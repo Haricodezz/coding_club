@@ -75,7 +75,7 @@ export default function DashboardPage() {
           .eq('question_id', todayQ.id);
 
         if (todaySubs) {
-          const solved = todaySubs.some(s => s.passed_tests === s.total_tests && s.total_tests > 0);
+          const solved = todaySubs.some(s => s.total_tests && s.total_tests > 0 && s.passed_tests === s.total_tests);
           setIsTodayQotdSolved(solved);
         }
       }

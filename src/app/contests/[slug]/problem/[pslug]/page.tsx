@@ -84,7 +84,7 @@ export default function ProblemPage({
 
       // Fetch active participants
       const supabase = getSupabase();
-      const { count } = await supabase.from('contest_participants').select('*', { count: 'exact', head: true }).eq('contest_id', cData.id);
+      const { count } = await (supabase as any).from('contest_participants').select('*', { count: 'exact', head: true }).eq('contest_id', cData.id);
       setParticipantCount(count || 0);
 
       // Fetch submissions to get solved set
