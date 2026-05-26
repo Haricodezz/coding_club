@@ -196,11 +196,6 @@ export default function ContestArenaPage({ params }: { params: Promise<{ slug: s
           </div>
 
           {/* Join / joined */}
-          {joined === false && timerPhase !== 'ended' && (
-            <button onClick={handleJoin} disabled={joining} style={{ padding: '0.45rem 1rem', borderRadius: '7px', border: 'none', background: 'var(--accent-1)', color: 'white', fontSize: '0.8rem', fontWeight: 700, cursor: joining ? 'not-allowed' : 'pointer', transition: 'filter 0.15s' }}>
-              {joining ? 'Joining...' : 'Join Contest'}
-            </button>
-          )}
           {joined === true && (
             <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#22c55e', padding: '0.3rem 0.75rem', borderRadius: '99px', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.25)' }}>✓ Joined</span>
           )}

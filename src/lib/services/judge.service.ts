@@ -5,7 +5,7 @@
 
 import { executePiston, type PistonResult } from '@/lib/piston';
 
-export type Verdict = 'AC' | 'WA' | 'TLE' | 'RE' | 'CE' | 'MLE' | 'JUDGE_ERROR';
+export type Verdict = 'AC' | 'WA' | 'TLE' | 'RE' | 'CE' | 'MLE' | 'JUDGE_ERROR' | 'PENDING';
 
 export interface Testcase {
   id:              string;

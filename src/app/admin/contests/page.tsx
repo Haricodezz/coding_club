@@ -104,7 +104,7 @@ export default function AdminContestsPage() {
           <span className="empty-state-icon">🏆</span>
           <h3>No contests yet</h3>
           <p>Create your first contest to get started.</p>
-          <button onClick={() => setShowCreate(true)} className="btn btn-primary">+ Create Contest</button>
+          <Link href="/admin/contests/new" className="btn btn-primary">+ Create Contest</Link>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>

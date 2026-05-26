@@ -90,14 +90,6 @@ export async function POST(
       return NextResponse.json({ error: 'No testcases configured for this problem' }, { status: 500 });
     }
 
-    // ── 8. Judge ───────────────────────────────────────────────
-    const judgeResult = await runAgainstTestcases(
-      code,
-      language,
-      testcases,
-      problem.time_limit || 2000,
-    );
-
     // ── 9. Count wrong attempts before this submission ─────────
     const { data: prevSubs } = await (supabase as any)
       .from('contest_submissions')
