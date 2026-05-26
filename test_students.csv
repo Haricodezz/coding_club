@@ -1,0 +1,4 @@
+full_name,email,roll_number,year,branch,role,section,phone
+John Doe,john.doe.student1@example.com,R1001,2,CSE,student,A,1234567890
+Jane Smith,jane.smith.student2@example.com,R1002,3,ECE,student,B,0987654321
+Alice Wong,alice.wong.student3@example.com,R1003,1,MECH,student,A,5554443333

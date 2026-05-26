@@ -1,0 +1,4 @@
+full_name,email,roll_number,year,branch,role,phone
+Peter Parker,peter.parker@example.com,R2001,2,CSE,student,1234567890
+Bruce Wayne,bruce.wayne@example.com,R2002,3,ECE,student,0987654321
+Diana Prince,diana.prince@example.com,R2003,1,MECH,student,5554443333
