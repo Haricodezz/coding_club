@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { getSupabase } from '@/lib/supabase';
 
 interface ContestInfo {
+  id: string;
   slug: string;
   title: string;
   start_time: string;
