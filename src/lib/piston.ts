@@ -118,7 +118,105 @@ export interface PistonResult {
 }
 
 // -----------------------------------------------
-// Core execution function — uses TRUE Piston API
+// Fallback code execution using public Judge0 CE API
+// -----------------------------------------------
+export async function executeJudge0(
+  code:      string,
+  language:  string,
+  stdin:     string = '',
+  timeLimitMs: number = 5000,
+): Promise<PistonResult> {
+  const lang = getLanguageById(language);
+  if (!lang || !lang.judgeId) {
+    return { success: false, output: '', stderr: '', exit_code: -1, runtime_ms: 0, verdict: 'JUDGE_ERROR', error: `Unsupported language for Judge0: ${language}` };
+  }
+
+  const startTime = Date.now();
+  try {
+    const res = await fetch('https://ce.judge0.com/submissions?base64_encoded=false&wait=true', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        source_code: code,
+        language_id: lang.judgeId,
+        stdin: stdin,
+        cpu_time_limit: Math.max(1, Math.min(15, timeLimitMs / 1000)),
+      })
+    });
+
+    const elapsed = Date.now() - startTime;
+
+    if (!res.ok) {
+      const body = await res.text().catch(() => '');
+      return {
+        success: false, output: '', stderr: body, exit_code: -1,
+        runtime_ms: elapsed, verdict: 'JUDGE_ERROR',
+        error: `Judge0 API returned HTTP ${res.status}`,
+      };
+    }
+
+    const data = await res.json();
+    const statusId = data.status?.id || 3;
+    const stdout = (data.stdout || '').trim();
+    const stderr = (data.stderr || '').trim();
+    const compileOutput = (data.compile_output || '').trim();
+    const exitCode = data.exit_code ?? 0;
+    const timeSec = parseFloat(data.time || '0');
+    const runtimeMs = Math.round(timeSec * 1000) || elapsed;
+
+    // Status: 3 - Accepted (AC)
+    if (statusId === 3) {
+      return {
+        success: true,
+        output: stdout,
+        stderr: stderr,
+        exit_code: 0,
+        runtime_ms: runtimeMs,
+      };
+    }
+
+    // Status: 6 - Compilation Error (CE)
+    if (statusId === 6) {
+      return {
+        success: false, output: '', stderr: compileOutput || stderr || 'Compilation failed',
+        exit_code: exitCode || -1, runtime_ms: runtimeMs, verdict: 'CE',
+        error: compileOutput || stderr || 'Compilation failed',
+      };
+    }
+
+    // Status: 5 - Time Limit Exceeded (TLE)
+    if (statusId === 5) {
+      return {
+        success: false, output: stdout, stderr: stderr || 'Time Limit Exceeded',
+        exit_code: exitCode || -1, runtime_ms: runtimeMs, verdict: 'TLE',
+        error: 'Time Limit Exceeded',
+      };
+    }
+
+    // Status: 7 to 12 - Runtime Errors (RE)
+    if (statusId >= 7 && statusId <= 12) {
+      return {
+        success: false, output: stdout, stderr: stderr || data.message || `Runtime Error (Status ${statusId})`,
+        exit_code: exitCode || -1, runtime_ms: runtimeMs, verdict: 'RE',
+        error: stderr || data.message || `Runtime error (Status ${statusId})`,
+      };
+    }
+
+    // Default error
+    return {
+      success: false, output: stdout, stderr: stderr || data.message || 'Execution failed',
+      exit_code: exitCode || -1, runtime_ms: runtimeMs, verdict: 'RE',
+      error: stderr || data.message || 'Execution failed',
+    };
+
+  } catch (err: unknown) {
+    const elapsed = Date.now() - startTime;
+    return { success: false, output: '', stderr: '', exit_code: -1, runtime_ms: elapsed, verdict: 'JUDGE_ERROR', error: String(err) };
+  }
+}
+
+// -----------------------------------------------
+// Core execution function — uses TRUE Piston API with Judge0 fallback
 // -----------------------------------------------
 export async function executePiston(
   code:      string,
@@ -162,6 +260,10 @@ export async function executePiston(
 
     if (!res.ok) {
       const body = await res.text().catch(() => '');
+      if (res.status === 401) {
+        console.warn('Piston API returned 401 Unauthorized (public service closed). Falling back to Judge0 CE...');
+        return await executeJudge0(code, language, stdin, timeLimitMs);
+      }
       return {
         success: false, output: '', stderr: body, exit_code: -1,
         runtime_ms: elapsed, verdict: 'JUDGE_ERROR',
@@ -186,7 +288,7 @@ export async function executePiston(
       };
     }
 
-    // Time limit exceeded (Piston returns specific message)
+    // Time limit exceeded
     if (run.signal === 'SIGKILL' || stderr.includes('Killed') || elapsed >= timeLimitMs + 2000) {
       return {
         success: false, output: stdout, stderr,
@@ -213,9 +315,16 @@ export async function executePiston(
     clearTimeout(timeout);
     const elapsed = Date.now() - startTime;
 
-    if (err instanceof Error && err.name === 'AbortError') {
-      return { success: false, output: '', stderr: '', exit_code: -1, runtime_ms: elapsed, verdict: 'TLE', error: 'Request timed out' };
+    // Fall back to Judge0 if fetching Piston fails overall
+    console.warn('Piston API request failed. Falling back to Judge0 CE...', err);
+    try {
+      return await executeJudge0(code, language, stdin, timeLimitMs);
+    } catch (fallbackErr) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        return { success: false, output: '', stderr: '', exit_code: -1, runtime_ms: elapsed, verdict: 'TLE', error: 'Request timed out' };
+      }
+      return { success: false, output: '', stderr: '', exit_code: -1, runtime_ms: elapsed, verdict: 'JUDGE_ERROR', error: String(err) };
     }
-    return { success: false, output: '', stderr: '', exit_code: -1, runtime_ms: elapsed, verdict: 'JUDGE_ERROR', error: String(err) };
   }
 }
+
