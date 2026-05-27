@@ -335,7 +335,7 @@ export default function AdminTeam() {
               <div style={{ background: 'var(--color-surface-2)', padding: '1.5rem', borderRadius: '8px' }}>
                 <h4 style={{ marginTop: 0, marginBottom: '1rem', color: 'var(--text-primary)' }}>2. Media (Avatar)</h4>
                 <div className="flex gap-4 items-center">
-                  <img src={formData.avatar_url} alt="Preview" style={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--brand-primary)' }} />
+                  <img src={formData.avatar_url || '/avatars/avatar_0.svg'} alt="Preview" style={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--brand-primary)' }} />
                   <div style={{ flex: 1 }}>
                     <label className="form-label">Upload New Avatar (auto-converts to WebP, 512x512)</label>
                     <input type="file" accept="image/*" onChange={handleAvatarUpload} disabled={uploadingAvatar} className="form-input" style={{ padding: '0.5rem' }} />
