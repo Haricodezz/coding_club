@@ -81,6 +81,11 @@ const NAV_GROUPS = [
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         ), public: true,
       },
+      {
+        href: 'https://discord.gg/em2hPagZ', label: 'Discord', icon: (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><path d="M7.5 20c0 0-2-1.5-2.5-3.5c0 0-1.5-4 0-9c0 0 2-2.5 7-2.5s7 2.5 7 2.5c1.5 5 0 9 0 9c-.5 2-2.5 3.5-2.5 3.5l-1-1.5c0 0-2.5 .5-3.5 .5s-3.5-.5-3.5-.5l-1 1.5z"/></svg>
+        ), public: true,
+      },
     ],
   },
 ];

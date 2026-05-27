@@ -67,15 +67,38 @@ export interface CmsGallery {
 
 export interface CmsTeamMember {
   id: string;
+  user_id?: string;
+  email?: string;
   name: string;
   role: string;
+  title?: string;
+  department?: string;
+  join_date?: string;
   avatar_url: string;
+  background_cover_url?: string;
   github_url?: string;
   linkedin_url?: string;
+  whatsapp_number?: string;
+  discord_handle?: string;
+  website_url?: string;
   bio?: string;
+  expertise_tags?: string[];
   display_order: number;
   is_active: boolean;
+  is_archived: boolean;
+  contact_visible: boolean;
   created_at: string;
+}
+
+export interface CmsTeamSettings {
+  id: string;
+  page_title: string;
+  page_description: string;
+  hero_bg_url?: string;
+  featured_member_ids?: string[];
+  display_mode: string;
+  card_size: string;
+  updated_at: string;
 }
 
 export interface CmsLearningPath {

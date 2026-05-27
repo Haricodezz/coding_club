@@ -265,31 +265,27 @@ export async function deleteEvent(id: string) {
 // -------------------------------------------------------------
 export async function getTeamMembersAdmin() {
   const { supabase } = await checkAdminAuth();
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from('cms_team_members')
     .select('*')
     .order('display_order', { ascending: true });
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    if (error.message?.includes('schema cache')) {
+      throw new Error("Supabase schema cache is stale after the migration. Please go to your Supabase SQL Editor and run: NOTIFY pgrst, 'reload schema';");
+    }
+    throw new Error(error.message);
+  }
   return data || [];
 }
 
-export async function saveTeamMember(id: string | null, payload: {
-  name: string;
-  role: string;
-  avatar_url: string;
-  github_url?: string;
-  linkedin_url?: string;
-  bio?: string;
-  display_order: number;
-  is_active: boolean;
-}) {
+export async function saveTeamMember(id: string | null, payload: any) {
   const { supabase } = await checkAdminAuth();
   let error;
   let result;
 
   if (id) {
-    const res = await supabase
+    const res = await (supabase as any)
       .from('cms_team_members')
       .update(payload)
       .eq('id', id)
@@ -298,7 +294,7 @@ export async function saveTeamMember(id: string | null, payload: {
     error = res.error;
     result = res.data;
   } else {
-    const res = await supabase
+    const res = await (supabase as any)
       .from('cms_team_members')
       .insert({
         ...payload,
@@ -317,9 +313,32 @@ export async function saveTeamMember(id: string | null, payload: {
 
 export async function deleteTeamMember(id: string) {
   const { supabase } = await checkAdminAuth();
-  const { error } = await supabase.from('cms_team_members').delete().eq('id', id);
+  const { error } = await (supabase as any).from('cms_team_members').delete().eq('id', id);
   if (error) throw new Error(error.message);
   revalidatePath('/team');
+}
+
+export async function getTeamSettingsAdmin() {
+  const { supabase } = await checkAdminAuth();
+  const { data, error } = await (supabase as any).from('cms_team_settings').select('*').single();
+  if (error && error.code !== 'PGRST116') throw new Error(error.message); // PGRST116 = 0 rows
+  return data;
+}
+
+export async function saveTeamSettings(payload: any) {
+  const { supabase } = await checkAdminAuth();
+  
+  const { data: existing } = await (supabase as any).from('cms_team_settings').select('id').single();
+  let res;
+  if (existing) {
+    res = await (supabase as any).from('cms_team_settings').update(payload).eq('id', existing.id).select().single();
+  } else {
+    res = await (supabase as any).from('cms_team_settings').insert(payload).select().single();
+  }
+  
+  if (res.error) throw new Error(res.error.message);
+  revalidatePath('/team');
+  return res.data;
 }
 
 // -------------------------------------------------------------
