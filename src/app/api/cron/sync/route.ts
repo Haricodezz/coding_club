@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
     const supabase = await createServerSupabaseClient();
 
     // Fetch users whose cooldown has passed or never synced, limit to 10 per cron run
-    const { data: users, error } = await supabase
+    const { data: users, error } = await (supabase as any)
       .from('user_platform_stats')
       .select('user_id, platform, sync_cooldown_until, users(leetcode_username)')
       .eq('platform', 'leetcode')
@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
     }
 
     const results = [];
-    for (const u of users) {
+    for (const u of users as any[]) {
       // Type assertion since it's a join
       const userData = u.users as any;
       if (userData?.leetcode_username) {
