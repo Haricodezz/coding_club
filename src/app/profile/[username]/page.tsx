@@ -248,18 +248,24 @@ export default function ProfilePage() {
               </div>
 
               {/* Upload Custom File */}
-              <div>
-                <label className="form-label" style={{ fontWeight: 600 }}>Upload Custom Avatar</label>
-                <input 
-                  type="file" 
-                  accept="image/*" 
-                  onChange={handleAvatarUpload}
-                  disabled={uploadingAvatar}
-                  className="form-input" 
-                  style={{ padding: '0.5rem', fontSize: '0.8rem' }}
-                />
-                <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>Auto-converts to optimized WebP format (512x512px).</p>
-              </div>
+              {((profile.role !== 'student') ? (
+                <div>
+                  <label className="form-label" style={{ fontWeight: 600 }}>Upload Custom Avatar</label>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={handleAvatarUpload}
+                    disabled={uploadingAvatar}
+                    className="form-input" 
+                    style={{ padding: '0.5rem', fontSize: '0.8rem' }}
+                  />
+                  <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>Auto-converts to optimized WebP format (512x512px).</p>
+                </div>
+              ) : (
+                <div style={{ background: 'var(--color-surface-2)', padding: '0.75rem 1rem', borderRadius: '8px', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                  🔒 Custom file uploads are reserved for team members and mentors. Please provide a public image URL or select a preset below.
+                </div>
+              ))}
 
               {/* Preset Selector Grid */}
               <div>
