@@ -324,7 +324,7 @@ export default function ContestArenaPage({ params }: { params: Promise<{ slug: s
                     </span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', minWidth: 0 }}>
                       {entry.users.avatar_url
-                        ? <img src={entry.users.avatar_url} alt="" style={{ width: '28px', height: '28px', borderRadius: '50%', flexShrink: 0 }} />
+                        ? <img src={entry.users.avatar_url.startsWith('http') ? entry.users.avatar_url : `/avatars/${entry.users.avatar_url}`} alt="" style={{ width: '28px', height: '28px', borderRadius: '50%', flexShrink: 0, objectFit: 'cover' }} />
                         : <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--accent-1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, color: 'white', flexShrink: 0 }}>{(entry.users.display_name || entry.users.username || '?')[0].toUpperCase()}</div>
                       }
                       <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.users.display_name || entry.users.username}</span>

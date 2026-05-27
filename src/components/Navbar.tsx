@@ -398,7 +398,7 @@ export function Navbar() {
                   aria-expanded={userDropOpen}
                 >
                   <img
-                    src={`/avatars/${user.avatar_url}`}
+                    src={user.avatar_url?.startsWith('http') ? user.avatar_url : `/avatars/${user.avatar_url || 'avatar_0.svg'}`}
                     alt={user.username}
                     width={34}
                     height={34}
@@ -411,7 +411,7 @@ export function Navbar() {
                     {/* Header */}
                     <div className="nav-user-dropdown-header">
                       <img
-                        src={`/avatars/${user.avatar_url}`}
+                        src={user.avatar_url?.startsWith('http') ? user.avatar_url : `/avatars/${user.avatar_url || 'avatar_0.svg'}`}
                         alt={user.username}
                         width={40}
                         height={40}
@@ -505,7 +505,7 @@ export function Navbar() {
         {/* User info */}
         {user && (
           <div className="mobile-drawer-user">
-            <img src={`/avatars/${user.avatar_url}`} alt={user.username} width={40} height={40} className="mobile-drawer-avatar" onError={(e) => { (e.target as HTMLImageElement).src = '/avatars/avatar_0.svg'; }} />
+            <img src={user.avatar_url?.startsWith('http') ? user.avatar_url : `/avatars/${user.avatar_url || 'avatar_0.svg'}`} alt={user.username} width={40} height={40} className="mobile-drawer-avatar" onError={(e) => { (e.target as HTMLImageElement).src = '/avatars/avatar_0.svg'; }} />
             <div>
               <p className="nav-user-name">{user.full_name || user.username}</p>
               <p className="nav-user-role">{user.role}</p>
@@ -582,7 +582,7 @@ export function Navbar() {
         </Link>
         {user ? (
           <Link href={`/profile/${user.username}`} className={`mobile-bottom-tab${pathname.startsWith('/profile') ? ' active' : ''}`}>
-            <img src={`/avatars/${user.avatar_url}`} alt={user.username} width={22} height={22} style={{ borderRadius: '50%', border: '1.5px solid var(--accent)' }} onError={(e) => { (e.target as HTMLImageElement).src = '/avatars/avatar_0.svg'; }} />
+            <img src={user.avatar_url?.startsWith('http') ? user.avatar_url : `/avatars/${user.avatar_url || 'avatar_0.svg'}`} alt={user.username} width={22} height={22} style={{ borderRadius: '50%', border: '1.5px solid var(--accent)' }} onError={(e) => { (e.target as HTMLImageElement).src = '/avatars/avatar_0.svg'; }} />
             <span>Profile</span>
           </Link>
         ) : (

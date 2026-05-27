@@ -156,9 +156,9 @@ export function DiscussionBoard({ itemId, user }: DiscussionBoardProps) {
         <form onSubmit={handleSubmit} style={{ marginBottom: '2rem' }}>
           <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
             <img 
-              src={`/avatars/${user.avatar_url || 'avatar_0.svg'}`} 
+              src={user.avatar_url?.startsWith('http') ? user.avatar_url : `/avatars/${user.avatar_url || 'avatar_0.svg'}`} 
               alt={user.username} 
-              style={{ width: 40, height: 40, borderRadius: '50%', border: '1px solid var(--color-border)' }} 
+              style={{ width: 40, height: 40, borderRadius: '50%', border: '1px solid var(--color-border)', objectFit: 'cover' }} 
             />
             <div style={{ flex: 1 }}>
               <textarea
@@ -249,7 +249,7 @@ export function DiscussionBoard({ itemId, user }: DiscussionBoardProps) {
                 <div style={{ flex: 1, background: 'var(--color-surface)', border: `1px solid ${comment.is_pinned ? 'var(--accent)' : 'var(--color-border)'}`, borderRadius: '12px', padding: '1rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <img src={`/avatars/${comment.users?.avatar_url || 'avatar_0.svg'}`} alt={comment.users?.username} style={{ width: 24, height: 24, borderRadius: '50%' }} />
+                      <img src={comment.users?.avatar_url?.startsWith('http') ? comment.users.avatar_url : `/avatars/${comment.users?.avatar_url || 'avatar_0.svg'}`} alt={comment.users?.username} style={{ width: 24, height: 24, borderRadius: '50%', objectFit: 'cover' }} />
                       <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>{comment.users?.username || 'Unknown'}</span>
                       {isMentor && (
                         <span style={{ fontSize: '0.65rem', padding: '0.1rem 0.4rem', background: 'rgba(139,92,246,0.15)', color: 'var(--accent-3)', borderRadius: '4px', fontWeight: 700 }}>MENTOR</span>

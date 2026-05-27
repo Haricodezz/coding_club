@@ -24,6 +24,7 @@ export default function ProfilePage() {
   // Edit Profile State
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({ avatar_url: '', cover_url: '' });
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -81,6 +82,64 @@ export default function ProfilePage() {
     if (profile) {
       setEditForm({ avatar_url: profile.avatar_url || '', cover_url: profile.cover_url || '' });
       setIsEditing(true);
+    }
+  }
+
+  async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingAvatar(true);
+    try {
+      // 1. Image Optimization using Canvas
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      
+      const optimizedBlob = await new Promise<Blob>((resolve, reject) => {
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = 512;
+          canvas.height = 512;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return reject('No canvas context');
+          
+          // Crop to 1:1 ratio
+          const minDim = Math.min(img.width, img.height);
+          const startX = (img.width - minDim) / 2;
+          const startY = (img.height - minDim) / 2;
+          
+          ctx.drawImage(img, startX, startY, minDim, minDim, 0, 0, 512, 512);
+          
+          // Convert to WebP
+          canvas.toBlob((blob) => {
+            if (blob) resolve(blob);
+            else reject('Conversion failed');
+          }, 'image/webp', 0.9);
+        };
+        img.src = url;
+      });
+
+      // 2. Upload to Supabase Storage
+      const supabase = getSupabase();
+      const fileName = `user_avatar_${Date.now()}.webp`;
+      
+      const { data, error } = await supabase.storage
+        .from('public-assets')
+        .upload(`avatars/${fileName}`, optimizedBlob, { contentType: 'image/webp' });
+
+      if (error) {
+        console.warn('Storage upload failed, please ensure a public bucket named "public-assets" exists.', error);
+        alert(`Storage Error: ${error.message}`);
+        setUploadingAvatar(false);
+        return;
+      }
+
+      const { data: publicUrlData } = supabase.storage.from('public-assets').getPublicUrl(`avatars/${fileName}`);
+      setEditForm(prev => ({ ...prev, avatar_url: publicUrlData.publicUrl }));
+    } catch (err: any) {
+      alert('Error uploading avatar: ' + (err.message || err));
+    } finally {
+      setUploadingAvatar(false);
     }
   }
 
@@ -170,12 +229,81 @@ export default function ProfilePage() {
 
       {/* Edit Profile Modal */}
       {isEditing && (
-        <div className="modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div className="card" style={{ width: '100%', maxWidth: '500px', background: 'var(--color-bg-2)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius)' }}>
-            <h3 style={{ marginBottom: '1.5rem' }}>Edit Profile Images</h3>
-            <div className="flex-col gap-4">
+        <div className="modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+          <div className="card glass" style={{ width: '100%', maxWidth: '500px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '16px', padding: '2rem', boxShadow: '0 24px 80px rgba(0,0,0,0.6)' }}>
+            <h3 style={{ marginBottom: '1.5rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.75rem' }}>Edit Profile Images</h3>
+            
+            <div className="flex-col gap-5">
+              {/* Image Preview Area */}
+              <div className="flex gap-4 items-center" style={{ background: 'var(--color-surface-2)', padding: '1rem', borderRadius: '12px' }}>
+                <img 
+                  src={editForm.avatar_url?.startsWith('http') ? editForm.avatar_url : `/avatars/${editForm.avatar_url || 'avatar_0.svg'}`} 
+                  alt="Avatar Preview" 
+                  style={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover', border: '2.5px solid var(--brand-primary)', boxShadow: '0 4px 15px rgba(108,99,255,0.2)' }} 
+                />
+                <div style={{ flex: 1 }}>
+                  <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>Live Preview</p>
+                  <p style={{ margin: '0.2rem 0 0', fontSize: '0.75rem', color: 'var(--text-muted)' }}>Choose a preset below or upload a custom image.</p>
+                </div>
+              </div>
+
+              {/* Upload Custom File */}
               <div>
-                <label className="form-label">Profile Picture URL (Public Link)</label>
+                <label className="form-label" style={{ fontWeight: 600 }}>Upload Custom Avatar</label>
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={handleAvatarUpload}
+                  disabled={uploadingAvatar}
+                  className="form-input" 
+                  style={{ padding: '0.5rem', fontSize: '0.8rem' }}
+                />
+                <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>Auto-converts to optimized WebP format (512x512px).</p>
+              </div>
+
+              {/* Preset Selector Grid */}
+              <div>
+                <label className="form-label" style={{ fontWeight: 600 }}>Select Preset Avatar</label>
+                <div style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: 'repeat(10, 1fr)', 
+                  gap: '0.4rem', 
+                  background: 'var(--color-surface-2)', 
+                  padding: '0.75rem', 
+                  borderRadius: '8px',
+                  maxHeight: '110px',
+                  overflowY: 'auto'
+                }}>
+                  {Array.from({ length: 20 }).map((_, idx) => {
+                    const name = `avatar_${idx}.svg`;
+                    const isSelected = editForm.avatar_url === name;
+                    return (
+                      <img
+                        key={name}
+                        src={`/avatars/${name}`}
+                        alt={`Preset ${idx}`}
+                        onClick={() => setEditForm(prev => ({ ...prev, avatar_url: name }))}
+                        style={{
+                          width: '30px',
+                          height: '30px',
+                          borderRadius: '50%',
+                          cursor: 'pointer',
+                          border: isSelected ? '2px solid var(--brand-primary)' : '1px solid var(--color-border)',
+                          padding: '1.5px',
+                          background: isSelected ? 'rgba(108,99,255,0.15)' : 'var(--color-surface)',
+                          transition: 'transform 0.1s, border-color 0.1s'
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.15)'}
+                        onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Manual URL Input */}
+              <div>
+                <label className="form-label">Or paste public Avatar URL</label>
                 <input 
                   type="text" 
                   className="form-input" 
@@ -184,6 +312,8 @@ export default function ProfilePage() {
                   placeholder="https://example.com/my-avatar.jpg"
                 />
               </div>
+
+              {/* Cover URL Input */}
               <div>
                 <label className="form-label">Cover Picture URL (Public Link)</label>
                 <input 
@@ -195,9 +325,12 @@ export default function ProfilePage() {
                 />
               </div>
             </div>
-            <div className="flex justify-end gap-3" style={{ marginTop: '2rem' }}>
+
+            <div style={{ display: 'flex', gap: '0.75rem', marginTop: '2rem', justifyContent: 'flex-end' }}>
               <button className="btn btn-secondary" onClick={() => setIsEditing(false)}>Cancel</button>
-              <button className="btn btn-primary" onClick={handleSaveProfile}>Save Changes</button>
+              <button className="btn btn-primary" onClick={handleSaveProfile} disabled={uploadingAvatar}>
+                {uploadingAvatar ? 'Uploading...' : 'Save Changes'}
+              </button>
             </div>
           </div>
         </div>

@@ -112,7 +112,7 @@ export function BlogListClient({ blogs }: BlogListClientProps) {
                 <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '1rem', marginTop: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div className="flex items-center gap-2">
                     <img
-                      src={`/avatars/${blog.author?.avatar_url || 'avatar_0.svg'}`}
+                      src={blog.author?.avatar_url?.startsWith('http') ? blog.author.avatar_url : `/avatars/${blog.author?.avatar_url || 'avatar_0.svg'}`}
                       alt={blog.author?.username || 'Author'}
                       style={{ width: '28px', height: '28px', borderRadius: '50%', border: '1px solid var(--accent)' }}
                     />

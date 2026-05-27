@@ -67,7 +67,7 @@ export default async function BlogPostDetailedPage({ params }: BlogPostPageProps
           {/* Author / Date Info */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '1.5rem', marginBottom: '2rem' }}>
             <img
-              src={`/avatars/${blog.author?.avatar_url || 'avatar_0.svg'}`}
+              src={blog.author?.avatar_url?.startsWith('http') ? blog.author.avatar_url : `/avatars/${blog.author?.avatar_url || 'avatar_0.svg'}`}
               alt={blog.author?.username || 'Author'}
               style={{ width: '42px', height: '42px', borderRadius: '50%', border: '2px solid var(--accent)' }}
             />
