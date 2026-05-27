@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { getSupabase } from '@/lib/supabase';
 
 type NotificationType = 'info' | 'warning' | 'success' | 'system' | 'security';
 
@@ -11,24 +13,124 @@ interface AppNotification {
   type: NotificationType;
   time: string;
   read: boolean;
+  link?: string;
 }
 
-const MOCK_NOTIFICATIONS: AppNotification[] = [
-  { id: '1', title: 'New user registered', message: 'john_doe just signed up.', type: 'info', time: '5m ago', read: false },
-  { id: '2', title: 'Contest starts in 2 hours', message: 'Weekly coding challenge is about to begin.', type: 'system', time: '10m ago', read: false },
-  { id: '3', title: 'Blog draft pending review', message: 'A new article "Intro to React" needs approval.', type: 'warning', time: '1h ago', read: false },
-  { id: '4', title: 'CSV import completed', message: 'Successfully imported 45 students.', type: 'success', time: '2h ago', read: true },
-  { id: '5', title: 'User suspended', message: 'user_123 was flagged for policy violation.', type: 'security', time: '3h ago', read: true },
-];
+// Time-ago formatting helper
+function formatTimeAgo(dateString: string) {
+  try {
+    const date = new Date(dateString);
+    const now = new Date();
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    
+    if (seconds < 60) return 'just now';
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    return `${days}d ago`;
+  } catch (e) {
+    return 'recently';
+  }
+}
 
 export function NotificationDropdown() {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
-  const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
   useEffect(() => {
+    async function fetchNotifications() {
+      try {
+        const supabase = getSupabase();
+        
+        // 1. Fetch real pending reviews (unpublished administrative blogs)
+        const { data: pendingBlogs } = await (supabase as any)
+          .from('cms_blogs')
+          .select('id, title, created_at')
+          .eq('is_published', false)
+          .order('created_at', { ascending: false })
+          .limit(5);
+
+        // 2. Fetch real student submissions awaiting approval (status = 'pending')
+        const { data: pendingUserBlogs } = await (supabase as any)
+          .from('user_blogs')
+          .select('id, title, created_at')
+          .eq('status', 'pending')
+          .order('created_at', { ascending: false })
+          .limit(5);
+
+        const rawItems: { id: string; title: string; message: string; type: NotificationType; timeStr: string; date: Date; link?: string }[] = [];
+
+        if (pendingBlogs) {
+          (pendingBlogs as any[]).forEach(b => {
+            rawItems.push({
+              id: `blog-${b.id}`,
+              title: 'Draft Awaiting Approval',
+              message: `"${b.title}" is pending administrative approval.`,
+              type: 'warning',
+              timeStr: b.created_at ? formatTimeAgo(b.created_at) : 'recently',
+              date: b.created_at ? new Date(b.created_at) : new Date(0),
+              link: '/admin/blogs'
+            });
+          });
+        }
+
+        if (pendingUserBlogs) {
+          (pendingUserBlogs as any[]).forEach(ub => {
+            rawItems.push({
+              id: `userblog-${ub.id}`,
+              title: 'Student Submission',
+              message: `"${ub.title}" needs review and approval.`,
+              type: 'warning',
+              timeStr: ub.created_at ? formatTimeAgo(ub.created_at) : 'recently',
+              date: ub.created_at ? new Date(ub.created_at) : new Date(0),
+              link: '/admin/blogs/user-submissions'
+            });
+          });
+        }
+
+        // Sort items chronologically (latest first)
+        rawItems.sort((a, b) => b.date.getTime() - a.date.getTime());
+
+        // Get read notification IDs from localStorage
+        const readIds: string[] = JSON.parse(localStorage.getItem('adminReadNotifications') || '[]');
+
+        // Map to notifications format
+        const finalNotifs: AppNotification[] = rawItems.map(item => ({
+          id: item.id,
+          title: item.title,
+          message: item.message,
+          type: item.type,
+          time: item.timeStr,
+          read: readIds.includes(item.id),
+          link: item.link
+        }));
+
+        // Add a standard system health notification if completely clean
+        if (finalNotifs.length === 0) {
+          finalNotifs.push({
+            id: 'sys-ok',
+            title: 'System operating normally',
+            message: 'All queues are empty. No pending reviews or approvals at this time.',
+            type: 'success',
+            time: 'just now',
+            read: true
+          });
+        }
+
+        setNotifications(finalNotifs);
+      } catch (err) {
+        console.error('Error fetching admin notifications:', err);
+      }
+    }
+
+    fetchNotifications();
+
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
@@ -39,14 +141,28 @@ export function NotificationDropdown() {
   }, []);
 
   const markAllAsRead = () => {
+    const allIds = notifications.map(n => n.id);
+    const readIds: string[] = JSON.parse(localStorage.getItem('adminReadNotifications') || '[]');
+    const nextReadIds = Array.from(new Set([...readIds, ...allIds]));
+    localStorage.setItem('adminReadNotifications', JSON.stringify(nextReadIds));
+
     setNotifications(notifications.map(n => ({ ...n, read: true })));
+  };
+
+  const markAsRead = (id: string) => {
+    const readIds: string[] = JSON.parse(localStorage.getItem('adminReadNotifications') || '[]');
+    if (!readIds.includes(id)) {
+      const nextReadIds = [...readIds, id];
+      localStorage.setItem('adminReadNotifications', JSON.stringify(nextReadIds));
+    }
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
   };
 
   const getIconForType = (type: NotificationType) => {
     switch (type) {
       case 'info': return <span style={{ color: '#3b82f6' }}>ℹ️</span>;
       case 'warning': return <span style={{ color: '#f59e0b' }}>⚠️</span>;
-      case 'success': return <span style={{ color: '#10b981' }}>✅</span>;
+      case 'success': return <span style={{ color: '#00C853' }}>✅</span>;
       case 'system': return <span style={{ color: '#8b5cf6' }}>⚙️</span>;
       case 'security': return <span style={{ color: '#ef4444' }}>🛡️</span>;
     }
@@ -56,6 +172,7 @@ export function NotificationDropdown() {
     <div className="relative" ref={dropdownRef} style={{ position: 'relative' }}>
       <button 
         onClick={() => setIsOpen(!isOpen)}
+        aria-label="Toggle notifications"
         style={{ 
           background: isOpen ? 'var(--color-surface-3)' : 'none', 
           border: 'none', 
@@ -90,7 +207,7 @@ export function NotificationDropdown() {
 
       {isOpen && (
         <div 
-          className="glass"
+          className="glass animate-fade-in"
           style={{
             position: 'absolute',
             top: 'calc(100% + 0.5rem)',
@@ -98,12 +215,13 @@ export function NotificationDropdown() {
             width: '320px',
             maxHeight: '400px',
             overflowY: 'auto',
-            borderRadius: '8px',
-            boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
+            borderRadius: '12px',
+            boxShadow: 'var(--shadow-lg)',
             border: '1px solid var(--color-border)',
             zIndex: 1000,
             display: 'flex',
-            flexDirection: 'column'
+            flexDirection: 'column',
+            background: 'var(--color-surface)'
           }}
         >
           <div style={{ 
@@ -112,13 +230,13 @@ export function NotificationDropdown() {
             alignItems: 'center', 
             padding: '0.75rem 1rem', 
             borderBottom: '1px solid var(--color-border)',
-            background: 'var(--color-surface-2)'
+            background: 'rgba(0,0,0,0.05)'
           }}>
             <h3 style={{ fontSize: '0.85rem', fontWeight: 600, margin: 0 }}>Notifications</h3>
             {unreadCount > 0 && (
               <button 
                 onClick={markAllAsRead}
-                style={{ background: 'none', border: 'none', color: 'var(--accent)', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}
+                style={{ background: 'none', border: 'none', color: 'var(--accent-green)', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}
               >
                 Mark all read
               </button>
@@ -134,28 +252,35 @@ export function NotificationDropdown() {
               notifications.map((notif) => (
                 <div 
                   key={notif.id}
+                  onClick={() => {
+                    markAsRead(notif.id);
+                    setIsOpen(false);
+                    if (notif.link) {
+                      router.push(notif.link);
+                    }
+                  }}
                   style={{ 
                     display: 'flex', 
                     gap: '0.75rem', 
                     padding: '0.75rem 1rem',
-                    background: notif.read ? 'transparent' : 'rgba(99, 102, 241, 0.05)',
-                    borderLeft: `2px solid ${notif.read ? 'transparent' : 'var(--accent)'}`,
+                    background: notif.read ? 'transparent' : 'rgba(0, 200, 83, 0.04)',
+                    borderLeft: `2px solid ${notif.read ? 'transparent' : 'var(--accent-green)'}`,
                     cursor: 'pointer'
                   }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'var(--color-surface-2)'}
-                  onMouseLeave={e => e.currentTarget.style.background = notif.read ? 'transparent' : 'rgba(99, 102, 241, 0.05)'}
+                  onMouseEnter={e => e.currentTarget.style.background = 'var(--color-surface-hover)'}
+                  onMouseLeave={e => e.currentTarget.style.background = notif.read ? 'transparent' : 'rgba(0, 200, 83, 0.04)'}
                 >
                   <div style={{ flexShrink: 0, marginTop: '2px', fontSize: '0.9rem' }}>
                     {getIconForType(notif.type)}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.15rem' }}>
-                      <p style={{ fontSize: '0.8rem', fontWeight: notif.read ? 400 : 500, color: 'var(--text-primary)', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <p style={{ fontSize: '0.8rem', fontWeight: notif.read ? 500 : 700, color: 'var(--text-primary)', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {notif.title}
                       </p>
-                      <span style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)', flexShrink: 0, marginLeft: '0.5rem' }}>{notif.time}</span>
+                      <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', flexShrink: 0, marginLeft: '0.5rem' }}>{notif.time}</span>
                     </div>
-                    <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: 1.35 }}>
                       {notif.message}
                     </p>
                   </div>

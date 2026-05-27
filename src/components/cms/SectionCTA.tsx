@@ -48,10 +48,10 @@ export function SectionCTA({ title, subtitle, data }: SectionCTAProps) {
             }}
           />
 
-          <h2 style={{ fontSize: '2.25rem', fontWeight: 800, marginBottom: '1rem', color: '#fff' }}>
+          <h2 style={{ fontSize: '2.25rem', fontWeight: 800, marginBottom: '1rem', color: 'var(--text-primary)' }}>
             {title || 'Ready to Start Coding?'}
           </h2>
-          <p style={{ marginBottom: '2.5rem', color: '#94a3b8', maxWidth: '500px', margin: '0 auto 2.5rem', fontSize: '1.05rem', lineHeight: 1.6 }}>
+          <p style={{ marginBottom: '2.5rem', color: 'var(--text-muted)', maxWidth: '500px', margin: '0 auto 2.5rem', fontSize: '1.05rem', lineHeight: 1.6 }}>
             {subtitle || "Join today to access daily challenges, run code in our IDE, and sync with HackerRank contests."}
           </p>
           

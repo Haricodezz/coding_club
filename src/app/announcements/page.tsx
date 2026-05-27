@@ -68,7 +68,7 @@ export default async function AnnouncementsPage() {
                   </span>
                 </div>
                 
-                <p style={{ marginTop: '1rem', color: '#a8b3cf', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>
+                <p style={{ marginTop: '1rem', color: 'var(--text-tertiary)', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>
                   {item.content}
                 </p>
 

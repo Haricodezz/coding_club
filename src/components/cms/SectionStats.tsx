@@ -20,7 +20,7 @@ export function SectionStats({ items = [], title, subtitle }: SectionStatsProps)
         {title && (
           <div className="text-center" style={{ marginBottom: '3rem' }}>
             {subtitle && <p className="eyebrow" style={{ color: 'var(--accent-3)' }}>{subtitle}</p>}
-            <h2 style={{ fontSize: '2rem', color: '#fff' }}>{title}</h2>
+            <h2 style={{ fontSize: '2rem', color: 'var(--text-primary)' }}>{title}</h2>
           </div>
         )}
         <div className="grid-4" style={{ gap: '1.5rem' }}>
@@ -35,9 +35,6 @@ export function SectionStats({ items = [], title, subtitle }: SectionStatsProps)
               style={{
                 padding: '2rem 1.5rem',
                 textAlign: 'center',
-                border: '1px solid var(--color-border)',
-                background: 'rgba(22, 22, 30, 0.4)',
-                backdropFilter: 'blur(8px)',
                 position: 'relative',
                 overflow: 'hidden'
               }}
@@ -46,7 +43,7 @@ export function SectionStats({ items = [], title, subtitle }: SectionStatsProps)
                 style={{ 
                   fontSize: '3rem', 
                   fontWeight: 850, 
-                  color: '#fff', 
+                  color: 'var(--text-primary)', 
                   marginBottom: '0.5rem',
                   background: 'var(--accent-gradient)',
                   WebkitBackgroundClip: 'text',
@@ -56,7 +53,7 @@ export function SectionStats({ items = [], title, subtitle }: SectionStatsProps)
               >
                 {stat.value}
               </div>
-              <div style={{ fontSize: '0.85rem', color: '#94a3b8', letterSpacing: '1px', textTransform: 'uppercase', fontWeight: 600 }}>
+              <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', letterSpacing: '1px', textTransform: 'uppercase', fontWeight: 600 }}>
                 {stat.label}
               </div>
             </motion.div>

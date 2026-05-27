@@ -243,7 +243,7 @@ export default function AdminLearningPaths() {
                 <div key={item.id} className="card" style={{ background: 'var(--color-surface-2)', opacity: item.is_published ? 1 : 0.6 }}>
                   <div className="flex justify-between items-start">
                     <div>
-                      <h4 style={{ color: '#fff', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <h4 style={{ color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                         {item.title}
                         {!item.is_published && <span className="badge badge-secondary" style={{ fontSize: '0.65rem' }}>Draft</span>}
                       </h4>
@@ -255,7 +255,7 @@ export default function AdminLearningPaths() {
                         <span className="badge badge-secondary">{item.resource_ids?.length || 0} Resources</span>
                       </div>
                       {item.description && (
-                        <p style={{ fontSize: '0.85rem', color: '#a8b3cf', marginTop: '0.75rem' }}>
+                        <p style={{ fontSize: '0.85rem', color: 'var(--text-tertiary)', marginTop: '0.75rem' }}>
                           {item.description}
                         </p>
                       )}

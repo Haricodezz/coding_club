@@ -65,7 +65,7 @@ export default function LearnPage() {
           <div className="card animate-slide-in" style={{ marginBottom: '2rem', border: '1px solid rgba(108,99,255,0.25)' }}>
             <div className="flex items-center justify-between" style={{ marginBottom: '0.75rem' }}>
               <div>
-                <span style={{ fontWeight: 700, color: '#e2e8f0' }}>{completedCount}</span>
+                <span style={{ fontWeight: 700, color: 'var(--text-secondary)' }}>{completedCount}</span>
                 <span style={{ color: '#64748b' }}> / {resources.length} resources completed</span>
               </div>
               <span style={{ fontWeight: 800, color: 'var(--accent-3)', fontSize: '1.1rem' }}>{progress}%</span>
@@ -171,7 +171,7 @@ function ResourceCard({
         </span>
       </div>
 
-      <h4 style={{ marginBottom: '0.5rem', color: resource.is_completed ? 'var(--color-success)' : '#f1f5f9' }}>
+      <h4 style={{ marginBottom: '0.5rem', color: resource.is_completed ? 'var(--color-success)' : 'var(--text-primary)' }}>
         {resource.is_completed && '✅ '}{resource.title}
       </h4>
 

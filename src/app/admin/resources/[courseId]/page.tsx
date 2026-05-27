@@ -69,7 +69,7 @@ export default function CourseEditorPage({ params }: { params: Promise<{ courseI
   if (!course) return (
     <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '1rem', padding: '3rem' }}>
       <span style={{ fontSize: '3rem' }}>🔍</span>
-      <h2 style={{ color: '#f1f5f9', margin: 0 }}>Course not found</h2>
+      <h2 style={{ color: 'var(--text-primary)', margin: 0 }}>Course not found</h2>
       <Link href="/admin/resources" style={{ color: 'var(--accent-1)', textDecoration: 'none', fontSize: '0.9rem' }}>← Back to all courses</Link>
     </div>
   );
@@ -92,7 +92,7 @@ export default function CourseEditorPage({ params }: { params: Promise<{ courseI
         {/* Course Title + Status */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: 0 }}>
           <span style={{ fontSize: '1rem' }}>{diffIcon(course.difficulty_level)}</span>
-          <h1 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#f1f5f9', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <h1 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {course.title}
           </h1>
           <span style={{
@@ -114,7 +114,7 @@ export default function CourseEditorPage({ params }: { params: Promise<{ courseI
             { label: 'Est. Time', value: totalMins ? `${Math.round(totalMins / 60 * 10) / 10}h` : '—' },
           ].map(s => (
             <div key={s.label} style={{ textAlign: 'center' }}>
-              <p style={{ fontSize: '0.85rem', fontWeight: 800, color: '#f1f5f9', margin: 0, lineHeight: 1 }}>{s.value}</p>
+              <p style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0, lineHeight: 1 }}>{s.value}</p>
               <p style={{ fontSize: '0.6rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0.1rem 0 0' }}>{s.label}</p>
             </div>
           ))}
@@ -208,7 +208,7 @@ function OverviewTab({ course, onSaved }: { course: any; onSaved: () => void }) 
   return (
     <div style={{ padding: '2rem', maxWidth: '680px', margin: '0 auto' }}>
       <div style={{ marginBottom: '1.75rem' }}>
-        <h2 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#f1f5f9', margin: '0 0 0.3rem' }}>Course Settings</h2>
+        <h2 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 0.3rem' }}>Course Settings</h2>
         <p style={{ color: 'var(--color-text-muted)', fontSize: '0.82rem', margin: 0 }}>Edit course metadata, description, and publishing settings.</p>
       </div>
 
@@ -408,7 +408,7 @@ function BuilderTab({ course, courseId, onRefresh }: { course: any; courseId: st
       {/* Builder Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
         <div>
-          <h2 style={{ fontSize: '1rem', fontWeight: 800, color: '#f1f5f9', margin: '0 0 0.2rem' }}>Module Builder</h2>
+          <h2 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 0.2rem' }}>Module Builder</h2>
           <p style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', margin: 0 }}>
             Organize your course into sections, then add curated resources inside each module.
           </p>
@@ -431,7 +431,7 @@ function BuilderTab({ course, courseId, onRefresh }: { course: any; courseId: st
           padding: '3rem', textAlign: 'center',
         }}>
           <p style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>📦</p>
-          <h3 style={{ color: '#f1f5f9', margin: '0 0 0.5rem', fontSize: '1rem' }}>No modules yet</h3>
+          <h3 style={{ color: 'var(--text-primary)', margin: '0 0 0.5rem', fontSize: '1rem' }}>No modules yet</h3>
           <p style={{ color: 'var(--color-text-muted)', fontSize: '0.82rem', margin: '0 0 1.25rem' }}>
             Start building by adding your first module (e.g., "Arrays", "Intro to HTML", etc.)
           </p>
@@ -468,7 +468,7 @@ function BuilderTab({ course, courseId, onRefresh }: { course: any; courseId: st
                       fontSize: '0.68rem', fontWeight: 800, color: 'var(--accent-1)', fontFamily: 'monospace',
                     }}>{mIdx + 1}</span>
                     <div style={{ minWidth: 0 }}>
-                      <p style={{ fontSize: '0.9rem', fontWeight: 700, color: '#f1f5f9', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <p style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {mod.title}
                       </p>
                       {mod.description && (
@@ -527,7 +527,7 @@ function BuilderTab({ course, courseId, onRefresh }: { course: any; courseId: st
 
                             {/* Title + Meta */}
                             <div style={{ flex: 1, minWidth: 0 }}>
-                              <p style={{ fontSize: '0.85rem', fontWeight: 600, color: '#e2e8f0', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              <p style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                 {item.title}
                               </p>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.15rem' }}>
@@ -733,7 +733,7 @@ function BuilderTab({ course, courseId, onRefresh }: { course: any; courseId: st
 /* ═══════════════════════════════ HELPERS ═══════════════════════════════ */
 const inputStyle: React.CSSProperties = {
   width: '100%', background: 'var(--color-surface-2)', border: '1px solid var(--color-border)',
-  borderRadius: '8px', padding: '0.6rem 0.8rem', color: '#f1f5f9', fontSize: '0.87rem',
+  borderRadius: '8px', padding: '0.6rem 0.8rem', color: 'var(--text-primary)', fontSize: '0.87rem',
   outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.15s',
 };
 const labelStyle: React.CSSProperties = {
@@ -772,7 +772,7 @@ function Modal({ title, children, onClose, wide }: { title: string; children: Re
         boxShadow: '0 24px 80px rgba(0,0,0,0.5)', animation: 'slideUp 0.2s ease',
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-          <h3 style={{ fontSize: '1rem', fontWeight: 800, color: '#f1f5f9', margin: 0 }}>{title}</h3>
+          <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>{title}</h3>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--color-text-muted)', fontSize: '1.1rem', cursor: 'pointer', lineHeight: 1 }}>✕</button>
         </div>
         {children}

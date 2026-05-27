@@ -45,7 +45,15 @@ export async function POST(
       return NextResponse.json({ error: 'No sample testcases available' }, { status: 404 });
     }
 
-    const result = await runSamples(code, language, testcases, problem.time_limit || 5000);
+    let finalCode = code;
+    if (problem.execution_mode === 'function' && problem.function_templates) {
+      const tpl = problem.function_templates[language];
+      if (tpl && tpl.driver) {
+        finalCode = tpl.driver.replace('// USER_CODE_HERE', code);
+      }
+    }
+
+    const result = await runSamples(finalCode, language, testcases, problem.time_limit || 5000);
 
     return NextResponse.json({
       verdict:          result.verdict,

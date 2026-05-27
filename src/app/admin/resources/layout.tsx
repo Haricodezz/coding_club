@@ -101,7 +101,7 @@ export default function ResourcesLayout({ children }: { children: React.ReactNod
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
             <div>
               <p style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.1rem' }}>Learning CMS</p>
-              <h2 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#f1f5f9', margin: 0 }}>Resources</h2>
+              <h2 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>Resources</h2>
             </div>
             <button
               onClick={() => setShowCreate(true)}
@@ -127,7 +127,7 @@ export default function ResourcesLayout({ children }: { children: React.ReactNod
               style={{
                 width: '100%', padding: '0.4rem 0.5rem 0.4rem 1.8rem',
                 background: 'var(--color-surface-2)', border: '1px solid var(--color-border)',
-                borderRadius: '6px', color: '#f1f5f9', fontSize: '0.78rem',
+                borderRadius: '6px', color: 'var(--text-primary)', fontSize: '0.78rem',
                 outline: 'none', boxSizing: 'border-box',
               }}
             />
@@ -143,7 +143,7 @@ export default function ResourcesLayout({ children }: { children: React.ReactNod
             { label: 'Resources', value: stats.resources },
           ].map(s => (
             <div key={s.label} style={{ background: 'var(--color-surface)', padding: '0.5rem 0.75rem' }}>
-              <p style={{ fontSize: '1rem', fontWeight: 800, color: '#f1f5f9', margin: 0, lineHeight: 1 }}>{s.value}</p>
+              <p style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0, lineHeight: 1 }}>{s.value}</p>
               <p style={{ fontSize: '0.62rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0.15rem 0 0' }}>{s.label}</p>
             </div>
           ))}
@@ -207,7 +207,7 @@ export default function ResourcesLayout({ children }: { children: React.ReactNod
                       <span style={{ fontSize: '0.7rem' }}>{diff.icon}</span>
                       <span style={{
                         fontSize: '0.8rem', fontWeight: 600,
-                        color: isActive ? '#f1f5f9' : '#cbd5e1',
+                        color: isActive ? 'var(--text-primary)' : '#cbd5e1',
                         overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                       }}>{course.title}</span>
                     </div>
@@ -276,7 +276,7 @@ export default function ResourcesLayout({ children }: { children: React.ReactNod
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
               <div>
-                <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#f1f5f9', margin: 0 }}>New Course / Roadmap</h2>
+                <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>New Course / Roadmap</h2>
                 <p style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', margin: '0.25rem 0 0' }}>Create a new curated learning collection</p>
               </div>
               <button onClick={() => setShowCreate(false)} style={{ background: 'none', border: 'none', color: 'var(--color-text-muted)', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
@@ -288,7 +288,7 @@ export default function ResourcesLayout({ children }: { children: React.ReactNod
                 <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-text-muted)', display: 'block', marginBottom: '0.35rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Course Title *</label>
                 <input required value={title} onChange={e => setTitle(e.target.value)}
                   placeholder="e.g. DSA Complete Roadmap"
-                  style={{ width: '100%', background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', borderRadius: '8px', padding: '0.65rem 0.85rem', color: '#f1f5f9', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.15s' }}
+                  style={{ width: '100%', background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', borderRadius: '8px', padding: '0.65rem 0.85rem', color: 'var(--text-primary)', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.15s' }}
                   onFocus={e => (e.target.style.borderColor = 'rgba(108,99,255,0.6)')}
                   onBlur={e => (e.target.style.borderColor = 'var(--color-border)')}
                 />
@@ -301,7 +301,7 @@ export default function ResourcesLayout({ children }: { children: React.ReactNod
                   <span style={{ padding: '0 0.75rem', color: 'var(--color-text-muted)', fontSize: '0.8rem', fontFamily: 'monospace', flexShrink: 0 }}>/resources/</span>
                   <input required value={slug} onChange={e => setSlug(e.target.value)}
                     placeholder="dsa-complete-roadmap"
-                    style={{ flex: 1, background: 'transparent', border: 'none', padding: '0.65rem 0.75rem 0.65rem 0', color: '#f1f5f9', fontSize: '0.85rem', fontFamily: 'monospace', outline: 'none' }}
+                    style={{ flex: 1, background: 'transparent', border: 'none', padding: '0.65rem 0.75rem 0.65rem 0', color: 'var(--text-primary)', fontSize: '0.85rem', fontFamily: 'monospace', outline: 'none' }}
                   />
                 </div>
               </div>
@@ -311,7 +311,7 @@ export default function ResourcesLayout({ children }: { children: React.ReactNod
                 <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-text-muted)', display: 'block', marginBottom: '0.35rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Description</label>
                 <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3}
                   placeholder="Brief description of what students will learn..."
-                  style={{ width: '100%', background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', borderRadius: '8px', padding: '0.65rem 0.85rem', color: '#f1f5f9', fontSize: '0.85rem', outline: 'none', resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit', transition: 'border-color 0.15s' }}
+                  style={{ width: '100%', background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', borderRadius: '8px', padding: '0.65rem 0.85rem', color: 'var(--text-primary)', fontSize: '0.85rem', outline: 'none', resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit', transition: 'border-color 0.15s' }}
                   onFocus={e => (e.target.style.borderColor = 'rgba(108,99,255,0.6)')}
                   onBlur={e => (e.target.style.borderColor = 'var(--color-border)')}
                 />
@@ -322,7 +322,7 @@ export default function ResourcesLayout({ children }: { children: React.ReactNod
                 <div>
                   <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-text-muted)', display: 'block', marginBottom: '0.35rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Difficulty</label>
                   <select value={difficulty} onChange={e => setDifficulty(e.target.value)}
-                    style={{ width: '100%', background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', borderRadius: '8px', padding: '0.65rem 0.75rem', color: '#f1f5f9', fontSize: '0.85rem', outline: 'none', boxSizing: 'border-box' }}>
+                    style={{ width: '100%', background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', borderRadius: '8px', padding: '0.65rem 0.75rem', color: 'var(--text-primary)', fontSize: '0.85rem', outline: 'none', boxSizing: 'border-box' }}>
                     <option value="Beginner">🌱 Beginner</option>
                     <option value="Intermediate">⚡ Intermediate</option>
                     <option value="Advanced">🔥 Advanced</option>
@@ -331,7 +331,7 @@ export default function ResourcesLayout({ children }: { children: React.ReactNod
                 <div>
                   <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-text-muted)', display: 'block', marginBottom: '0.35rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Sort Order</label>
                   <input type="number" value={displayOrder} onChange={e => setDisplayOrder(parseInt(e.target.value))}
-                    style={{ width: '100%', background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', borderRadius: '8px', padding: '0.65rem 0.75rem', color: '#f1f5f9', fontSize: '0.85rem', outline: 'none', boxSizing: 'border-box', fontFamily: 'monospace' }}
+                    style={{ width: '100%', background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', borderRadius: '8px', padding: '0.65rem 0.75rem', color: 'var(--text-primary)', fontSize: '0.85rem', outline: 'none', boxSizing: 'border-box', fontFamily: 'monospace' }}
                   />
                 </div>
               </div>
@@ -341,7 +341,7 @@ export default function ResourcesLayout({ children }: { children: React.ReactNod
                 <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-text-muted)', display: 'block', marginBottom: '0.35rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Banner Image URL <span style={{ fontWeight: 400, opacity: 0.6 }}>(optional)</span></label>
                 <input type="url" value={bannerUrl} onChange={e => setBannerUrl(e.target.value)}
                   placeholder="https://images.unsplash.com/..."
-                  style={{ width: '100%', background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', borderRadius: '8px', padding: '0.65rem 0.85rem', color: '#f1f5f9', fontSize: '0.82rem', outline: 'none', boxSizing: 'border-box', fontFamily: 'monospace', transition: 'border-color 0.15s' }}
+                  style={{ width: '100%', background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', borderRadius: '8px', padding: '0.65rem 0.85rem', color: 'var(--text-primary)', fontSize: '0.82rem', outline: 'none', boxSizing: 'border-box', fontFamily: 'monospace', transition: 'border-color 0.15s' }}
                   onFocus={e => (e.target.style.borderColor = 'rgba(108,99,255,0.6)')}
                   onBlur={e => (e.target.style.borderColor = 'var(--color-border)')}
                 />

@@ -56,6 +56,15 @@ function mapVerdict(pistonResult: PistonResult, expected: string): Verdict {
   return 'AC';
 }
 
+import { CodeTemplateGenerator, FunctionParam } from '@/lib/CodeTemplateGenerator';
+
+export interface ExecutionOptions {
+  mode: 'function' | 'full' | 'full_program';
+  function_name?: string;
+  function_params?: FunctionParam[];
+  function_return_type?: string;
+}
+
 // -----------------------------------------------
 // Run code against a list of testcases
 // Stops on first non-AC verdict (ICPC style)
@@ -65,7 +74,22 @@ export async function runAgainstTestcases(
   language:     string,
   testcases:    Testcase[],
   timeLimitMs:  number = 2000,
+  execOpts?:    ExecutionOptions
 ): Promise<JudgeResult> {
+  let finalCode = code;
+
+  // Handle LeetCode style function execution by wrapping the code in a driver
+  if (execOpts?.mode === 'function' && execOpts.function_params && execOpts.function_return_type) {
+    const templates = CodeTemplateGenerator.generate(
+      language,
+      execOpts.function_params,
+      execOpts.function_return_type,
+      execOpts.function_name || 'solve'
+    );
+    if (templates.driver) {
+      finalCode = templates.driver.replace('// USER_CODE_HERE', code);
+    }
+  }
   const results: TestcaseResult[] = [];
   let maxRuntime = 0;
 

@@ -30,7 +30,7 @@ export default function UserActionsDropdown({ onSuspend, onTerminate, canRestric
     <div style={{ position: 'relative', display: 'inline-block' }} ref={dropdownRef}>
       <button 
         onClick={(e) => { e.stopPropagation(); onToggle(); }}
-        style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '0.5rem', borderRadius: 'var(--radius)', transition: 'background 0.2s' }}
+        style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.5rem', borderRadius: 'var(--radius)', transition: 'background 0.2s' }}
         onMouseOver={e => e.currentTarget.style.background = 'var(--color-surface-2)'}
         onMouseOut={e => e.currentTarget.style.background = 'transparent'}
       >
@@ -48,7 +48,7 @@ export default function UserActionsDropdown({ onSuspend, onTerminate, canRestric
             onClick={() => { onToggle(); onSuspend(); }}
             style={{ 
               display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%', padding: '0.5rem',
-              background: 'transparent', border: 'none', color: '#f1f5f9', cursor: 'pointer',
+              background: 'transparent', border: 'none', color: 'var(--text-primary)', cursor: 'pointer',
               borderRadius: 'var(--radius-sm)', textAlign: 'left', fontSize: '0.85rem'
             }}
             onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}

@@ -66,7 +66,7 @@ export default function AdminContestsPage() {
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '2rem', gap: '1rem', flexWrap: 'wrap' }}>
         <div>
           <p style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 0.3rem', fontWeight: 700 }}>Admin CMS</p>
-          <h1 style={{ color: '#f1f5f9', fontSize: '1.75rem', fontWeight: 800, margin: 0 }}>Contest Management</h1>
+          <h1 style={{ color: 'var(--text-primary)', fontSize: '1.75rem', fontWeight: 800, margin: 0 }}>Contest Management</h1>
           <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', margin: '0.4rem 0 0' }}>Create and manage coding competitions.</p>
         </div>
         <div style={{ display: 'flex', gap: '0.75rem' }}>
@@ -119,7 +119,7 @@ export default function AdminContestsPage() {
                 {/* Info */}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap', marginBottom: '0.2rem' }}>
-                    <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#f1f5f9', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.title}</span>
+                    <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.title}</span>
                     <span style={{ fontSize: '0.62rem', fontWeight: 700, padding: '0.12rem 0.5rem', borderRadius: '99px', background: sc.bg, color: sc.color, flexShrink: 0 }}>{sc.label}</span>
                     {!c.is_published && <span style={{ fontSize: '0.62rem', fontWeight: 700, padding: '0.12rem 0.5rem', borderRadius: '99px', background: 'rgba(100,116,139,0.15)', color: '#64748b', flexShrink: 0 }}>Draft</span>}
                     {c.is_featured && <span style={{ fontSize: '0.62rem', fontWeight: 700, padding: '0.12rem 0.5rem', borderRadius: '99px', background: 'rgba(245,158,11,0.12)', color: '#f59e0b', flexShrink: 0 }}>⭐ Featured</span>}

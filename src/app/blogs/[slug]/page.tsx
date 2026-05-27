@@ -60,7 +60,7 @@ export default async function BlogPostDetailedPage({ params }: BlogPostPageProps
           </div>
 
           {/* Title */}
-          <h1 style={{ fontSize: '3rem', fontWeight: 900, color: '#fff', marginBottom: '1.25rem', lineHeight: 1.15 }}>
+          <h1 style={{ fontSize: '3rem', fontWeight: 900, color: 'var(--text-primary)', marginBottom: '1.25rem', lineHeight: 1.15 }}>
             {blog.title}
           </h1>
 
@@ -72,7 +72,7 @@ export default async function BlogPostDetailedPage({ params }: BlogPostPageProps
               style={{ width: '42px', height: '42px', borderRadius: '50%', border: '2px solid var(--accent)' }}
             />
             <div>
-              <div style={{ fontWeight: 600, color: '#fff', fontSize: '0.95rem' }}>{blog.author?.username || 'Club Admin'}</div>
+              <div style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '0.95rem' }}>{blog.author?.username || 'Club Admin'}</div>
               <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: '0.15rem' }}>
                 Published on {blog.created_at ? new Date(blog.created_at).toLocaleDateString(undefined, { dateStyle: 'long' }) : 'Unknown Date'}
               </div>

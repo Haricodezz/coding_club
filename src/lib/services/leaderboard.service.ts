@@ -130,28 +130,90 @@ export async function getContestLeaderboard(
 }
 
 // -----------------------------------------------
-// Get the global leaderboard (existing functionality)
+// Get the global leaderboard (reads users directly)
 // -----------------------------------------------
 export async function getGlobalLeaderboard(
   supabase: SupabaseClient<any, 'public', any>,
-  opts: { branch?: string; year?: string; limit?: number } = {},
+  opts: { platform?: string; limit?: number } = {},
 ) {
   let query = (supabase as any)
     .from('users')
     .select(`
-      id, display_name, username, avatar_url, total_points,
-      user_profiles (branch, year, leetcode_username, github_username)
-    `)
-    .gt('total_points', 0)
-    .order('total_points', { ascending: false })
-    .limit(opts.limit || 100);
+      id, full_name, username, avatar_url, total_points, branch, academic_year, roll_number, email, role,
+      lc_points, lc_easy_solved, lc_medium_solved, lc_hard_solved, lc_total_solved, lc_last_synced_at,
+      streaks (current_streak, longest_streak),
+      leetcode_user_streaks (current_streak, highest_streak)
+    `);
+
+  // Rank users by selected platform score
+  if (opts.platform === 'leetcode') {
+    query = query.order('lc_points', { ascending: false });
+  } else {
+    query = query.order('total_points', { ascending: false });
+  }
+
+  if (opts.limit) {
+    query = query.limit(opts.limit);
+  }
 
   const { data, error } = await query;
-  if (error) throw new Error(error.message);
+  if (error) {
+    console.error('Error fetching global leaderboard:', error);
+    throw new Error(error.message);
+  }
 
-  let result = data || [];
-  if (opts.branch) result = result.filter((u: any) => u.user_profiles?.branch === opts.branch);
-  if (opts.year)   result = result.filter((u: any) => String(u.user_profiles?.year) === String(opts.year));
+  return data || [];
+}
 
+// -----------------------------------------------
+// Get the weekly LeetCode leaderboard
+// -----------------------------------------------
+export async function getWeeklyLeetCodeLeaderboard(
+  supabase: SupabaseClient<any, 'public', any>,
+  opts: { limit?: number } = {},
+) {
+  const oneWeekAgo = new Date();
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+  const { data: ledger, error } = await (supabase as any)
+    .from('credit_ledger')
+    .select(`
+      user_id, amount,
+      users (
+        id, username, full_name, avatar_url, branch, academic_year, roll_number, email, role,
+        lc_points, lc_easy_solved, lc_medium_solved, lc_hard_solved, lc_total_solved, lc_last_synced_at,
+        streaks (current_streak, longest_streak),
+        leetcode_user_streaks (current_streak, highest_streak)
+      )
+    `)
+    .eq('source', 'leetcode_sync')
+    .gte('created_at', oneWeekAgo.toISOString());
+
+  if (error) {
+    console.error('Error fetching weekly leetcode leaderboard:', error);
+    throw new Error(error.message);
+  }
+
+  const userTotals = new Map<string, { user: any; total: number }>();
+  
+  for (const row of ledger || []) {
+    if (!row.users) continue;
+    const userId = row.user_id;
+    const existing = userTotals.get(userId) || { user: row.users, total: 0 };
+    existing.total += row.amount;
+    userTotals.set(userId, existing);
+  }
+
+  const result = Array.from(userTotals.values())
+    .map(val => ({
+      ...val.user,
+      weekly_credits: val.total,
+      total_points: val.total // For matching display values on the weekly tab
+    }))
+    .sort((a, b) => b.weekly_credits - a.weekly_credits);
+
+  if (opts.limit) {
+    return result.slice(0, opts.limit);
+  }
   return result;
 }

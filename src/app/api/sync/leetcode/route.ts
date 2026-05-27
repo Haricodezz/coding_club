@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
       points_earned: result.points
     });
 
-    return NextResponse.json({ success: true, data: result.data, points: result.points });
+    return NextResponse.json({ success: true, data: result.data, points: result.points, breakdown: result.breakdown });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }

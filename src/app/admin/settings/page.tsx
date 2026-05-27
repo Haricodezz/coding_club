@@ -11,7 +11,7 @@ export default function AdminSettings() {
 
       <div className="card glass" style={{ marginTop: '2rem', padding: '3rem', textAlign: 'center' }}>
         <h2 style={{ marginBottom: '1rem' }}>🚧 Coming Soon</h2>
-        <p style={{ color: '#94a3b8', maxWidth: '600px', margin: '0 auto' }}>
+        <p style={{ color: 'var(--text-muted)', maxWidth: '600px', margin: '0 auto' }}>
           Global platform settings are currently hardcoded via environment variables. A database-backed settings panel will be released in the next update to allow hot-swapping configurations like OAuth providers, maintenance mode, and contest syncing intervals.
         </p>
       </div>

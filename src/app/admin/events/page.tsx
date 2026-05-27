@@ -234,14 +234,14 @@ export default function AdminEvents() {
                         />
                       )}
                       <div>
-                        <h4 style={{ color: '#fff', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <h4 style={{ color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                           {item.title}
                           {!item.is_published && <span className="badge badge-secondary" style={{ fontSize: '0.65rem' }}>Draft</span>}
                         </h4>
-                        <p style={{ fontSize: '0.85rem', color: '#a8b3cf', marginTop: '0.5rem' }}>
+                        <p style={{ fontSize: '0.85rem', color: 'var(--text-tertiary)', marginTop: '0.5rem' }}>
                           {item.description.substring(0, 100)}{item.description.length > 100 ? '...' : ''}
                         </p>
-                        <div className="flex gap-3 wrap" style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: '#94a3b8' }}>
+                        <div className="flex gap-3 wrap" style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                           <span>⏱️ {new Date(item.event_date).toLocaleString()}</span>
                           <span>📍 {item.location}</span>
                         </div>

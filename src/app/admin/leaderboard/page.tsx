@@ -81,19 +81,19 @@ export default function AdminLeaderboard() {
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--color-surface-3)' }}>
-                  <th style={{ padding: '1rem 0.5rem', color: '#94a3b8' }}>Rank</th>
-                  <th style={{ padding: '1rem 0.5rem', color: '#94a3b8' }}>Student</th>
-                  <th style={{ padding: '1rem 0.5rem', color: '#94a3b8' }}>Batch</th>
-                  <th style={{ padding: '1rem 0.5rem', color: '#94a3b8', textAlign: 'right' }}>QotD</th>
-                  <th style={{ padding: '1rem 0.5rem', color: '#94a3b8', textAlign: 'right' }}>Contests</th>
-                  <th style={{ padding: '1rem 0.5rem', color: '#94a3b8', textAlign: 'right' }}>Platform</th>
+                  <th style={{ padding: '1rem 0.5rem', color: 'var(--text-muted)' }}>Rank</th>
+                  <th style={{ padding: '1rem 0.5rem', color: 'var(--text-muted)' }}>Student</th>
+                  <th style={{ padding: '1rem 0.5rem', color: 'var(--text-muted)' }}>Batch</th>
+                  <th style={{ padding: '1rem 0.5rem', color: 'var(--text-muted)', textAlign: 'right' }}>QotD</th>
+                  <th style={{ padding: '1rem 0.5rem', color: 'var(--text-muted)', textAlign: 'right' }}>Contests</th>
+                  <th style={{ padding: '1rem 0.5rem', color: 'var(--text-muted)', textAlign: 'right' }}>Platform</th>
                   <th style={{ padding: '1rem 0.5rem', color: 'var(--accent)', textAlign: 'right' }}>Total</th>
                 </tr>
               </thead>
               <tbody>
                 {leaderboard.map((user, index) => (
                   <tr key={user.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                    <td style={{ padding: '1rem 0.5rem', color: '#fff', fontWeight: 'bold' }}>#{index + 1}</td>
+                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-primary)', fontWeight: 'bold' }}>#{index + 1}</td>
                     <td style={{ padding: '1rem 0.5rem' }}>
                       <div className="flex items-center gap-3">
                         <img 
@@ -102,13 +102,13 @@ export default function AdminLeaderboard() {
                           style={{ width: '32px', height: '32px', borderRadius: '50%' }}
                           onError={(e) => (e.currentTarget.src = '/avatars/avatar_0.svg')}
                         />
-                        <span style={{ color: '#fff' }}>{user.username}</span>
+                        <span style={{ color: 'var(--text-primary)' }}>{user.username}</span>
                       </div>
                     </td>
-                    <td style={{ padding: '1rem 0.5rem', color: '#a8b3cf' }}>{user.batch_id || '-'}</td>
-                    <td style={{ padding: '1rem 0.5rem', color: '#a8b3cf', textAlign: 'right' }}>{user.qotd_points}</td>
-                    <td style={{ padding: '1rem 0.5rem', color: '#a8b3cf', textAlign: 'right' }}>{user.contest_points}</td>
-                    <td style={{ padding: '1rem 0.5rem', color: '#a8b3cf', textAlign: 'right' }}>{user.platform_points}</td>
+                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-tertiary)' }}>{user.batch_id || '-'}</td>
+                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-tertiary)', textAlign: 'right' }}>{user.qotd_points}</td>
+                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-tertiary)', textAlign: 'right' }}>{user.contest_points}</td>
+                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-tertiary)', textAlign: 'right' }}>{user.platform_points}</td>
                     <td style={{ padding: '1rem 0.5rem', color: 'var(--accent)', fontWeight: 'bold', textAlign: 'right' }}>{user.total_points}</td>
                   </tr>
                 ))}

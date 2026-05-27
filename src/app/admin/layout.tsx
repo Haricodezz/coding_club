@@ -13,6 +13,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
   const [user, setUser] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [highContrast, setHighContrast] = useState(false);
 
   useEffect(() => {
     async function checkAuth() {
@@ -42,6 +43,24 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
 
     checkAuth();
+
+    // Check localStorage for high contrast preference
+    const hcStored = localStorage.getItem('adminHighContrast') === 'true';
+    setHighContrast(hcStored);
+
+    // Decoupled window event listener for high contrast toggle
+    function handleHCToggle() {
+      setHighContrast(prev => {
+        const nextVal = !prev;
+        localStorage.setItem('adminHighContrast', String(nextVal));
+        return nextVal;
+      });
+    }
+
+    window.addEventListener('admin-toggle-high-contrast', handleHCToggle);
+    return () => {
+      window.removeEventListener('admin-toggle-high-contrast', handleHCToggle);
+    };
   }, [router]);
 
   async function handleLogout() {
@@ -78,11 +97,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div className="admin-layout-wrapper" style={{ display: 'flex' }}>
+    <div className={`admin-layout-wrapper ${highContrast ? 'high-contrast-mode' : ''}`}>
+      {/* Accessibility Skip to main content */}
+      <a href="#admin-main-content" className="skip-to-content">
+        Skip to Main Content
+      </a>
+
       <AdminSidebar user={user} onLogout={handleLogout} />
+      
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
         <AdminTopbar user={user} />
-        <div style={{ flex: 1, overflowY: 'auto' }}>
+        
+        {/* Main Work Area */}
+        <div id="admin-main-content" style={{ flex: 1, overflowY: 'auto', padding: '1.75rem 2rem 2.5rem' }}>
           {children}
         </div>
       </main>

@@ -4,6 +4,9 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { LANGUAGES, STARTER_CODE } from '@/lib/piston';
 
+import { PanelGroup, Panel, ImperativePanelHandle } from 'react-resizable-panels';
+import PanelDivider from '@/components/workspace/PanelDivider';
+
 // Lazy-load Monaco to avoid SSR issues
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), { ssr: false, loading: () => (
   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>
@@ -38,6 +41,10 @@ interface Props {
   problemTitle: string;
   timeLimit?:   number;
   storageKey:   string;
+  executionMode?: 'function' | 'full';
+  functionTemplates?: any;
+  onSubmissionComplete?: (json: any) => void;
+  disableCopyPaste?: boolean;
 }
 
 const VERDICT_CONFIG: Record<string, { label: string; color: string; bg: string; icon: string }> = {
@@ -50,7 +57,7 @@ const VERDICT_CONFIG: Record<string, { label: string; color: string; bg: string;
   JUDGE_ERROR: { label: 'Judge Error',          color: '#64748b', bg: 'rgba(100,116,139,0.1)', icon: '⚠️' },
 };
 
-export default function MonacoIDE({ contestSlug, problemSlug, problemTitle, timeLimit = 2000, storageKey }: Props) {
+export default function MonacoIDE({ contestSlug, problemSlug, problemTitle, timeLimit = 2000, storageKey, executionMode, functionTemplates, onSubmissionComplete, disableCopyPaste }: Props) {
   const [language, setLanguage] = useState('cpp');
   const [code, setCode]         = useState('');
   const [running, setRunning]   = useState(false);
@@ -60,12 +67,22 @@ export default function MonacoIDE({ contestSlug, problemSlug, problemTitle, time
   const [activeTab, setActiveTab] = useState<'run' | 'submit'>('run');
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' | 'info' } | null>(null);
   const editorRef = useRef<any>(null);
+  const resultsPanelRef = useRef<ImperativePanelHandle>(null);
+  const [isConsoleExpanded, setIsConsoleExpanded] = useState(false);
 
-  // Load from localStorage
+  // Load from localStorage or Templates
   useEffect(() => {
     const saved = localStorage.getItem(`${storageKey}:${language}`);
-    setCode(saved || STARTER_CODE[language] || '');
-  }, [language, storageKey]);
+    if (saved) {
+      setCode(saved);
+    } else {
+      let defaultCode = STARTER_CODE[language] || '';
+      if (executionMode === 'function' && functionTemplates && functionTemplates[language]?.starter) {
+        defaultCode = functionTemplates[language].starter;
+      }
+      setCode(defaultCode);
+    }
+  }, [language, storageKey, executionMode, functionTemplates]);
 
   // Autosave
   const handleCodeChange = useCallback((val: string | undefined) => {
@@ -83,8 +100,10 @@ export default function MonacoIDE({ contestSlug, problemSlug, problemTitle, time
     setRunning(true);
     setActiveTab('run');
     setRunResult(null);
+    expandConsole();
     try {
-      const res = await fetch(`/api/v1/contests/${contestSlug}/run`, {
+      const baseUrl = contestSlug === 'practice' || contestSlug === 'qotd' ? `/api/practice` : `/api/v1/contests/${contestSlug}`;
+      const res = await fetch(`${baseUrl}/run`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ problem_slug: problemSlug, language, code }),
@@ -103,8 +122,10 @@ export default function MonacoIDE({ contestSlug, problemSlug, problemTitle, time
     setSubmitting(true);
     setActiveTab('submit');
     setSubmitResult(null);
+    expandConsole();
     try {
-      const res = await fetch(`/api/v1/contests/${contestSlug}/submit`, {
+      const baseUrl = contestSlug === 'practice' ? `/api/practice` : contestSlug === 'qotd' ? `/api/qotd` : `/api/v1/contests/${contestSlug}`;
+      const res = await fetch(`${baseUrl}/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ problem_slug: problemSlug, language, code }),
@@ -113,6 +134,7 @@ export default function MonacoIDE({ contestSlug, problemSlug, problemTitle, time
       if (res.status === 429) { showToast(json.error, 'error'); return; }
       if (!res.ok) { showToast(json.error || 'Submission failed', 'error'); return; }
       setSubmitResult(json);
+      if (onSubmissionComplete) onSubmissionComplete(json);
       if (json.verdict === 'AC') showToast('🎉 Accepted! Great solve!', 'success');
       else showToast(`${VERDICT_CONFIG[json.verdict]?.icon || '❌'} ${VERDICT_CONFIG[json.verdict]?.label || json.verdict}`, 'error');
     } catch (err: any) {
@@ -126,22 +148,75 @@ export default function MonacoIDE({ contestSlug, problemSlug, problemTitle, time
   const vc = currentVerdict ? VERDICT_CONFIG[currentVerdict] : null;
   const displayResult = activeTab === 'run' ? runResult : submitResult;
 
+  const toggleConsole = () => {
+    const panel = resultsPanelRef.current;
+    if (panel) {
+      if (panel.isExpanded()) {
+        panel.collapse();
+      } else {
+        panel.expand();
+        panel.resize(30);
+      }
+    }
+  };
+
+  const expandConsole = () => {
+    const panel = resultsPanelRef.current;
+    if (panel && !panel.isExpanded()) {
+      panel.expand();
+      panel.resize(30);
+    }
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
 
       {/* ── TOOLBAR ── */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.5rem 1rem', borderBottom: '1px solid var(--color-border)', background: 'var(--color-surface)', flexShrink: 0, gap: '0.75rem' }}>
-        {/* Language selector */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', fontWeight: 600 }}>LANG</span>
-          <select value={language} onChange={e => setLanguage(e.target.value)}
-            style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', borderRadius: '6px', color: '#f1f5f9', fontSize: '0.8rem', padding: '0.3rem 0.5rem', outline: 'none', cursor: 'pointer' }}>
-            {LANGUAGES.map(l => <option key={l.id} value={l.id}>{l.displayName}</option>)}
-          </select>
+
+        {/* Left: Problem title indicator */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0 }}>
+          <span style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            ⚡ {problemTitle}
+          </span>
         </div>
 
-        {/* Actions */}
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
+        {/* Right: Language selector + Actions */}
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexShrink: 0 }}>
+
+          {/* Language Selector — prominent badge style */}
+          <div style={{ position: 'relative' }}>
+            <label htmlFor="ide-lang-select" style={{
+              position: 'absolute', inset: 0, zIndex: 1, cursor: 'pointer',
+            }} />
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '0.4rem',
+              padding: '0.35rem 0.75rem',
+              borderRadius: '8px',
+              border: '1px solid rgba(108,99,255,0.4)',
+              background: 'rgba(108,99,255,0.08)',
+              pointerEvents: 'none',
+            }}>
+              <span style={{ fontSize: '0.8rem', opacity: 0.8 }}>{'{ }'}</span>
+              <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--accent-3)', whiteSpace: 'nowrap' }}>
+                {LANGUAGES.find(l => l.id === language)?.displayName || language}
+              </span>
+              <span style={{ fontSize: '0.6rem', color: 'var(--color-text-muted)', opacity: 0.7 }}>▼</span>
+            </div>
+            <select
+              id="ide-lang-select"
+              value={language}
+              onChange={e => setLanguage(e.target.value)}
+              style={{
+                position: 'absolute', inset: 0, opacity: 0, width: '100%',
+                cursor: 'pointer', zIndex: 2,
+              }}
+            >
+              {LANGUAGES.map(l => <option key={l.id} value={l.id}>{l.displayName}</option>)}
+            </select>
+          </div>
+
+          {/* Run button */}
           <button onClick={handleRun} disabled={running || submitting}
             style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', padding: '0.4rem 0.9rem', borderRadius: '7px', border: '1px solid rgba(59,130,246,0.4)', background: running ? 'rgba(59,130,246,0.1)' : 'transparent', color: '#60a5fa', fontSize: '0.8rem', fontWeight: 700, cursor: running ? 'not-allowed' : 'pointer', transition: 'all 0.15s' }}
             onMouseEnter={e => { if (!running && !submitting) (e.currentTarget.style.background = 'rgba(59,130,246,0.12)'); }}
@@ -149,6 +224,8 @@ export default function MonacoIDE({ contestSlug, problemSlug, problemTitle, time
           >
             {running ? '▶ Running...' : '▶ Run'}
           </button>
+
+          {/* Submit button */}
           <button onClick={handleSubmit} disabled={running || submitting}
             style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', padding: '0.4rem 1rem', borderRadius: '7px', border: 'none', background: submitting ? 'rgba(108,99,255,0.7)' : 'var(--accent-1)', color: 'white', fontSize: '0.8rem', fontWeight: 700, cursor: submitting ? 'not-allowed' : 'pointer', transition: 'filter 0.15s' }}
             onMouseEnter={e => { if (!submitting) (e.currentTarget.style.filter = 'brightness(1.15)'); }}
@@ -159,40 +236,87 @@ export default function MonacoIDE({ contestSlug, problemSlug, problemTitle, time
         </div>
       </div>
 
-      {/* ── MONACO EDITOR ── */}
-      <div style={{ flex: '1 1 0', minHeight: 0 }}>
-        <MonacoEditor
-          height="100%"
-          language={LANGUAGES.find(l => l.id === language)?.monacoLanguage || language}
-          value={code}
-          onChange={handleCodeChange}
-          onMount={editor => { editorRef.current = editor; }}
-          theme="vs-dark"
-          options={{
-            fontSize: 14,
-            fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace",
-            minimap: { enabled: false },
-            scrollBeyondLastLine: false,
-            wordWrap: 'on',
-            lineNumbers: 'on',
-            renderLineHighlight: 'all',
-            tabSize: 2,
-            smoothScrolling: true,
-            cursorSmoothCaretAnimation: 'on',
-            bracketPairColorization: { enabled: true },
-          }}
-        />
-      </div>
 
-      {/* ── RESULTS PANEL ── */}
-      <div style={{ flexShrink: 0, maxHeight: '240px', overflow: 'auto', borderTop: '1px solid var(--color-border)', background: 'var(--color-bg)' }}>
+      {/* ── VERTICAL SPLIT ── */}
+      <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        <PanelGroup direction="vertical" autoSaveId="contest-editor-layout-v1">
+          
+          {/* ── MONACO EDITOR ── */}
+          <Panel defaultSize={70} minSize={20} style={{ display: 'flex', flexDirection: 'column', position: 'relative' }}>
+            <MonacoEditor
+              height="100%"
+              language={LANGUAGES.find(l => l.id === language)?.monacoLanguage || language}
+              value={code}
+              onChange={handleCodeChange}
+              onMount={(editor: any) => {
+                editorRef.current = editor;
+                if (disableCopyPaste) {
+                  const domNode = editor.getDomNode();
+                  if (domNode) {
+                    const prevent = (e: Event) => {
+                      const ce = e as ClipboardEvent;
+                      ce.preventDefault();
+                      if (ce.type === 'paste') {
+                        showToast('⛔ Copy-paste is disabled. Please type your solution.', 'error');
+                      }
+                    };
+                    domNode.addEventListener('paste', prevent, true);
+                    domNode.addEventListener('copy', prevent, true);
+                    domNode.addEventListener('contextmenu', prevent, true);
+                  }
+                }
+              }}
+              theme="vs-dark"
+              options={{
+                fontSize: 14,
+                fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace",
+                minimap: { enabled: false },
+                scrollBeyondLastLine: false,
+                wordWrap: 'on',
+                lineNumbers: 'on',
+                renderLineHighlight: 'all',
+                tabSize: 2,
+                smoothScrolling: true,
+                cursorSmoothCaretAnimation: 'on',
+                bracketPairColorization: { enabled: true },
+              }}
+            />
+            {/* Collapse Console Button overlaying editor bottom right */}
+            <button 
+              onClick={toggleConsole}
+              style={{
+                position: 'absolute', bottom: '1rem', right: '1.5rem',
+                background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.15)',
+                color: 'var(--color-text-muted)', padding: '0.4rem 0.75rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 600,
+                cursor: 'pointer', transition: 'all 0.15s', zIndex: 10,
+                display: 'flex', alignItems: 'center', gap: '0.4rem'
+              }}
+              onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.background = 'rgba(255,255,255,0.15)' }}
+              onMouseLeave={e => { e.currentTarget.style.color = 'var(--color-text-muted)'; e.currentTarget.style.background = 'rgba(255,255,255,0.1)' }}
+            >
+              Console {isConsoleExpanded ? '↓' : '↑'}
+            </button>
+          </Panel>
 
-        {/* Result tabs */}
-        <div style={{ display: 'flex', borderBottom: '1px solid var(--color-border)', background: 'var(--color-surface)' }}>
+          <PanelDivider direction="vertical" />
+
+          {/* ── RESULTS PANEL ── */}
+          <Panel 
+            ref={resultsPanelRef}
+            defaultSize={30} 
+            minSize={15}
+            collapsible={true}
+            onCollapse={() => setIsConsoleExpanded(false)}
+            onExpand={() => setIsConsoleExpanded(true)}
+            style={{ display: 'flex', flexDirection: 'column', background: 'var(--color-bg)' }}
+          >
+            <div style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
+              {/* Result tabs */}
+              <div style={{ display: 'flex', borderBottom: '1px solid var(--color-border)', background: 'var(--color-surface)', flexShrink: 0 }}>
           {(['run', 'submit'] as const).map(t => (
             <button key={t} onClick={() => setActiveTab(t)} style={{
               padding: '0.45rem 1rem', border: 'none', background: 'transparent',
-              color: activeTab === t ? '#f1f5f9' : 'var(--color-text-muted)',
+              color: activeTab === t ? 'var(--text-primary)' : 'var(--color-text-muted)',
               fontSize: '0.78rem', fontWeight: activeTab === t ? 700 : 400,
               cursor: 'pointer', borderBottom: activeTab === t ? '2px solid var(--accent-1)' : '2px solid transparent',
               transition: 'all 0.15s',
@@ -241,35 +365,46 @@ export default function MonacoIDE({ contestSlug, problemSlug, problemTitle, time
                 </pre>
               )}
 
-              {/* Testcase results detailed list */}
               {displayResult.results && displayResult.results.length > 0 && (
                 <div style={{ display: 'grid', gap: '0.5rem', marginTop: '0.5rem' }}>
-                  {displayResult.results.map((r, i) => (
+                  {displayResult.results.map((r, i) => {
+                    const vc = VERDICT_CONFIG[r.verdict] || VERDICT_CONFIG['JUDGE_ERROR'];
+                    return (
                     <div key={i} style={{ 
-                      display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.6rem 0.75rem', borderRadius: '8px',
-                      background: r.passed ? 'rgba(34,197,94,0.04)' : 'rgba(239,68,68,0.04)',
-                      border: `1px solid ${r.passed ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)'}`
-                    }}>
-                      <div style={{ width: '24px', height: '24px', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 800, background: r.passed ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)', color: r.passed ? '#22c55e' : '#ef4444', flexShrink: 0 }}>
-                        {r.is_hidden ? '?' : (i + 1)}
+                      display: 'flex', alignItems: 'center', gap: '0.85rem', padding: '0.6rem 0.85rem', borderRadius: '8px',
+                      background: `linear-gradient(90deg, ${r.passed ? 'rgba(34,197,94,0.08)' : 'rgba(239,68,68,0.08)'}, transparent)`,
+                      border: `1px solid ${r.passed ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)'}`,
+                      borderLeft: `3px solid ${r.passed ? '#22c55e' : '#ef4444'}`,
+                      transition: 'all 0.2s ease',
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = `0 4px 12px ${r.passed ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)'}`; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
+                    >
+                      <div style={{ width: '26px', height: '26px', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 800, background: r.passed ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)', color: r.passed ? '#22c55e' : '#ef4444', flexShrink: 0 }}>
+                        {r.is_hidden ? '🔒' : (i + 1)}
                       </div>
-                      <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: r.passed ? '#22c55e' : '#ef4444' }}>
-                          {r.verdict}
-                        </span>
+                      <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                           <span style={{ fontSize: '0.8rem', fontWeight: 700, color: vc.color }}>
+                             {vc.icon} {vc.label}
+                           </span>
+                        </div>
                         {r.runtime_ms > 0 && (
-                          <span style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', fontFamily: 'monospace' }}>
-                            {r.runtime_ms}ms
+                          <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', fontFamily: 'monospace', background: 'rgba(255,255,255,0.05)', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
+                            {r.runtime_ms} ms
                           </span>
                         )}
                       </div>
                     </div>
-                  ))}
+                  )})}
                 </div>
               )}
             </div>
           )}
         </div>
+      </div>
+    </Panel>
+        </PanelGroup>
       </div>
 
       {/* ── TOAST ── */}

@@ -78,7 +78,7 @@ export default function ContestHeader({ contest, participantCount = 0 }: Props) 
           ← Hub
         </Link>
         <div style={{ width: '1px', height: '16px', background: 'var(--color-border)', flexShrink: 0 }} />
-        <h1 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#f1f5f9', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <h1 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {contest.title}
         </h1>
         <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '0.15rem 0.5rem', borderRadius: '99px', background: 'rgba(108,99,255,0.12)', color: 'var(--accent-1)', border: '1px solid rgba(108,99,255,0.25)', flexShrink: 0 }}>

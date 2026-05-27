@@ -56,7 +56,7 @@ export function BlogListClient({ blogs }: BlogListClientProps) {
                   padding: '0.5rem 1.25rem',
                   fontSize: '0.9rem',
                   whiteSpace: 'nowrap',
-                  border: selectedTag === tag ? 'none' : '1px solid rgba(255,255,255,0.1)'
+                  border: selectedTag === tag ? 'none' : '1px solid var(--color-border)'
                 }}
               >
                 {tag}
@@ -80,8 +80,7 @@ export function BlogListClient({ blogs }: BlogListClientProps) {
               style={{
                 display: 'flex',
                 flexDirection: 'column',
-                height: '100%',
-                background: 'rgba(22, 22, 30, 0.45)'
+                height: '100%'
               }}
             >
               {/* Optional image thumbnail */}
@@ -102,22 +101,22 @@ export function BlogListClient({ blogs }: BlogListClientProps) {
                   ))}
                 </div>
 
-                <h3 style={{ fontSize: '1.25rem', color: '#fff', marginBottom: '0.5rem', fontWeight: 700, lineHeight: 1.3 }}>
+                <h3 style={{ fontSize: '1.25rem', color: 'var(--text-primary)', marginBottom: '0.5rem', fontWeight: 700, lineHeight: 1.3 }}>
                   {blog.title}
                 </h3>
 
-                <p style={{ fontSize: '0.88rem', color: '#94a3b8', lineHeight: 1.5, marginBottom: '1.5rem', flex: 1 }}>
+                <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '1.5rem', flex: 1 }}>
                   {blog.summary || 'Click below to read this article.'}
                 </p>
 
-                <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1rem', marginTop: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '1rem', marginTop: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div className="flex items-center gap-2">
                     <img
                       src={`/avatars/${blog.author?.avatar_url || 'avatar_0.svg'}`}
                       alt={blog.author?.username || 'Author'}
                       style={{ width: '28px', height: '28px', borderRadius: '50%', border: '1px solid var(--accent)' }}
                     />
-                    <span style={{ fontSize: '0.78rem', color: '#a8b3cf', fontWeight: 500 }}>
+                    <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 500 }}>
                       {blog.author?.username || 'Club Admin'}
                     </span>
                   </div>

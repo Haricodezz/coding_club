@@ -137,8 +137,19 @@ export default function ContestArenaPage({ params }: { params: Promise<{ slug: s
     setJoining(true);
     try {
       const res = await fetch(`/api/v1/contests/${slug}/join`, { method: 'POST' });
-      if (res.ok) { setJoined(true); }
-      else { const d = await res.json(); alert(d.error); }
+      if (res.ok) { 
+        // Delay to allow the success animation in ContestJoinCard to play
+        setTimeout(() => setJoined(true), 1500); 
+        return true;
+      }
+      else { 
+        const d = await res.json(); 
+        alert(d.error); 
+        return false; // Return false instead of throwing error
+      }
+    } catch (err: any) {
+      alert(err.message || "Failed to join");
+      return false;
     } finally { setJoining(false); }
   }
 
@@ -154,7 +165,7 @@ export default function ContestArenaPage({ params }: { params: Promise<{ slug: s
   if (!contest) return (
     <div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center', background: 'var(--color-bg)', flexDirection: 'column', gap: '1rem' }}>
       <p style={{ fontSize: '3rem' }}>🏆</p>
-      <h2 style={{ color: '#f1f5f9' }}>Contest not found</h2>
+      <h2 style={{ color: 'var(--text-primary)' }}>Contest not found</h2>
       <Link href="/contests" style={{ color: 'var(--accent-1)', textDecoration: 'none' }}>← All contests</Link>
     </div>
   );
@@ -165,7 +176,7 @@ export default function ContestArenaPage({ params }: { params: Promise<{ slug: s
         <div style={{ display: 'flex', alignItems: 'center', padding: '0 1.5rem', height: '3.5rem', flexShrink: 0, background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)' }}>
           <Link href="/contests" style={{ color: 'var(--color-text-muted)', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 600 }}>← Back to Contests</Link>
         </div>
-        <ContestJoinCard contest={contest} onJoin={handleJoin} participantCount={leaderboard.length || 0} />
+        <ContestJoinCard contest={contest} onJoin={handleJoin} participantCount={leaderboard.length || 0} alreadyJoined={false} />
       </div>
     );
   }
@@ -182,7 +193,7 @@ export default function ContestArenaPage({ params }: { params: Promise<{ slug: s
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', minWidth: 0 }}>
           <Link href="/contests" style={{ color: 'var(--color-text-muted)', textDecoration: 'none', fontSize: '0.8rem', flexShrink: 0 }}>← Contests</Link>
           <div style={{ width: '1px', height: '16px', background: 'var(--color-border)', flexShrink: 0 }} />
-          <h1 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#f1f5f9', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{contest.title}</h1>
+          <h1 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{contest.title}</h1>
           <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '0.15rem 0.5rem', borderRadius: '99px', background: 'rgba(108,99,255,0.12)', color: 'var(--accent-1)', border: '1px solid rgba(108,99,255,0.25)', flexShrink: 0 }}>{contest.contest_type}</span>
         </div>
 
@@ -253,7 +264,7 @@ export default function ContestArenaPage({ params }: { params: Promise<{ slug: s
                   >
                     <span style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(108,99,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.8rem', color: 'var(--accent-1)', fontFamily: 'monospace', flexShrink: 0 }}>{p.label}</span>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ color: '#f1f5f9', fontWeight: 600, margin: 0, fontSize: '0.9rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.title}</p>
+                      <p style={{ color: 'var(--text-primary)', fontWeight: 600, margin: 0, fontSize: '0.9rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.title}</p>
                       {p.tags && p.tags.length > 0 && (
                         <div style={{ display: 'flex', gap: '0.25rem', marginTop: '0.2rem' }}>
                           {p.tags.slice(0, 3).map(tag => <span key={tag} style={{ fontSize: '0.6rem', color: 'var(--color-text-muted)' }}>{tag}</span>)}
@@ -316,9 +327,9 @@ export default function ContestArenaPage({ params }: { params: Promise<{ slug: s
                         ? <img src={entry.users.avatar_url} alt="" style={{ width: '28px', height: '28px', borderRadius: '50%', flexShrink: 0 }} />
                         : <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--accent-1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, color: 'white', flexShrink: 0 }}>{(entry.users.display_name || entry.users.username || '?')[0].toUpperCase()}</div>
                       }
-                      <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#e2e8f0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.users.display_name || entry.users.username}</span>
+                      <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.users.display_name || entry.users.username}</span>
                     </div>
-                    <span style={{ fontSize: '0.9rem', fontWeight: 800, color: '#f1f5f9', fontFamily: 'monospace' }}>{entry.score}</span>
+                    <span style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'monospace' }}>{entry.score}</span>
                     <span style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)', fontFamily: 'monospace' }}>{entry.penalty_minutes}m</span>
                     <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--accent-1)' }}>{entry.solved_count}</span>
                   </div>
@@ -349,7 +360,7 @@ export default function ContestArenaPage({ params }: { params: Promise<{ slug: s
                     padding: '0.7rem 1rem', alignItems: 'center',
                     borderBottom: i < submissions.length - 1 ? '1px solid var(--color-border)' : 'none',
                   }}>
-                    <span style={{ fontSize: '0.82rem', color: '#e2e8f0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sub.contest_problems?.title}</span>
+                    <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sub.contest_problems?.title}</span>
                     <span style={{ fontSize: '0.75rem', fontWeight: 700, color: VERDICT_COLOR[sub.verdict] || '#64748b' }}>{sub.verdict}</span>
                     <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', fontFamily: 'monospace' }}>{sub.language}</span>
                     <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', fontFamily: 'monospace' }}>{sub.runtime_ms ? `${sub.runtime_ms}ms` : '—'}</span>
@@ -373,8 +384,8 @@ export default function ContestArenaPage({ params }: { params: Promise<{ slug: s
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 {announcements.map(a => (
                   <div key={a.id} style={{ padding: '1rem 1.25rem', borderRadius: '10px', background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-                    <p style={{ fontWeight: 700, color: '#f1f5f9', margin: '0 0 0.4rem' }}>{a.title}</p>
-                    <p style={{ color: '#94a3b8', fontSize: '0.85rem', margin: '0 0 0.5rem' }}>{a.body}</p>
+                    <p style={{ fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 0.4rem' }}>{a.title}</p>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', margin: '0 0 0.5rem' }}>{a.body}</p>
                     <p style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', margin: 0 }}>{new Date(a.created_at).toLocaleString()}</p>
                   </div>
                 ))}

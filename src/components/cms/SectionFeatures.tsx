@@ -36,7 +36,7 @@ export function SectionFeatures({ title, subtitle, cards = [] }: SectionFeatures
               {subtitle}
             </p>
           )}
-          <h2 style={{ fontSize: '2.5rem', fontWeight: 800, color: '#fff' }}>
+          <h2 style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--text-primary)' }}>
             {title || 'Built for Competitive Programmers'}
           </h2>
         </div>
@@ -71,10 +71,10 @@ export function SectionFeatures({ title, subtitle, cards = [] }: SectionFeatures
               >
                 {card.icon}
               </div>
-              <h4 style={{ fontSize: '1.2rem', fontWeight: 600, marginBottom: '0.75rem', color: '#fff' }}>
+              <h4 style={{ fontSize: '1.2rem', fontWeight: 600, marginBottom: '0.75rem', color: 'var(--text-primary)' }}>
                 {card.title}
               </h4>
-              <p style={{ fontSize: '0.92rem', color: '#94a3b8', lineHeight: 1.5 }}>
+              <p style={{ fontSize: '0.92rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
                 {card.desc}
               </p>
             </GlassCard>

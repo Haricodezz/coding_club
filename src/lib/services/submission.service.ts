@@ -9,7 +9,7 @@ import type { Verdict } from './judge.service';
 const RATE_LIMIT_SECONDS = 30; // 1 submission per 30 seconds per user per problem
 
 export interface SubmissionPayload {
-  contest_id:       string;
+  contest_id?:      string | null;
   problem_id:       string;
   user_id:          string;
   language:         string;
@@ -59,7 +59,7 @@ export async function createSubmission(
   const { data, error } = await (supabase as any)
     .from('contest_submissions')
     .insert({
-      contest_id:       payload.contest_id,
+      contest_id:       payload.contest_id || null,
       problem_id:       payload.problem_id,
       user_id:          payload.user_id,
       language:         payload.language,
@@ -135,16 +135,22 @@ export async function hasSolved(
   supabase: SupabaseClient<any, 'public', any>,
   userId: string,
   problemId: string,
-  contestId: string,
+  contestId?: string | null,
 ): Promise<boolean> {
-  const { data } = await (supabase as any)
+  let query = (supabase as any)
     .from('contest_submissions')
     .select('id')
     .eq('user_id', userId)
     .eq('problem_id', problemId)
-    .eq('contest_id', contestId)
-    .eq('verdict', 'AC')
-    .limit(1);
+    .eq('verdict', 'AC');
+    
+  if (contestId) {
+    query = query.eq('contest_id', contestId);
+  } else {
+    query = query.is('contest_id', null);
+  }
+
+  const { data } = await query.limit(1);
 
   return !!(data && data.length > 0);
 }

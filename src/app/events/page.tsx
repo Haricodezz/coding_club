@@ -49,7 +49,7 @@ export default async function PublicEventsPage() {
                   display: 'flex',
                   flexDirection: 'column',
                   height: '100%',
-                  background: 'rgba(22, 22, 30, 0.45)'
+                  background: 'var(--color-surface-2)'
                 }}
               >
                 {/* Optional image thumbnail */}
@@ -76,11 +76,11 @@ export default async function PublicEventsPage() {
                     </span>
                   </div>
 
-                  <h3 style={{ fontSize: '1.25rem', color: '#fff', marginBottom: '0.5rem', fontWeight: 700, lineHeight: 1.3 }}>
+                  <h3 style={{ fontSize: '1.25rem', color: 'var(--text-primary)', marginBottom: '0.5rem', fontWeight: 700, lineHeight: 1.3 }}>
                     {event.title}
                   </h3>
 
-                  <p style={{ fontSize: '0.88rem', color: '#94a3b8', lineHeight: 1.5, marginBottom: '1.5rem', flex: 1 }}>
+                  <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '1.5rem', flex: 1 }}>
                     {event.description}
                   </p>
 

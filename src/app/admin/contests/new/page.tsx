@@ -159,7 +159,7 @@ export default function NewContestPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <Link href="/admin/contests" style={{ color: 'var(--color-text-muted)', textDecoration: 'none', fontSize: '1.2rem' }}>✕</Link>
           <div style={{ height: '24px', width: '1px', background: 'var(--color-border)' }} />
-          <h1 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0, color: '#f1f5f9' }}>Contest Builder</h1>
+          <h1 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>Contest Builder</h1>
         </div>
 
         {/* Stepper */}
@@ -169,13 +169,13 @@ export default function NewContestPage() {
               <div style={{ 
                 width: '28px', height: '28px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
                 background: currentStep === i ? 'var(--accent-1)' : currentStep > i ? 'rgba(34,197,94,0.1)' : 'transparent',
-                color: currentStep === i ? '#fff' : currentStep > i ? '#22c55e' : 'var(--color-text-muted)',
+                color: currentStep === i ? 'var(--text-primary)' : currentStep > i ? '#22c55e' : 'var(--color-text-muted)',
                 border: currentStep < i ? '1px solid var(--color-border)' : 'none',
                 fontWeight: 700, fontSize: '0.8rem'
               }}>
                 {currentStep > i ? '✓' : i + 1}
               </div>
-              <span style={{ fontSize: '0.8rem', fontWeight: currentStep === i ? 700 : 600, color: currentStep >= i ? '#f1f5f9' : 'var(--color-text-muted)', display: i === STEPS.length -1 ? 'none' : 'block' }}>{s}</span>
+              <span style={{ fontSize: '0.8rem', fontWeight: currentStep === i ? 700 : 600, color: currentStep >= i ? 'var(--text-primary)' : 'var(--color-text-muted)', display: i === STEPS.length -1 ? 'none' : 'block' }}>{s}</span>
               {i < STEPS.length - 1 && <div style={{ width: '30px', height: '2px', background: currentStep > i ? 'var(--accent-1)' : 'var(--color-border)' }} />}
             </div>
           ))}
@@ -189,14 +189,14 @@ export default function NewContestPage() {
         {/* STEP 1: Details */}
         {currentStep === 0 && (
           <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#f1f5f9', margin: 0 }}>Basic Details</h2>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>Basic Details</h2>
             <p style={{ color: 'var(--color-text-muted)', margin: '-1rem 0 0', fontSize: '0.9rem' }}>Set the name, timing, and visibility of your contest.</p>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               <div>
                 <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', display: 'block', marginBottom: '0.4rem' }}>Contest Title *</label>
                 <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value, slug: slugify(e.target.value) }))} placeholder="e.g. Weekly Contest 101"
-                  style={{ width: '100%', padding: '0.85rem 1rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: '#f1f5f9', fontSize: '1rem', outline: 'none' }} />
+                  style={{ width: '100%', padding: '0.85rem 1rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--text-primary)', fontSize: '1rem', outline: 'none' }} />
               </div>
 
               <div>
@@ -209,26 +209,26 @@ export default function NewContestPage() {
                 <div>
                   <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', display: 'block', marginBottom: '0.4rem' }}>Start Time *</label>
                   <input type="datetime-local" value={form.start_time} onChange={e => setForm(f => ({ ...f, start_time: e.target.value }))}
-                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: '#f1f5f9', fontSize: '0.9rem', outline: 'none' }} />
+                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--text-primary)', fontSize: '0.9rem', outline: 'none' }} />
                 </div>
                 <div>
                   <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', display: 'block', marginBottom: '0.4rem' }}>End Time *</label>
                   <input type="datetime-local" value={form.end_time} onChange={e => setForm(f => ({ ...f, end_time: e.target.value }))}
-                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: '#f1f5f9', fontSize: '0.9rem', outline: 'none' }} />
+                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--text-primary)', fontSize: '0.9rem', outline: 'none' }} />
                 </div>
               </div>
 
               <div>
                 <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', display: 'block', marginBottom: '0.4rem' }}>Description</label>
                 <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={3} placeholder="Brief summary for the contest page..."
-                  style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: '#f1f5f9', fontSize: '0.9rem', outline: 'none', resize: 'vertical' }} />
+                  style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--text-primary)', fontSize: '0.9rem', outline: 'none', resize: 'vertical' }} />
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div>
                   <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', display: 'block', marginBottom: '0.4rem' }}>Visibility</label>
                   <select value={form.visibility} onChange={e => setForm(f => ({ ...f, visibility: e.target.value }))}
-                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: '#f1f5f9', fontSize: '0.9rem', outline: 'none' }}>
+                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--text-primary)', fontSize: '0.9rem', outline: 'none' }}>
                     <option value="public">Public (Anyone can see & join)</option>
                     <option value="private">Private (Link only)</option>
                   </select>
@@ -236,7 +236,7 @@ export default function NewContestPage() {
                 <div>
                   <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', display: 'block', marginBottom: '0.4rem' }}>Contest Type</label>
                   <select value={form.contest_type} onChange={e => setForm(f => ({ ...f, contest_type: e.target.value }))}
-                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: '#f1f5f9', fontSize: '0.9rem', outline: 'none' }}>
+                    style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--text-primary)', fontSize: '0.9rem', outline: 'none' }}>
                     <option value="ICPC">ICPC (Time penalty for WA)</option>
                     <option value="IOI">IOI (Partial scoring, no time penalty)</option>
                   </select>
@@ -251,7 +251,7 @@ export default function NewContestPage() {
           <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#f1f5f9', margin: 0 }}>Problems ({problems.length})</h2>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>Problems ({problems.length})</h2>
                 <p style={{ color: 'var(--color-text-muted)', margin: '0.2rem 0 0', fontSize: '0.9rem' }}>Add problems and drag to reorder them.</p>
               </div>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -271,7 +271,7 @@ export default function NewContestPage() {
         {/* STEP 3: Rules */}
         {currentStep === 2 && (
           <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#f1f5f9', margin: 0 }}>Contest Rules</h2>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>Contest Rules</h2>
             <p style={{ color: 'var(--color-text-muted)', margin: '-1rem 0 0', fontSize: '0.9rem' }}>Configure judging behavior and leaderboard settings.</p>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
@@ -279,7 +279,7 @@ export default function NewContestPage() {
                 <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', cursor: 'pointer' }}>
                   <input type="checkbox" checked={form.practice_mode} onChange={e => setForm(f => ({ ...f, practice_mode: e.target.checked }))} style={{ marginTop: '0.2rem', accentColor: 'var(--accent-1)' }} />
                   <div>
-                    <span style={{ display: 'block', fontSize: '0.95rem', fontWeight: 700, color: '#f1f5f9', marginBottom: '0.2rem' }}>Allow Practice Mode</span>
+                    <span style={{ display: 'block', fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.2rem' }}>Allow Practice Mode</span>
                     <span style={{ display: 'block', fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>If enabled, students can continue to submit solutions and practice even after the contest ends. (Scores won't affect the official leaderboard).</span>
                   </div>
                 </label>
@@ -287,12 +287,12 @@ export default function NewContestPage() {
 
               <div style={{ padding: '1rem', background: 'var(--color-surface)', borderRadius: '10px', border: '1px solid var(--color-border)' }}>
                 <div style={{ marginBottom: '1rem' }}>
-                  <span style={{ display: 'block', fontSize: '0.95rem', fontWeight: 700, color: '#f1f5f9', marginBottom: '0.2rem' }}>Leaderboard Freeze</span>
+                  <span style={{ display: 'block', fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.2rem' }}>Leaderboard Freeze</span>
                   <span style={{ display: 'block', fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>Stop updating the public leaderboard near the end of the contest to build suspense.</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                   <input type="number" value={form.freeze_time_mins} onChange={e => setForm(f => ({ ...f, freeze_time_mins: +e.target.value }))} min={0} max={300}
-                    style={{ width: '80px', padding: '0.6rem 0.85rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: '#f1f5f9', fontSize: '0.9rem', outline: 'none' }} />
+                    style={{ width: '80px', padding: '0.6rem 0.85rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--text-primary)', fontSize: '0.9rem', outline: 'none' }} />
                   <span style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>minutes before the end (0 to disable)</span>
                 </div>
               </div>
@@ -303,24 +303,24 @@ export default function NewContestPage() {
         {/* STEP 4: Preview */}
         {currentStep === 3 && (
           <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#f1f5f9', margin: 0 }}>Review Details</h2>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>Review Details</h2>
             
             <div style={{ padding: '1.5rem', borderRadius: '12px', background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
               <div style={{ marginBottom: '1.5rem' }}>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#f1f5f9', margin: '0 0 0.5rem' }}>{form.title || 'Untitled Contest'}</h3>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 0.5rem' }}>{form.title || 'Untitled Contest'}</h3>
                 <code style={{ fontSize: '0.8rem', color: 'var(--accent-1)', background: 'rgba(108,99,255,0.1)', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>/contests/{form.slug || 'slug'}</code>
               </div>
               
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
                 <div>
                   <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>Time Window</span>
-                  <span style={{ display: 'block', fontSize: '0.9rem', color: '#f1f5f9', marginTop: '0.25rem' }}>
+                  <span style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-primary)', marginTop: '0.25rem' }}>
                     {form.start_time ? new Date(form.start_time).toLocaleString() : 'Not set'} - {form.end_time ? new Date(form.end_time).toLocaleString() : 'Not set'}
                   </span>
                 </div>
                 <div>
                   <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>Configuration</span>
-                  <span style={{ display: 'block', fontSize: '0.9rem', color: '#f1f5f9', marginTop: '0.25rem' }}>
+                  <span style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text-primary)', marginTop: '0.25rem' }}>
                     Type: {form.contest_type} | Vis: {form.visibility} | Practice: {form.practice_mode ? 'Yes' : 'No'}
                   </span>
                 </div>
@@ -332,7 +332,7 @@ export default function NewContestPage() {
                   {problems.length === 0 ? <span style={{ fontSize: '0.85rem', color: '#ef4444' }}>No problems added. (Warning: Empty contest)</span> : 
                     problems.map(p => (
                       <div key={p.problem_id} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0.75rem', background: 'var(--color-bg)', borderRadius: '6px' }}>
-                        <span style={{ fontSize: '0.85rem', color: '#f1f5f9' }}><b>{p.label}.</b> {p.title}</span>
+                        <span style={{ fontSize: '0.85rem', color: 'var(--text-primary)' }}><b>{p.label}.</b> {p.title}</span>
                         <span style={{ fontSize: '0.85rem', color: 'var(--accent-1)', fontWeight: 700 }}>{p.points}pt</span>
                       </div>
                     ))
@@ -347,13 +347,13 @@ export default function NewContestPage() {
         {currentStep === 4 && (
           <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center', textAlign: 'center', padding: '2rem 0' }}>
             <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🚀</div>
-            <h2 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#f1f5f9', margin: 0 }}>Ready for takeoff</h2>
+            <h2 style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>Ready for takeoff</h2>
             <p style={{ color: 'var(--color-text-muted)', margin: 0, fontSize: '1rem', maxWidth: '400px' }}>
               Your contest is fully configured. You can publish it immediately (visible to students) or save it as a draft to keep working on it later.
             </p>
             
             <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
-              <button onClick={() => handlePublish(false)} disabled={saving} style={{ padding: '0.85rem 1.5rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: '#f1f5f9', fontSize: '0.95rem', cursor: 'pointer', fontWeight: 600 }}>
+              <button onClick={() => handlePublish(false)} disabled={saving} style={{ padding: '0.85rem 1.5rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--text-primary)', fontSize: '0.95rem', cursor: 'pointer', fontWeight: 600 }}>
                 {saving ? 'Saving...' : '💾 Save as Draft'}
               </button>
               <button onClick={() => handlePublish(true)} disabled={saving} className="btn btn-primary" style={{ padding: '0.85rem 1.5rem', fontSize: '0.95rem' }}>
@@ -367,7 +367,7 @@ export default function NewContestPage() {
 
       {/* Footer Navigation */}
       <div style={{ position: 'sticky', bottom: 0, zIndex: 100, background: 'var(--color-surface)', borderTop: '1px solid var(--color-border)', padding: '1.25rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <button onClick={handlePrev} disabled={currentStep === 0} style={{ padding: '0.6rem 1.25rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'transparent', color: currentStep === 0 ? 'rgba(255,255,255,0.2)' : '#e2e8f0', fontSize: '0.9rem', cursor: currentStep === 0 ? 'not-allowed' : 'pointer', fontWeight: 600, visibility: currentStep === 0 ? 'hidden' : 'visible' }}>
+        <button onClick={handlePrev} disabled={currentStep === 0} style={{ padding: '0.6rem 1.25rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'transparent', color: currentStep === 0 ? 'rgba(255,255,255,0.2)' : 'var(--text-secondary)', fontSize: '0.9rem', cursor: currentStep === 0 ? 'not-allowed' : 'pointer', fontWeight: 600, visibility: currentStep === 0 ? 'hidden' : 'visible' }}>
           ← Back
         </button>
         {currentStep < STEPS.length - 1 && (

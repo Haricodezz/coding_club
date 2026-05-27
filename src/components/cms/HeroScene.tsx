@@ -78,7 +78,7 @@ function FloatingCard({ emoji, title, value, sub, delay, style }: FloatingCardPr
       transition={{ duration: 0.7, delay, ease: [0.16, 1, 0.3, 1] as const }}
       style={{
         position: 'absolute',
-        background: 'rgba(22,22,30,0.85)',
+        background: 'var(--color-surface)',
         border: '1px solid rgba(108,99,255,0.25)',
         borderRadius: 12,
         padding: '10px 14px',
@@ -103,7 +103,7 @@ function FloatingCard({ emoji, title, value, sub, delay, style }: FloatingCardPr
         <div style={{ fontSize: '0.68rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
           {title}
         </div>
-        <div style={{ fontWeight: 800, color: '#fff', fontSize: '1rem', lineHeight: 1.2 }}>{value}</div>
+        <div style={{ fontWeight: 800, color: 'var(--text-primary)', fontSize: '1rem', lineHeight: 1.2 }}>{value}</div>
         <div style={{ fontSize: '0.68rem', color: '#6c63ff' }}>{sub}</div>
       </div>
     </motion.div>
@@ -229,7 +229,7 @@ export function HeroScene({
               fontWeight: 900,
               lineHeight: 1.1,
               letterSpacing: '-1px',
-              color: '#fff',
+              color: 'var(--text-primary)',
               margin: 0,
             }}
           >
@@ -251,7 +251,7 @@ export function HeroScene({
             transition={{ duration: 0.7, delay: 0.2 }}
             style={{
               fontSize: '1.1rem',
-              color: '#94a3b8',
+              color: 'var(--text-muted)',
               lineHeight: 1.65,
               maxWidth: 480,
               margin: 0,

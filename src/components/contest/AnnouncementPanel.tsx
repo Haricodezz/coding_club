@@ -62,17 +62,17 @@ export default function AnnouncementPanel({ contestId }: { contestId: string }) 
       
       {/* Post new */}
       <div style={{ padding: '1.5rem', background: 'var(--color-surface)', borderRadius: '12px', border: '1px solid var(--color-border)' }}>
-        <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#f1f5f9', margin: '0 0 1rem' }}>New Announcement</h3>
+        <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 1rem' }}>New Announcement</h3>
         <form onSubmit={handlePost} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <div>
             <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', display: 'block', marginBottom: '0.4rem' }}>Title</label>
             <input value={title} onChange={e => setTitle(e.target.value)} required placeholder="e.g. Hint for Problem B"
-              style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: '#f1f5f9', fontSize: '0.9rem', outline: 'none' }} />
+              style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--text-primary)', fontSize: '0.9rem', outline: 'none' }} />
           </div>
           <div>
             <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', display: 'block', marginBottom: '0.4rem' }}>Message</label>
             <textarea value={body} onChange={e => setBody(e.target.value)} required rows={4} placeholder="Type announcement..."
-              style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: '#f1f5f9', fontSize: '0.9rem', outline: 'none', resize: 'vertical' }} />
+              style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--text-primary)', fontSize: '0.9rem', outline: 'none', resize: 'vertical' }} />
           </div>
           <button type="submit" disabled={posting || !title || !body} className="btn btn-primary" style={{ alignSelf: 'flex-start' }}>
             {posting ? 'Posting...' : '📢 Broadcast'}
@@ -82,7 +82,7 @@ export default function AnnouncementPanel({ contestId }: { contestId: string }) 
 
       {/* History */}
       <div>
-        <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#f1f5f9', margin: '0 0 1rem' }}>Sent Announcements</h3>
+        <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 1rem' }}>Sent Announcements</h3>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           {announcements.length === 0 ? (
             <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>No announcements sent.</p>
@@ -90,7 +90,7 @@ export default function AnnouncementPanel({ contestId }: { contestId: string }) 
             announcements.map(a => (
               <div key={a.id} style={{ padding: '1rem', background: 'var(--color-surface)', borderRadius: '10px', border: '1px solid var(--color-border)', position: 'relative' }}>
                 <button onClick={() => handleDelete(a.id)} style={{ position: 'absolute', top: '0.75rem', right: '0.75rem', background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '1rem' }}>✕</button>
-                <p style={{ margin: '0 0 0.5rem', fontSize: '1rem', fontWeight: 700, color: '#f1f5f9' }}>{a.title}</p>
+                <p style={{ margin: '0 0 0.5rem', fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)' }}>{a.title}</p>
                 <p style={{ margin: '0 0 0.5rem', fontSize: '0.9rem', color: '#cbd5e1' }}>{a.body}</p>
                 <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>{new Date(a.created_at).toLocaleString()}</p>
               </div>

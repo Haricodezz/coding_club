@@ -243,12 +243,12 @@ export default function AdminTeam() {
                         onError={(e) => (e.currentTarget.src = '/avatars/avatar_0.svg')}
                       />
                       <div>
-                        <h4 style={{ color: '#fff', margin: 0 }}>
+                        <h4 style={{ color: 'var(--text-primary)', margin: 0 }}>
                           {item.name}
                           {!item.is_active && <span className="badge badge-secondary ml-2" style={{ fontSize: '0.65rem' }}>Hidden</span>}
                         </h4>
                         <p style={{ fontSize: '0.85rem', color: 'var(--accent)', margin: 0 }}>{item.role}</p>
-                        {item.bio && <p style={{ fontSize: '0.8rem', color: '#94a3b8', margin: '0.25rem 0 0 0' }}>{item.bio.substring(0, 60)}{item.bio.length > 60 ? '...' : ''}</p>}
+                        {item.bio && <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0.25rem 0 0 0' }}>{item.bio.substring(0, 60)}{item.bio.length > 60 ? '...' : ''}</p>}
                       </div>
                     </div>
                     <div className="flex gap-2">

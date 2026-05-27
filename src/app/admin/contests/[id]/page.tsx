@@ -154,7 +154,7 @@ export default function ContestAdminPage({ params }: { params: Promise<{ id: str
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1.5rem', gap: '1rem', flexWrap: 'wrap' }}>
         <div>
           <Link href="/admin/contests" style={{ color: 'var(--color-text-muted)', textDecoration: 'none', fontSize: '0.85rem' }}>← All Contests</Link>
-          <h1 style={{ color: '#f1f5f9', fontSize: '1.75rem', fontWeight: 800, margin: '0.2rem 0 0' }}>{contest.title}</h1>
+          <h1 style={{ color: 'var(--text-primary)', fontSize: '1.75rem', fontWeight: 800, margin: '0.2rem 0 0' }}>{contest.title}</h1>
           <p style={{ color: 'var(--accent-1)', fontSize: '0.85rem', margin: '0.2rem 0 0', fontFamily: 'monospace' }}>/contests/{contest.slug}</p>
         </div>
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
@@ -187,33 +187,33 @@ export default function ContestAdminPage({ params }: { params: Promise<{ id: str
           <div>
             <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', display: 'block', marginBottom: '0.4rem' }}>Contest Title</label>
             <input value={form.title} onChange={e => setForm((f: any) => ({ ...f, title: e.target.value }))}
-              style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: '#f1f5f9', fontSize: '0.9rem', outline: 'none' }} />
+              style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--text-primary)', fontSize: '0.9rem', outline: 'none' }} />
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <div>
               <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', display: 'block', marginBottom: '0.4rem' }}>Start Time</label>
               <input type="datetime-local" value={form.start_time} onChange={e => setForm((f: any) => ({ ...f, start_time: e.target.value }))}
-                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: '#f1f5f9', fontSize: '0.9rem', outline: 'none' }} />
+                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--text-primary)', fontSize: '0.9rem', outline: 'none' }} />
             </div>
             <div>
               <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', display: 'block', marginBottom: '0.4rem' }}>End Time</label>
               <input type="datetime-local" value={form.end_time} onChange={e => setForm((f: any) => ({ ...f, end_time: e.target.value }))}
-                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: '#f1f5f9', fontSize: '0.9rem', outline: 'none' }} />
+                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--text-primary)', fontSize: '0.9rem', outline: 'none' }} />
             </div>
           </div>
 
           <div>
             <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', display: 'block', marginBottom: '0.4rem' }}>Description</label>
             <textarea value={form.description} onChange={e => setForm((f: any) => ({ ...f, description: e.target.value }))} rows={3}
-              style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: '#f1f5f9', fontSize: '0.9rem', outline: 'none', resize: 'vertical' }} />
+              style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--text-primary)', fontSize: '0.9rem', outline: 'none', resize: 'vertical' }} />
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <div>
               <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', display: 'block', marginBottom: '0.4rem' }}>Visibility</label>
               <select value={form.visibility} onChange={e => setForm((f: any) => ({ ...f, visibility: e.target.value }))}
-                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: '#f1f5f9', fontSize: '0.9rem', outline: 'none' }}>
+                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--text-primary)', fontSize: '0.9rem', outline: 'none' }}>
                 <option value="public">Public</option>
                 <option value="private">Private</option>
               </select>
@@ -221,7 +221,7 @@ export default function ContestAdminPage({ params }: { params: Promise<{ id: str
             <div>
               <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', display: 'block', marginBottom: '0.4rem' }}>Contest Type</label>
               <select value={form.contest_type} onChange={e => setForm((f: any) => ({ ...f, contest_type: e.target.value }))}
-                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: '#f1f5f9', fontSize: '0.9rem', outline: 'none' }}>
+                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--text-primary)', fontSize: '0.9rem', outline: 'none' }}>
                 <option value="ICPC">ICPC (penalty)</option>
                 <option value="IOI">IOI (partial)</option>
               </select>
@@ -233,7 +233,7 @@ export default function ContestAdminPage({ params }: { params: Promise<{ id: str
               <label key={field} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
                 <input type="checkbox" checked={form[field]} onChange={e => setForm((f: any) => ({ ...f, [field]: e.target.checked }))}
                   style={{ width: '16px', height: '16px', accentColor: 'var(--accent-1)' }} />
-                <span style={{ fontSize: '0.85rem', color: '#e2e8f0', fontWeight: 600 }}>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
                   {field.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                 </span>
               </label>

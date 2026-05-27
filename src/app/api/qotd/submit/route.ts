@@ -9,40 +9,51 @@ export async function POST(req: NextRequest) {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { code, language, question_id } = await req.json();
-  if (!code || !language || !question_id) {
-    return NextResponse.json({ error: 'code, language, question_id required' }, { status: 400 });
+  const { code, language, problem_slug } = await req.json();
+  if (!code || !language || !problem_slug) {
+    return NextResponse.json({ error: 'code, language, problem_slug required' }, { status: 400 });
   }
 
   // Fetch the question + test cases
   const { data: question, error: qErr } = await supabase
-    .from('questions')
+    .from('question_bank')
     .select('*')
-    .eq('id', question_id)
-    .eq('is_published', true)
+    .eq('slug', problem_slug)
     .single();
 
   if (qErr || !question) return NextResponse.json({ error: 'Question not found' }, { status: 404 });
 
-  const testCases: TestCase[] = (question.test_cases as unknown as TestCase[]) || [];
-  const results: TestCaseResult[] = [];
+  const question_id = question.id;
 
-  // Run code against each test case
-  for (const tc of testCases) {
-    const result = await executePiston(code, language, tc.input);
-    const actual = (result.output || '').trim();
-    const expected = tc.expected_output.trim();
-    results.push({
-      passed: actual === expected,
-      input: tc.input,
-      expected,
-      actual,
-      stderr: result.stderr,
-    });
+  const adminSupabase = await import('@/lib/supabase-server').then(m => m.createAdminSupabaseClient());
+  const { data: testcases, error: tcErr } = await (adminSupabase as any)
+    .from('question_bank_testcases')
+    .select('id, input, expected_output, is_hidden')
+    .eq('question_id', question.id)
+    .order('display_order', { ascending: true });
+
+  if (tcErr || !testcases || testcases.length === 0) {
+    return NextResponse.json({ error: 'No testcases configured for this problem' }, { status: 500 });
   }
 
-  const passedCount = results.filter(r => r.passed).length;
-  const allPassed = passedCount === testCases.length;
+  let finalCode = code;
+  if (question.execution_mode === 'function' && question.function_templates) {
+    const tpl = question.function_templates[language];
+    if (tpl && tpl.driver) {
+      finalCode = tpl.driver.replace('// USER_CODE_HERE', code);
+    }
+  }
+
+  const { runAgainstTestcases } = await import('@/lib/services/judge.service');
+  let judgeResult: any;
+  try {
+    judgeResult = await runAgainstTestcases(finalCode, language, testcases, question.time_limit || 2000);
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message || 'Judge failed' }, { status: 500 });
+  }
+
+  const passedCount = judgeResult.testcases_passed;
+  const allPassed = judgeResult.verdict === 'AC';
 
   // Check if already solved today (first-submission-per-day rule)
   const today = new Date().toISOString().split('T')[0];
@@ -65,15 +76,12 @@ export async function POST(req: NextRequest) {
     code,
     language,
     passed_tests: passedCount,
-    total_tests: testCases.length,
+    total_tests: judgeResult.testcases_total,
     points_earned: points,
   });
 
   return NextResponse.json({
-    results,
-    passed: passedCount,
-    total: testCases.length,
-    all_passed: allPassed,
+    ...judgeResult,
     points_earned: points,
     already_solved: alreadyEarnedToday,
   });

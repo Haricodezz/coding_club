@@ -17,11 +17,11 @@ export default function AdminStatsCard({ title, value, subtitle, icon, trend }: 
         {icon}
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ color: '#94a3b8', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' }}>{title}</span>
+        <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' }}>{title}</span>
         <span style={{ fontSize: '1.25rem' }}>{icon}</span>
       </div>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem', marginTop: '0.5rem' }}>
-        <span className="stat-value" style={{ fontSize: '2.5rem', fontWeight: 800, color: '#fff', background: 'none', WebkitTextFillColor: 'initial', margin: 0 }}>{value}</span>
+        <span className="stat-value" style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--text-primary)', background: 'none', WebkitTextFillColor: 'initial', margin: 0 }}>{value}</span>
         {trend && (
           <span style={{ 
             fontSize: '0.8rem', 

@@ -5,18 +5,77 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getSupabase } from '@/lib/supabase';
 import type { User as AppUser, LeaderboardEntry, Question, Contest } from '@/types';
+import PreviewBanner from '@/components/admin/PreviewBanner';
+import { Skeleton, SkeletonText } from '@/components/ui/Skeleton';
+import { QuickStatsWidget } from '@/components/dashboard/QuickStatsWidget';
+import { CarouselQotD } from '@/components/dashboard/CarouselQotD';
+import { ContestsWidget } from '@/components/dashboard/ContestsWidget';
+import { RecentSubmissionsWidget } from '@/components/dashboard/RecentSubmissionsWidget';
+import { QuickLinksWidget } from '@/components/dashboard/QuickLinksWidget';
+
+const MOTIVATIONAL_SUBTEXTS = [
+  'Keep pushing — every line of code counts. 💻',
+  'Consistency beats talent. Keep solving! ⚡',
+  'One problem at a time. You\'re doing great! 🚀',
+  'The best time to practice is right now. 🔥',
+  'Small steps compound into big achievements. 🏆',
+  'Debug your code, debug your limits. 🧠',
+];
+
+function RotatingSubtext() {
+  const [idx, setIdx] = useState(0);
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setVisible(false);
+      setTimeout(() => {
+        setIdx(i => (i + 1) % MOTIVATIONAL_SUBTEXTS.length);
+        setVisible(true);
+      }, 400);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <p style={{
+      opacity: visible ? 1 : 0,
+      transition: 'opacity 0.4s ease',
+      color: '#64748b',
+      fontSize: '0.95rem',
+      minHeight: '1.5em',
+    }}>
+      {MOTIVATIONAL_SUBTEXTS[idx]}
+    </p>
+  );
+}
 
 export default function DashboardPage() {
   const router = useRouter();
   const [user, setUser] = useState<AppUser | null>(null);
   const [userLb, setUserLb] = useState<LeaderboardEntry | null>(null);
   const [rank, setRank] = useState<number | null>(null);
-  const [todayQuestion, setTodayQuestion] = useState<Question | null>(null);
-  const [isTodayQotdSolved, setIsTodayQotdSolved] = useState(false);
+  const [qotdQuestions, setQotdQuestions] = useState<(Question & { isSolved?: boolean, dateLabel?: string })[]>([]);
   const [completedCount, setCompletedCount] = useState(0);
   const [recentSubmissions, setRecentSubmissions] = useState<any[]>([]);
-  const [activeContests, setActiveContests] = useState<Contest[]>([]);
+  const [allContests, setAllContests] = useState<Contest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
+
+  const [stats, setStats] = useState({ winRate: 0, accuracy: 0, trend: 0, streak: 0, nextMilestone: 7 });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const flag = localStorage.getItem('adminPreviewMode');
+      if (flag === 'true') setIsPreviewMode(true);
+    }
+  }, []);
+
+  function exitPreviewMode() {
+    localStorage.removeItem('adminPreviewMode');
+    setIsPreviewMode(false);
+    router.push('/admin');
+  }
 
   useEffect(() => {
     const supabase = getSupabase();
@@ -29,7 +88,6 @@ export default function DashboardPage() {
 
       const userId = sessionData.session.user.id;
       
-      // 1. Fetch user profile
       const { data: profile } = await supabase.from('users').select('*').eq('id', userId).single();
       if (profile) {
         const userData = profile as unknown as AppUser;
@@ -40,421 +98,153 @@ export default function DashboardPage() {
         setUser(userData);
       }
 
-      // 2. Fetch leaderboard rank & specific entry for accurate total points breakdown
-      const { data: lb } = await supabase
-        .from('leaderboard')
-        .select('*')
-        .order('total_points', { ascending: false });
+      const { data: lb } = await supabase.from('leaderboard').select('*').order('total_points', { ascending: false });
       if (lb) {
         const entries = lb as unknown as LeaderboardEntry[];
-        const idx = entries.findIndex((e: LeaderboardEntry) => e.id === userId);
-        if (idx !== -1) {
-          setRank(idx + 1);
-          setUserLb(entries[idx]);
-        }
+        const idx = entries.findIndex(e => e.id === userId);
+        if (idx !== -1) { setRank(idx + 1); setUserLb(entries[idx]); }
       }
 
-      // 3. Fetch today's QotD
       const today = new Date().toISOString().split('T')[0];
+      const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+      
       const { data: calendar } = await supabase
         .from('qotd_calendar')
-        .select('question_id, questions(*)')
-        .eq('date', today)
-        .eq('is_active', true)
-        .single();
+        .select('date, question_bank(*)')
+        .in('date', [today, yesterday])
+        .eq('is_active', true);
       
-      if (calendar?.questions) {
-        const todayQ = calendar.questions as unknown as Question;
-        setTodayQuestion(todayQ);
-
-        // Check if user has already solved today's QotD
-        const { data: todaySubs } = await supabase
-          .from('user_qotd_submissions')
-          .select('passed_tests, total_tests')
-          .eq('user_id', userId)
-          .eq('question_id', todayQ.id);
-
-        if (todaySubs) {
-          const solved = todaySubs.some(s => s.total_tests && s.total_tests > 0 && s.passed_tests === s.total_tests);
-          setIsTodayQotdSolved(solved);
+      if (calendar && calendar.length > 0) {
+        const questionsArr = [];
+        for (const c of calendar) {
+          const q = (c.question_bank || c.questions) as unknown as Question;
+          if (!q) continue;
+          const { data: subs } = await supabase.from('user_qotd_submissions')
+            .select('passed_tests, total_tests')
+            .eq('user_id', userId)
+            .eq('question_id', q.id);
+          
+          const isSolved = subs?.some(s => s.total_tests > 0 && s.passed_tests === s.total_tests) || false;
+          questionsArr.push({ ...q, isSolved, dateLabel: c.date === today ? 'Today' : 'Yesterday' });
         }
+        setQotdQuestions(questionsArr.sort((a, b) => b.dateLabel === 'Today' ? 1 : -1));
       }
 
-      // 4. Count completed learning resources
-      const { count } = await supabase
-        .from('user_progress')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', userId)
-        .eq('completed', true);
+      const { count } = await supabase.from('user_progress').select('*', { count: 'exact', head: true }).eq('user_id', userId).eq('completed', true);
       setCompletedCount(count || 0);
 
-      // 5. Fetch recent submissions
       const { data: subsData } = await supabase
         .from('user_qotd_submissions')
         .select('id, submitted_at, language, passed_tests, total_tests, points_earned, question_id, questions(title)')
         .eq('user_id', userId)
         .order('submitted_at', { ascending: false })
-        .limit(3);
-      if (subsData) {
-        setRecentSubmissions(subsData);
-      }
+        .limit(10);
+      if (subsData) setRecentSubmissions(subsData);
 
-      // 6. Fetch active/upcoming contests
-      const { data: contestsData } = await supabase
-        .from('contests')
-        .select('*')
-        .in('status', ['active', 'upcoming'])
-        .order('start_date', { ascending: true })
-        .limit(2);
-      if (contestsData) {
-        setActiveContests(contestsData as unknown as Contest[]);
-      }
+      const { data: contestsData } = await supabase.from('contests').select('*').order('start_date', { ascending: false });
+      if (contestsData) setAllContests(contestsData as unknown as Contest[]);
+
+      // Fetch real analytics & streaks
+      const { data: analytics } = await supabase.from('user_performance_analytics').select('*').eq('user_id', userId).single();
+      const { data: streakData } = await supabase.from('streaks').select('*').eq('user_id', userId).single();
+      
+      setStats({
+        winRate: analytics?.win_rate || 0,
+        accuracy: analytics?.accuracy || 0,
+        trend: analytics?.improvement_trend || 0,
+        streak: streakData?.current_streak || 0,
+        nextMilestone: streakData?.next_milestone || 7
+      });
 
       setLoading(false);
     }
     loadDashboard();
   }, [router]);
 
+  function getGreeting(): { label: string; emoji: string } {
+    const h = new Date().getHours();
+    if (h >= 5 && h < 12)  return { label: 'Good Morning',   emoji: '☀️' };
+    if (h >= 12 && h < 17) return { label: 'Good Afternoon', emoji: '🌤️' };
+    if (h >= 17 && h < 21) return { label: 'Good Evening',   emoji: '🌆' };
+    return                         { label: 'Good Night',     emoji: '🌙' };
+  }
+
+  const totalPoints = userLb?.total_points ?? user?.platform_points ?? 0;
+
   if (loading) {
     return (
-      <div className="page-wrapper">
-        <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
-          <div className="spinner" style={{ width: 40, height: 40 }} />
+      <div className="page-wrapper" style={{ paddingTop: 'calc(var(--navbar-height) + 2rem)' }}>
+        <div className="container">
+          <div className="flex-col gap-6">
+            <div className="flex items-center justify-between">
+              <SkeletonText lines={2} style={{ width: '300px' }} />
+              <Skeleton style={{ width: '120px', height: '120px', borderRadius: '50%' }} />
+            </div>
+            <div className="grid-4">
+              <Skeleton style={{ height: '100px' }} /><Skeleton style={{ height: '100px' }} /><Skeleton style={{ height: '100px' }} /><Skeleton style={{ height: '100px' }} />
+            </div>
+            <div className="grid-2">
+              <Skeleton style={{ height: '400px' }} /><Skeleton style={{ height: '400px' }} />
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
-  // Formatting helpers
-  function getGreeting(): string {
-    const h = new Date().getHours();
-    if (h < 12) return 'morning';
-    if (h < 17) return 'afternoon';
-    return 'evening';
-  }
-
-  function formatRelativeTime(dateString: string): string {
-    try {
-      const date = new Date(dateString);
-      const now = new Date();
-      const diffMs = now.getTime() - date.getTime();
-      const diffMins = Math.floor(diffMs / 60000);
-      const diffHours = Math.floor(diffMs / 3600000);
-      const diffDays = Math.floor(diffMs / 86400000);
-
-      if (diffMins < 1) return 'Just now';
-      if (diffMins < 60) return `${diffMins}m ago`;
-      if (diffHours < 24) return `${diffHours}h ago`;
-      if (diffDays === 1) return 'Yesterday';
-      return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-    } catch (e) {
-      return 'Recently';
-    }
-  }
-
-  function formatContestDate(dateString: string): string {
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleString(undefined, {
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true
-      });
-    } catch (e) {
-      return dateString;
-    }
-  }
-
-  const totalPoints = userLb?.total_points ?? user?.platform_points ?? 0;
-  const breakDownText = userLb 
-    ? `CP: ${userLb.platform_points} | QotD: ${userLb.qotd_points} | Contest: ${userLb.contest_points}`
-    : 'Platform stats only';
-
   return (
-    <div className="page-wrapper">
+    <div className="page-wrapper" style={{ paddingTop: isPreviewMode ? 'calc(var(--navbar-height) + 44px)' : undefined }}>
+      {isPreviewMode && <PreviewBanner onExit={exitPreviewMode} />}
       <div className="container">
-        {/* Greeting Section */}
-        <div className="page-header animate-fade-in" style={{ marginBottom: '2rem' }}>
-          <p className="eyebrow">Good {getGreeting()}</p>
-          <h1>
-            Welcome back, <span className="gradient-text">{user?.username || 'Coder'}</span> 👋
-          </h1>
-          <p>Here's your coding activity at a glance.</p>
+        
+        {/* Dynamic Welcome Section */}
+        <div className="flex justify-between items-end animate-fade-in" style={{ marginBottom: '2rem' }}>
+          <div>
+            <p className="eyebrow" style={{ color: 'var(--accent)' }}>{getGreeting().emoji} {getGreeting().label}</p>
+            <h1 style={{ marginBottom: '0.25rem', fontSize: '2.5rem' }}>
+              Welcome back, <span className="gradient-text">{user?.username || 'Coder'}</span>
+            </h1>
+            <RotatingSubtext />
+          </div>
+          
+          <div className="flex items-center gap-3" style={{ background: 'var(--color-surface-2)', padding: '0.5rem 1rem', borderRadius: 'var(--radius-full)', border: '1px solid rgba(249,115,22,0.2)' }}>
+            <span style={{ fontSize: '1.5rem', animation: 'pulse-ring 2s infinite' }}>🔥</span>
+            <div className="flex-col">
+              <span style={{ fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1 }}>{stats.streak} Day Streak</span>
+              <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{stats.nextMilestone - stats.streak} more for bonus!</span>
+            </div>
+          </div>
         </div>
 
-        {/* Stats Row */}
+        {/* Global Stats Grid */}
         <div className="grid-4" style={{ marginBottom: '2.5rem' }}>
           {[
-            { 
-              label: 'Global Rank', 
-              value: rank ? `#${rank}` : '—', 
-              icon: '🏆', 
-              link: '/leaderboard', 
-              subtext: 'View live standings' 
-            },
-            { 
-              label: 'Total Points', 
-              value: totalPoints, 
-              icon: '⭐', 
-              link: `/profile/${user?.username}`, 
-              subtext: breakDownText 
-            },
-            { 
-              label: 'Resources Completed', 
-              value: completedCount, 
-              icon: '📚', 
-              link: '/learn', 
-              subtext: 'Master DSA & Web Dev' 
-            },
-            { 
-              label: 'Batch ID', 
-              value: user?.batch_id || '—', 
-              icon: '🎓', 
-              link: `/profile/${user?.username}`, 
-              subtext: 'Linked profile details' 
-            },
+            { label: 'Global Rank', value: rank ? `#${rank}` : '—', icon: '🏆', link: '/leaderboard', subtext: 'View live standings' },
+            { label: 'Total Points', value: totalPoints, icon: '⭐', link: `/profile/${user?.username}`, subtext: 'CP & Challenges' },
+            { label: 'Resources Completed', value: completedCount, icon: '📚', link: '/learn', subtext: 'Master DSA & Web Dev' },
+            { label: 'Batch ID', value: user?.batch_id || '—', icon: '🎓', link: `/profile/${user?.username}`, subtext: 'Linked profile' },
           ].map(({ label, value, icon, link, subtext }) => (
             <Link href={link} key={label} className="stat-box animate-slide-in" style={{ textDecoration: 'none', display: 'block', transition: 'var(--transition)' }}>
               <div style={{ fontSize: '1.5rem', marginBottom: '0.4rem' }}>{icon}</div>
-              <div className="stat-value" style={{ fontSize: '1.75rem', fontWeight: 800, color: '#f1f5f9' }}>{value}</div>
-              <div className="stat-label" style={{ fontWeight: 600, color: '#94a3b8', fontSize: '0.85rem', marginBottom: '0.25rem' }}>{label}</div>
+              <div className="stat-value" style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--text-primary)' }}>{value}</div>
+              <div className="stat-label" style={{ fontWeight: 600, color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '0.25rem' }}>{label}</div>
               <div style={{ fontSize: '0.7rem', color: '#64748b' }}>{subtext}</div>
             </Link>
           ))}
         </div>
 
         <div className="grid-2" style={{ gap: '2rem' }}>
-          {/* COLUMN 1: Challenge & Activity */}
+          {/* Left Column */}
           <div className="flex-col gap-6">
-            
-            {/* Today's Question of the Day (QotD) */}
-            <div 
-              className="card animate-slide-in" 
-              style={{ 
-                border: isTodayQotdSolved ? '1px solid rgba(34, 211, 160, 0.4)' : '1px solid rgba(108,99,255,0.3)',
-                background: isTodayQotdSolved ? 'rgba(34, 211, 160, 0.02)' : 'var(--color-surface)',
-                boxShadow: isTodayQotdSolved ? '0 0 15px rgba(34, 211, 160, 0.03)' : 'none'
-              }}
-            >
-              <div className="flex items-center justify-between" style={{ marginBottom: '1rem' }}>
-                <h3 className="flex items-center gap-2">
-                  <span>💡</span> Question of the Day
-                </h3>
-                {todayQuestion && (
-                  <div className="flex gap-2 items-center">
-                    {isTodayQotdSolved && (
-                      <span className="badge badge-success" style={{ textTransform: 'uppercase', background: 'rgba(34, 211, 160, 0.15)', color: 'var(--color-success)', border: '1px solid rgba(34,211,160,0.3)' }}>
-                        ✓ Solved
-                      </span>
-                    )}
-                    <span className={`badge badge-${todayQuestion.difficulty.toLowerCase()}`}>
-                      {todayQuestion.difficulty}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              {todayQuestion ? (
-                <>
-                  <p style={{ fontWeight: 700, color: '#f1f5f9', marginBottom: '0.5rem', fontSize: '1.1rem' }}>
-                    {todayQuestion.title}
-                  </p>
-                  <p style={{ fontSize: '0.875rem', color: '#94a3b8', marginBottom: '1.5rem', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: '1.6' }}>
-                    {todayQuestion.description}
-                  </p>
-                  <Link 
-                    href="/qotd" 
-                    className={`btn ${isTodayQotdSolved ? 'btn-secondary' : 'btn-primary'}`} 
-                    style={{ width: '100%', justifyContent: 'center' }}
-                  >
-                    {isTodayQotdSolved ? 'View Question & IDE ✓' : 'Solve Now — Earn 10 pts 🚀'}
-                  </Link>
-                </>
-              ) : (
-                <div className="empty-state text-center" style={{ padding: '2rem 0' }}>
-                  <span style={{ fontSize: '2rem', display: 'block', marginBottom: '0.5rem' }}>📭</span>
-                  <p style={{ fontSize: '0.9rem', color: '#64748b' }}>No question scheduled for today yet.</p>
-                </div>
-              )}
-            </div>
-
-            {/* Recent Submissions */}
-            <div className="card animate-slide-in">
-              <h3 style={{ marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span>🧑‍💻</span> Recent Submissions
-              </h3>
-              {recentSubmissions.length > 0 ? (
-                <div className="flex-col gap-3">
-                  {recentSubmissions.map((sub) => {
-                    const isPassed = sub.passed_tests === sub.total_tests && sub.total_tests > 0;
-                    return (
-                      <div 
-                        key={sub.id} 
-                        className="flex items-center justify-between" 
-                        style={{
-                          padding: '0.75rem 1rem',
-                          background: 'var(--color-bg-2)',
-                          border: '1px solid var(--color-border)',
-                          borderRadius: 'var(--radius)',
-                        }}
-                      >
-                        <div style={{ minWidth: 0, flex: 1, marginRight: '1rem' }}>
-                          <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#f1f5f9', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {sub.questions?.title || `Question #${sub.question_id}`}
-                          </div>
-                          <div className="flex gap-2 items-center" style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.2rem' }}>
-                            <span style={{ textTransform: 'uppercase', color: 'var(--accent-3)', fontWeight: 600 }}>{sub.language}</span>
-                            <span>•</span>
-                            <span>{formatRelativeTime(sub.submitted_at)}</span>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                          <span 
-                            className="badge" 
-                            style={{ 
-                              fontSize: '0.75rem',
-                              background: isPassed ? 'var(--color-success-bg)' : 'var(--color-error-bg)',
-                              color: isPassed ? 'var(--color-success)' : 'var(--color-error)',
-                              border: isPassed ? '1px solid rgba(34,211,160,0.2)' : '1px solid rgba(248,113,113,0.2)'
-                            }}
-                          >
-                            {sub.passed_tests}/{sub.total_tests} Tests
-                          </span>
-                          <span style={{ fontWeight: 700, fontSize: '0.9rem', color: isPassed ? 'var(--color-success)' : '#94a3b8' }}>
-                            +{sub.points_earned} pts
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="empty-state text-center" style={{ padding: '2rem 0' }}>
-                  <span style={{ fontSize: '1.5rem', display: 'block', marginBottom: '0.5rem' }}>📋</span>
-                  <p style={{ fontSize: '0.85rem', color: '#64748b' }}>You haven't submitted any solutions yet.</p>
-                  <Link href="/qotd" className="btn btn-ghost btn-sm" style={{ marginTop: '0.75rem' }}>
-                    Solve first challenge
-                  </Link>
-                </div>
-              )}
-            </div>
-
+            <QuickStatsWidget winRate={stats.winRate} accuracy={stats.accuracy} trend={stats.trend} />
+            <CarouselQotD questions={qotdQuestions} />
+            <RecentSubmissionsWidget submissions={recentSubmissions} />
           </div>
 
-          {/* COLUMN 2: Contests & Shortcuts */}
+          {/* Right Column */}
           <div className="flex-col gap-6">
-
-            {/* Live / Upcoming Contests */}
-            <div className="card animate-slide-in">
-              <h3 style={{ marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span>🏆</span> Contests & Events
-              </h3>
-              {activeContests.length > 0 ? (
-                <div className="flex-col gap-3">
-                  {activeContests.map((contest) => {
-                    const isActive = contest.status === 'active';
-                    return (
-                      <div 
-                        key={contest.id}
-                        style={{
-                          padding: '1rem',
-                          background: 'var(--color-bg-2)',
-                          border: isActive ? '1px solid rgba(108, 99, 255, 0.4)' : '1px solid var(--color-border)',
-                          borderRadius: 'var(--radius)',
-                          position: 'relative',
-                        }}
-                      >
-                        <div className="flex items-center justify-between" style={{ marginBottom: '0.5rem' }}>
-                          <span 
-                            className="badge animate-pulse-ring" 
-                            style={{ 
-                              background: isActive ? 'var(--color-error-bg)' : 'rgba(108,99,255,0.1)',
-                              color: isActive ? 'var(--color-error)' : 'var(--accent-3)',
-                              border: isActive ? '1px solid rgba(248,113,113,0.3)' : '1px solid rgba(108,99,255,0.2)'
-                            }}
-                          >
-                            {isActive ? '● LIVE NOW' : '📅 Upcoming'}
-                          </span>
-                          <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
-                            {isActive ? 'Ends soon' : 'Scheduled'}
-                          </span>
-                        </div>
-                        <h4 style={{ color: '#f1f5f9', fontWeight: 700, marginBottom: '0.4rem', fontSize: '0.95rem' }}>
-                          {contest.title}
-                        </h4>
-                        <p style={{ fontSize: '0.78rem', color: '#94a3b8', marginBottom: '0.75rem' }}>
-                          {contest.description || 'Join our HackerRank contest to earn placement points!'}
-                        </p>
-                        <div className="flex justify-between items-center" style={{ borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: '0.625rem', fontSize: '0.75rem', color: '#64748b' }}>
-                          <span>Start: {formatContestDate(contest.start_date)}</span>
-                          <Link 
-                            href={contest.hackerrank_contest_id ? `https://hackerrank.com/${contest.hackerrank_contest_id}` : '/contests'} 
-                            target="_blank" 
-                            className="btn btn-secondary btn-sm"
-                            style={{ padding: '0.25rem 0.6rem', fontSize: '0.7rem' }}
-                          >
-                            {isActive ? 'Enter 🚀' : 'Details'}
-                          </Link>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="empty-state text-center" style={{ padding: '2rem 0' }}>
-                  <span style={{ fontSize: '1.5rem', display: 'block', marginBottom: '0.5rem' }}>📅</span>
-                  <p style={{ fontSize: '0.85rem', color: '#64748b' }}>No active or upcoming contests currently.</p>
-                  <p style={{ fontSize: '0.75rem', color: '#475569', marginTop: '0.25rem' }}>Check back later or solve daily challenges!</p>
-                </div>
-              )}
-            </div>
-
-            {/* Quick Actions Shortcuts */}
-            <div className="card animate-slide-in">
-              <h3 style={{ marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span>⚡</span> Quick Links
-              </h3>
-              <div className="flex-col gap-3">
-                {[
-                  { href: '/ide', label: 'Launch Online IDE', icon: '💻', desc: 'Write & compile in 6 languages' },
-                  { href: '/leaderboard', label: 'Global Leaderboard', icon: '📊', desc: 'Compare your score & rank' },
-                  { href: '/learn', label: 'Learning Resources', icon: '📚', desc: `${completedCount} modules completed` },
-                  { href: `/profile/${user?.username}`, label: 'Manage Profile', icon: '👤', desc: 'Link Codeforces & LeetCode' },
-                ].map(({ href, label, icon, desc }) => (
-                  <Link
-                    key={href}
-                    href={href}
-                    className="flex items-center gap-3"
-                    style={{
-                      padding: '0.875rem 1rem',
-                      background: 'var(--color-surface-2)',
-                      border: '1px solid var(--color-border)',
-                      borderRadius: 'var(--radius)',
-                      transition: 'var(--transition)',
-                    }}
-                    onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLElement).style.borderColor = 'var(--accent)';
-                      (e.currentTarget as HTMLElement).style.background = 'var(--color-surface-3)';
-                    }}
-                    onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-border)';
-                      (e.currentTarget as HTMLElement).style.background = 'var(--color-surface-2)';
-                    }}
-                  >
-                    <span style={{ fontSize: '1.25rem', flexShrink: 0 }}>{icon}</span>
-                    <div style={{ minWidth: 0 }}>
-                      <div style={{ fontWeight: 600, fontSize: '0.875rem', color: '#e2e8f0' }}>{label}</div>
-                      <div style={{ fontSize: '0.75rem', color: '#64748b', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{desc}</div>
-                    </div>
-                    <span style={{ marginLeft: 'auto', color: '#64748b' }}>→</span>
-                  </Link>
-                ))}
-              </div>
-            </div>
-
+            <ContestsWidget contests={allContests} />
+            <QuickLinksWidget />
           </div>
         </div>
       </div>

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import { useTheme } from 'next-themes';
 import { getSupabase } from '@/lib/supabase';
 import type { User as AppUser } from '@/types';
 
@@ -15,7 +16,7 @@ const NAV_LINKS = [
   { href: '/ide', label: 'IDE', icon: '⚡', public: true },
   { href: '/contests', label: 'Contests', icon: '🏆', public: true },
   { href: '/leaderboard', label: 'Leaderboard', icon: '📊', public: true },
-  { href: '/questions', label: 'Questions', icon: '🧩', public: false },
+  { href: '/practice', label: 'Practice', icon: '🧩', public: false },
 ];
 
 export function Navbar() {
@@ -23,6 +24,14 @@ export function Navbar() {
   const [user, setUser] = useState<AppUser | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const { theme, setTheme } = useTheme();
+
+  useEffect(() => { setMounted(true); }, []);
+
+  function toggleTheme() {
+    setTheme(theme === 'dark' ? 'light' : 'dark');
+  }
 
   // Track scroll for shadow effect
   useEffect(() => {
@@ -59,12 +68,22 @@ export function Navbar() {
     window.location.href = '/login';
   }
 
-  if (pathname.startsWith('/admin') || (pathname.startsWith('/contests/') && pathname !== '/contests')) {
+  if (
+    pathname.startsWith('/admin') || 
+    (pathname.startsWith('/contests/') && pathname !== '/contests') ||
+    (pathname.startsWith('/practice/') && pathname !== '/practice')
+  ) {
     return null;
   }
 
   return (
-    <nav className="navbar" style={{ boxShadow: scrolled ? '0 1px 20px rgba(0,0,0,0.4)' : 'none' }}>
+    <nav className="navbar" style={{
+      boxShadow: scrolled
+        ? (theme === 'light'
+          ? '0 1px 20px rgba(108,99,255,0.06)'
+          : '0 1px 20px rgba(0,0,0,0.4)')
+        : 'none'
+    }}>
       <div className="container navbar-inner">
         {/* Logo */}
         <Link href={user ? '/dashboard' : '/'} className="navbar-logo">
@@ -105,6 +124,31 @@ export function Navbar() {
 
         {/* Right side */}
         <div className="navbar-right">
+          {/* Theme Toggle */}
+          {mounted && (
+            <button
+              onClick={toggleTheme}
+              className="navbar-theme-toggle"
+              aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+              title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+              style={{
+                width: '34px', height: '34px', borderRadius: '8px',
+                background: 'var(--color-surface-2)',
+                border: '1px solid var(--color-border)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '1rem', cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                flexShrink: 0,
+              }}
+              onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--accent)')}
+              onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--color-border)')}
+            >
+              <span style={{ display: 'inline-block', transition: 'transform 0.3s ease', transform: theme === 'light' ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                {theme === 'light' ? '🌙' : '☀️'}
+              </span>
+            </button>
+          )}
+
           {user ? (
             <>
               <Link

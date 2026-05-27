@@ -19,8 +19,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     if (!input || !expected_output) return NextResponse.json({ error: 'input and expected_output required' }, { status: 400 });
     const adminSupabase = createAdminSupabaseClient();
     const { data, error } = await (adminSupabase as any)
-      .from('problem_testcases')
-      .insert({ problem_id: problemId, input, expected_output, is_hidden, explanation, display_order })
+      .from('question_bank_testcases')
+      .insert({ question_id: problemId, input, expected_output, is_hidden, explanation, display_order })
       .select('id')
       .single();
     if (error) throw new Error(error.message);
@@ -39,7 +39,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     const testcaseId = new URL(req.url).searchParams.get('testcase_id');
     if (!testcaseId) return NextResponse.json({ error: 'testcase_id required' }, { status: 400 });
     const adminSupabase = createAdminSupabaseClient();
-    const { error } = await (adminSupabase as any).from('problem_testcases').delete().eq('id', testcaseId);
+    const { error } = await (adminSupabase as any).from('question_bank_testcases').delete().eq('id', testcaseId);
     if (error) throw new Error(error.message);
     return NextResponse.json({ success: true });
   } catch (err: any) {

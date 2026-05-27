@@ -36,14 +36,14 @@ export function AnnouncementBanner({ announcements = [] }: AnnouncementBannerPro
               <span className="badge" style={{ fontSize: '0.65rem', padding: '0.15rem 0.4rem', whiteSpace: 'nowrap' }}>
                 📢 {item.type?.toUpperCase() || 'NOTICE'}
               </span>
-              <span style={{ color: '#fff', fontWeight: 500, whiteSpace: 'nowrap' }}>{item.title}:</span>
+              <span style={{ color: 'var(--text-primary)', fontWeight: 500, whiteSpace: 'nowrap' }}>{item.title}:</span>
               
               {item.link_url ? (
                 <a href={item.link_url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'underline', whiteSpace: 'nowrap' }}>
                   {item.content}
                 </a>
               ) : (
-                <span style={{ color: '#a8b3cf', whiteSpace: 'nowrap' }}>{item.content}</span>
+                <span style={{ color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{item.content}</span>
               )}
             </div>
           ))}

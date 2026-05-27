@@ -251,7 +251,7 @@ export default function AdminBlogsPage() {
                 >
                   <div className="flex justify-between items-start">
                     <div>
-                      <h4 style={{ color: '#fff' }}>{blog.title}</h4>
+                      <h4 style={{ color: 'var(--text-primary)' }}>{blog.title}</h4>
                       <span className="badge badge-easy" style={{ fontSize: '0.65rem', marginTop: '0.25rem', display: 'inline-block' }}>
                         /{blog.slug}
                       </span>

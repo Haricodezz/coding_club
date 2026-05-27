@@ -194,11 +194,11 @@ export default function AdminUsersPage() {
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead>
               <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--color-border)' }}>
-                <th style={{ padding: '1rem 1.5rem', fontWeight: 600, color: '#94a3b8', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px' }}>User</th>
-                <th style={{ padding: '1rem 1.5rem', fontWeight: 600, color: '#94a3b8', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Role</th>
-                <th style={{ padding: '1rem 1.5rem', fontWeight: 600, color: '#94a3b8', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Status</th>
-                <th style={{ padding: '1rem 1.5rem', fontWeight: 600, color: '#94a3b8', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Joined Date</th>
-                <th style={{ padding: '1rem 1.5rem', fontWeight: 600, color: '#94a3b8', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px', textAlign: 'right' }}>Actions</th>
+                <th style={{ padding: '1rem 1.5rem', fontWeight: 600, color: 'var(--text-muted)', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px' }}>User</th>
+                <th style={{ padding: '1rem 1.5rem', fontWeight: 600, color: 'var(--text-muted)', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Role</th>
+                <th style={{ padding: '1rem 1.5rem', fontWeight: 600, color: 'var(--text-muted)', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Status</th>
+                <th style={{ padding: '1rem 1.5rem', fontWeight: 600, color: 'var(--text-muted)', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Joined Date</th>
+                <th style={{ padding: '1rem 1.5rem', fontWeight: 600, color: 'var(--text-muted)', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px', textAlign: 'right' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -219,7 +219,7 @@ export default function AdminUsersPage() {
                   }} onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'} onMouseOut={e => e.currentTarget.style.background = 'transparent'}>
                     <td style={{ padding: '1rem 1.5rem' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                        <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'linear-gradient(135deg, #6c63ff 0%, #3b82f6 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '1rem', color: '#fff', flexShrink: 0 }}>
+                        <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'linear-gradient(135deg, #6c63ff 0%, #3b82f6 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '1rem', color: 'var(--text-primary)', flexShrink: 0 }}>
                           {u.username?.charAt(0).toUpperCase()}
                         </div>
                         <div>
@@ -234,7 +234,7 @@ export default function AdminUsersPage() {
                     <td style={{ padding: '1rem 1.5rem' }}>
                       <StatusBadge isSuspended={u.isSuspended || false} />
                     </td>
-                    <td style={{ padding: '1rem 1.5rem', color: '#94a3b8', fontSize: '0.9rem' }}>
+                    <td style={{ padding: '1rem 1.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
                       {new Date(u.created_at!).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
                     </td>
                     <td style={{ padding: '1rem 1.5rem', textAlign: 'right' }}>
@@ -254,7 +254,7 @@ export default function AdminUsersPage() {
                 <tr>
                   <td colSpan={5} style={{ padding: '4rem', textAlign: 'center' }}>
                     <div className="empty-state-icon" style={{ fontSize: '3rem', opacity: 0.3, marginBottom: '1rem' }}>🔍</div>
-                    <h3 style={{ color: '#94a3b8', margin: 0 }}>No users found</h3>
+                    <h3 style={{ color: 'var(--text-muted)', margin: 0 }}>No users found</h3>
                     <p style={{ color: '#64748b', fontSize: '0.9rem', marginTop: '0.5rem' }}>Try adjusting your search or filters.</p>
                   </td>
                 </tr>

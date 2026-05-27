@@ -192,7 +192,7 @@ export default function ResourcesPage() {
 function Stat({ value, label }: { value: number; label: string }) {
   return (
     <div style={{ textAlign: 'center' }}>
-      <p style={{ fontSize: '1.5rem', fontWeight: 800, color: '#e2e8f0', lineHeight: 1 }}>{value}</p>
+      <p style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-secondary)', lineHeight: 1 }}>{value}</p>
       <p style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '0.25rem' }}>{label}</p>
     </div>
   );
@@ -257,7 +257,7 @@ function CourseCard({ course, index }: { course: any; index: number }) {
 
       {/* Body */}
       <div style={{ padding: '1.1rem', flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-        <h4 style={{ color: '#f1f5f9', margin: 0, fontSize: '1rem', lineHeight: 1.35, fontWeight: 700 }}>
+        <h4 style={{ color: 'var(--text-primary)', margin: 0, fontSize: '1rem', lineHeight: 1.35, fontWeight: 700 }}>
           {course.title}
         </h4>
         <p style={{
@@ -331,7 +331,7 @@ function CourseListRow({ course, index }: { course: any; index: number }) {
       {/* Info */}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-          <h4 style={{ color: '#f1f5f9', margin: 0, fontSize: '0.95rem', fontWeight: 700 }}>{course.title}</h4>
+          <h4 style={{ color: 'var(--text-primary)', margin: 0, fontSize: '0.95rem', fontWeight: 700 }}>{course.title}</h4>
           <DifficultyBadge level={course.difficulty_level} />
         </div>
         <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>

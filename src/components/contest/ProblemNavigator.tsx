@@ -44,7 +44,7 @@ export default function ProblemNavigator({ problems, contestSlug, activeSlug }: 
             </span>
             <span style={{
               fontSize: '0.8rem', fontWeight: isActive ? 700 : 500,
-              color: isActive ? '#f1f5f9' : 'var(--color-text-muted)'
+              color: isActive ? 'var(--text-primary)' : 'var(--color-text-muted)'
             }}>
               {p.title}
             </span>

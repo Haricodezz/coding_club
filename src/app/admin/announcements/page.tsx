@@ -204,11 +204,11 @@ export default function AdminAnnouncements() {
                 >
                   <div className="flex justify-between items-start">
                     <div>
-                      <h4 style={{ color: '#fff', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <h4 style={{ color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                         {item.title}
                         {!item.is_active && <span className="badge badge-secondary" style={{ fontSize: '0.65rem' }}>Archived</span>}
                       </h4>
-                      <p style={{ fontSize: '0.85rem', color: '#a8b3cf', marginTop: '0.5rem', whiteSpace: 'pre-wrap' }}>
+                      <p style={{ fontSize: '0.85rem', color: 'var(--text-tertiary)', marginTop: '0.5rem', whiteSpace: 'pre-wrap' }}>
                         {item.content}
                       </p>
                       {item.link_url && (

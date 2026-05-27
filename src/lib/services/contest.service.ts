@@ -67,7 +67,8 @@ export async function getContestProblems(supabase: SupabaseClient<any, 'public',
     .select(`
       id, label, custom_points, display_order, is_locked,
       contest_problems (
-        id, slug, title, difficulty, points, time_limit, tags
+        id, slug, title, difficulty, points, time_limit, tags,
+        execution_mode, function_params, function_return_type, function_templates
       )
     `)
     .eq('contest_id', contestId)

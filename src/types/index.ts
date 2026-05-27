@@ -22,6 +22,7 @@ export interface User {
   batch_id?: string;
   role: 'super_admin' | 'team' | 'student';
   avatar_url: string;
+  cover_url?: string;
   platform_profiles?: PlatformProfiles; // Deprecated in favor of direct fields
   platform_stats?: PlatformStats; // Deprecated in favor of UserPlatformStats table
   platform_points: number;

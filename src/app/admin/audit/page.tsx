@@ -11,7 +11,7 @@ export default function AdminAudit() {
 
       <div className="card glass" style={{ marginTop: '2rem', padding: '3rem', textAlign: 'center' }}>
         <h2 style={{ marginBottom: '1rem' }}>🚧 Coming Soon</h2>
-        <p style={{ color: '#94a3b8', maxWidth: '600px', margin: '0 auto' }}>
+        <p style={{ color: 'var(--text-muted)', maxWidth: '600px', margin: '0 auto' }}>
           The Audit Log tracking system is currently under development. Once enabled, it will track all CRUD operations, role changes, and sensitive system events performed by administrators.
         </p>
         <div style={{ marginTop: '2rem' }}>

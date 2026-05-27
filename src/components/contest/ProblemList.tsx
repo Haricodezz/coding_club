@@ -101,7 +101,7 @@ export default function ProblemList({ problems, onChange, onRemove }: ProblemLis
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
-              <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#f1f5f9', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.title}</span>
+              <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.title}</span>
               <span style={{ fontSize: '0.65rem', padding: '0.1rem 0.5rem', borderRadius: '99px', fontWeight: 700,
                 background: p.difficulty === 'Easy' ? 'rgba(34,197,94,0.1)' : p.difficulty === 'Hard' ? 'rgba(239,68,68,0.1)' : 'rgba(245,158,11,0.1)',
                 color: p.difficulty === 'Easy' ? '#22c55e' : p.difficulty === 'Hard' ? '#ef4444' : '#f59e0b' }}>
@@ -117,7 +117,7 @@ export default function ProblemList({ problems, onChange, onRemove }: ProblemLis
               type="number" 
               value={p.points} 
               onChange={(e) => handlePointsChange(idx, Number(e.target.value))}
-              style={{ width: '60px', padding: '0.3rem', borderRadius: '6px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: '#f1f5f9', fontSize: '0.8rem', outline: 'none' }} 
+              style={{ width: '60px', padding: '0.3rem', borderRadius: '6px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--text-primary)', fontSize: '0.8rem', outline: 'none' }} 
             />
           </div>
           

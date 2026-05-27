@@ -59,7 +59,7 @@ export default function QuestionEditorModal({ isOpen, onClose, onSaved }: Questi
         
         {/* Header */}
         <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 style={{ margin: 0, fontSize: '1.25rem', color: '#f1f5f9', fontWeight: 800 }}>Create New Problem</h2>
+          <h2 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--text-primary)', fontWeight: 800 }}>Create New Problem</h2>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--color-text-muted)', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
         </div>
 
@@ -69,20 +69,20 @@ export default function QuestionEditorModal({ isOpen, onClose, onSaved }: Questi
             <div>
               <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '0.5rem' }}>Title *</label>
               <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} required placeholder="e.g. Find Max Subarray"
-                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: '#f1f5f9', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box' }} />
+                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--text-primary)', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box' }} />
             </div>
 
             <div>
               <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '0.5rem' }}>Statement *</label>
               <textarea value={form.statement} onChange={e => setForm(f => ({ ...f, statement: e.target.value }))} required rows={6} placeholder="Markdown supported..."
-                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: '#f1f5f9', fontSize: '0.85rem', outline: 'none', resize: 'vertical', fontFamily: 'monospace', boxSizing: 'border-box' }} />
+                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--text-primary)', fontSize: '0.85rem', outline: 'none', resize: 'vertical', fontFamily: 'monospace', boxSizing: 'border-box' }} />
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '0.75rem' }}>
               <div>
                 <label style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '0.4rem' }}>Difficulty</label>
                 <select value={form.difficulty} onChange={e => setForm(f => ({ ...f, difficulty: e.target.value }))}
-                  style={{ width: '100%', padding: '0.65rem 0.5rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: '#f1f5f9', fontSize: '0.85rem', outline: 'none' }}>
+                  style={{ width: '100%', padding: '0.65rem 0.5rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--text-primary)', fontSize: '0.85rem', outline: 'none' }}>
                   <option value="Easy">Easy</option>
                   <option value="Medium">Medium</option>
                   <option value="Hard">Hard</option>
@@ -91,29 +91,29 @@ export default function QuestionEditorModal({ isOpen, onClose, onSaved }: Questi
               <div>
                 <label style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '0.4rem' }}>Points</label>
                 <input type="number" value={form.points} onChange={e => setForm(f => ({ ...f, points: +e.target.value }))} required min={1}
-                  style={{ width: '100%', padding: '0.65rem 0.5rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: '#f1f5f9', fontSize: '0.85rem', outline: 'none', boxSizing: 'border-box' }} />
+                  style={{ width: '100%', padding: '0.65rem 0.5rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--text-primary)', fontSize: '0.85rem', outline: 'none', boxSizing: 'border-box' }} />
               </div>
               <div>
                 <label style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '0.4rem' }}>Time Limit (ms)</label>
                 <input type="number" value={form.time_limit} onChange={e => setForm(f => ({ ...f, time_limit: +e.target.value }))} required min={500} step={500}
-                  style={{ width: '100%', padding: '0.65rem 0.5rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: '#f1f5f9', fontSize: '0.85rem', outline: 'none', boxSizing: 'border-box' }} />
+                  style={{ width: '100%', padding: '0.65rem 0.5rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--text-primary)', fontSize: '0.85rem', outline: 'none', boxSizing: 'border-box' }} />
               </div>
               <div>
                 <label style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '0.4rem' }}>Mem Limit (MB)</label>
                 <input type="number" value={form.memory_limit} onChange={e => setForm(f => ({ ...f, memory_limit: +e.target.value }))} required min={64} step={64}
-                  style={{ width: '100%', padding: '0.65rem 0.5rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: '#f1f5f9', fontSize: '0.85rem', outline: 'none', boxSizing: 'border-box' }} />
+                  style={{ width: '100%', padding: '0.65rem 0.5rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--text-primary)', fontSize: '0.85rem', outline: 'none', boxSizing: 'border-box' }} />
               </div>
             </div>
 
             <div>
               <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '0.5rem' }}>Tags (comma separated)</label>
               <input value={form.tags} onChange={e => setForm(f => ({ ...f, tags: e.target.value }))} placeholder="arrays, math"
-                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: '#f1f5f9', fontSize: '0.85rem', outline: 'none', boxSizing: 'border-box' }} />
+                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--text-primary)', fontSize: '0.85rem', outline: 'none', boxSizing: 'border-box' }} />
             </div>
           </form>
           <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px dashed var(--color-border)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-              <h3 style={{ fontSize: '0.85rem', fontWeight: 800, color: '#f1f5f9', margin: 0 }}>Testcases (Optional but Recommended)</h3>
+              <h3 style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>Testcases (Optional but Recommended)</h3>
               <button type="button" onClick={() => setTestcases([...testcases, { input: '', expected_output: '', is_hidden: true }])} className="btn btn-secondary btn-sm" style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem' }}>+ Add Testcase</button>
             </div>
             <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', margin: '0 0 1rem' }}>
@@ -126,7 +126,7 @@ export default function QuestionEditorModal({ isOpen, onClose, onSaved }: Questi
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
                     <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--color-text-muted)' }}>Testcase #{i + 1}</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', fontSize: '0.75rem', color: '#e2e8f0', fontWeight: 600 }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
                         <input type="checkbox" checked={tc.is_hidden} onChange={e => {
                           const nt = [...testcases]; nt[i].is_hidden = e.target.checked; setTestcases(nt);
                         }} style={{ accentColor: 'var(--accent-1)' }} />
@@ -141,12 +141,12 @@ export default function QuestionEditorModal({ isOpen, onClose, onSaved }: Questi
                     <div>
                       <label style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', display: 'block', marginBottom: '0.4rem' }}>Input</label>
                       <textarea value={tc.input} onChange={e => { const nt = [...testcases]; nt[i].input = e.target.value; setTestcases(nt); }} rows={2} placeholder="e.g. 5\n1 2 3"
-                        style={{ width: '100%', padding: '0.6rem', borderRadius: '6px', border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: '#f1f5f9', fontSize: '0.8rem', outline: 'none', resize: 'vertical', fontFamily: 'monospace', boxSizing: 'border-box' }} />
+                        style={{ width: '100%', padding: '0.6rem', borderRadius: '6px', border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--text-primary)', fontSize: '0.8rem', outline: 'none', resize: 'vertical', fontFamily: 'monospace', boxSizing: 'border-box' }} />
                     </div>
                     <div>
                       <label style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', display: 'block', marginBottom: '0.4rem' }}>Expected Output</label>
                       <textarea value={tc.expected_output} onChange={e => { const nt = [...testcases]; nt[i].expected_output = e.target.value; setTestcases(nt); }} rows={2} placeholder="e.g. 15"
-                        style={{ width: '100%', padding: '0.6rem', borderRadius: '6px', border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: '#f1f5f9', fontSize: '0.8rem', outline: 'none', resize: 'vertical', fontFamily: 'monospace', boxSizing: 'border-box' }} />
+                        style={{ width: '100%', padding: '0.6rem', borderRadius: '6px', border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--text-primary)', fontSize: '0.8rem', outline: 'none', resize: 'vertical', fontFamily: 'monospace', boxSizing: 'border-box' }} />
                     </div>
                   </div>
                 </div>
@@ -157,7 +157,7 @@ export default function QuestionEditorModal({ isOpen, onClose, onSaved }: Questi
 
         {/* Footer */}
         <div style={{ padding: '1.25rem 1.5rem', borderTop: '1px solid var(--color-border)', display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
-          <button type="button" onClick={onClose} style={{ padding: '0.65rem 1.25rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'transparent', color: '#e2e8f0', fontSize: '0.85rem', cursor: 'pointer', fontWeight: 600 }}>Cancel</button>
+          <button type="button" onClick={onClose} style={{ padding: '0.65rem 1.25rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'transparent', color: 'var(--text-secondary)', fontSize: '0.85rem', cursor: 'pointer', fontWeight: 600 }}>Cancel</button>
           <button type="submit" form="question-form" disabled={saving} className="btn btn-primary" style={{ padding: '0.65rem 1.25rem' }}>
             {saving ? 'Creating...' : 'Create & Add to Contest'}
           </button>

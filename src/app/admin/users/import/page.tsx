@@ -192,7 +192,7 @@ export default function BulkImportPage() {
               {result.success ? '🎉 Import Completed' : '❌ Import Failed'}
             </h2>
             
-            <p style={{ fontSize: '1.1rem', marginBottom: '2rem', color: '#94a3b8' }}>
+            <p style={{ fontSize: '1.1rem', marginBottom: '2rem', color: 'var(--text-muted)' }}>
               Successfully imported <strong>{result.successCount}</strong> users.
               {result.failedCount > 0 && ` Failed to import ${result.failedCount} users.`}
             </p>

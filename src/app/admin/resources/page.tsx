@@ -35,7 +35,7 @@ export default function AdminResourcesEmptyState() {
         ))}
       </div>
 
-      <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#f1f5f9', margin: '0 0 0.5rem', letterSpacing: '-0.02em' }}>
+      <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 0.5rem', letterSpacing: '-0.02em' }}>
         Select a Course
       </h2>
       <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', maxWidth: '22rem', lineHeight: 1.6, margin: '0 0 2rem' }}>
@@ -55,7 +55,7 @@ export default function AdminResourcesEmptyState() {
             borderRadius: '12px', padding: '1rem',
           }}>
             <div style={{ fontSize: '1.3rem', marginBottom: '0.4rem' }}>{f.icon}</div>
-            <p style={{ fontSize: '0.82rem', fontWeight: 700, color: '#e2e8f0', margin: '0 0 0.25rem' }}>{f.title}</p>
+            <p style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-secondary)', margin: '0 0 0.25rem' }}>{f.title}</p>
             <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', margin: 0, lineHeight: 1.4 }}>{f.desc}</p>
           </div>
         ))}

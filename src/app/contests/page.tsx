@@ -93,7 +93,7 @@ function ContestCard({ contest }: { contest: Contest }) {
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.3rem' }}>
-            <h3 style={{ color: '#f1f5f9', margin: 0, fontSize: '1rem', fontWeight: 700 }}>{contest.title}</h3>
+            <h3 style={{ color: 'var(--text-primary)', margin: 0, fontSize: '1rem', fontWeight: 700 }}>{contest.title}</h3>
             <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '0.15rem 0.55rem', borderRadius: '99px', background: sc.bg, color: sc.color, border: `1px solid ${sc.color}40`, flexShrink: 0 }}>
               {sc.label}
             </span>
@@ -110,15 +110,15 @@ function ContestCard({ contest }: { contest: Contest }) {
         <div style={{ display: 'flex', gap: '1.25rem', flexWrap: 'wrap' }}>
           <div>
             <p style={{ fontSize: '0.65rem', color: 'var(--color-text-muted)', margin: '0 0 0.15rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Start</p>
-            <p style={{ fontSize: '0.8rem', color: '#e2e8f0', margin: 0, fontWeight: 600 }}>{new Date(contest.start_time).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</p>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, fontWeight: 600 }}>{new Date(contest.start_time).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</p>
           </div>
           <div>
             <p style={{ fontSize: '0.65rem', color: 'var(--color-text-muted)', margin: '0 0 0.15rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>End</p>
-            <p style={{ fontSize: '0.8rem', color: '#e2e8f0', margin: 0, fontWeight: 600 }}>{new Date(contest.end_time).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</p>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, fontWeight: 600 }}>{new Date(contest.end_time).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</p>
           </div>
           <div>
             <p style={{ fontSize: '0.65rem', color: 'var(--color-text-muted)', margin: '0 0 0.15rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Type</p>
-            <p style={{ fontSize: '0.8rem', color: '#e2e8f0', margin: 0, fontWeight: 600 }}>{contest.contest_type}</p>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, fontWeight: 600 }}>{contest.contest_type}</p>
           </div>
         </div>
 
@@ -127,7 +127,7 @@ function ContestCard({ contest }: { contest: Contest }) {
             <p style={{ fontSize: '0.65rem', color: 'var(--color-text-muted)', margin: '0 0 0.1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               {contest.status === 'upcoming' ? 'Starts in' : 'Ends in'}
             </p>
-            <p style={{ fontSize: '0.95rem', fontWeight: 800, color: contest.status === 'active' ? '#22c55e' : '#f1f5f9', margin: 0, fontFamily: 'monospace' }}>
+            <p style={{ fontSize: '0.95rem', fontWeight: 800, color: contest.status === 'active' ? '#22c55e' : 'var(--text-primary)', margin: 0, fontFamily: 'monospace' }}>
               {countdown}
             </p>
           </div>
@@ -240,7 +240,7 @@ export default function ContestsPage() {
             ].map(item => (
               <div key={item.title} style={{ padding: '0.75rem', background: 'var(--color-surface)', borderRadius: '8px', border: '1px solid var(--color-border)' }}>
                 <p style={{ fontSize: '1.2rem', margin: '0 0 0.3rem' }}>{item.icon}</p>
-                <p style={{ fontSize: '0.8rem', fontWeight: 700, color: '#e2e8f0', margin: '0 0 0.2rem' }}>{item.title}</p>
+                <p style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', margin: '0 0 0.2rem' }}>{item.title}</p>
                 <p style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', margin: 0 }}>{item.desc}</p>
               </div>
             ))}

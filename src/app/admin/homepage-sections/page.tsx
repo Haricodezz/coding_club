@@ -218,7 +218,7 @@ export default function AdminHomepageSections() {
 
             <div className="form-group">
               <label className="form-label">Terminal Animation Script</label>
-              <p style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '0.5rem' }}>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
                 Start lines with <code>$</code> for commands, <code>#</code> for yellow text, and <code>&gt;</code> or <code>✓</code> for green output.
               </p>
               <textarea

@@ -491,9 +491,21 @@ export async function deleteQuestion(id: number) {
 // QOTD CALENDAR CRUD
 // ============================================================
 
+export async function getQuestionBankForQotd() {
+  const { supabase } = await checkAdminAuth();
+  const { data, error } = await supabase
+    .from('question_bank' as any)
+    .select('id, title, slug, difficulty, tags, statement')
+    .eq('is_published', true)
+    .eq('available_for_qotd', true)
+    .order('created_at', { ascending: false });
+  if (error) throw new Error(error.message);
+  return data;
+}
+
 export async function getQotdCalendarAdmin() {
   const { supabase } = await checkAdminAuth();
-  const { data, error } = await supabase.from('qotd_calendar').select('*, questions(title)').order('date', { ascending: false });
+  const { data, error } = await supabase.from('qotd_calendar' as any).select('*, question_bank(title)').order('date', { ascending: false });
   if (error) throw new Error(error.message);
   return data;
 }

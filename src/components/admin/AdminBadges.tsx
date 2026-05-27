@@ -1,5 +1,5 @@
 export function UserBadge({ role }: { role: string }) {
-  let config = { bg: 'rgba(100,116,139,0.1)', color: '#94a3b8', border: 'rgba(100,116,139,0.2)', label: role };
+  let config = { bg: 'rgba(100,116,139,0.1)', color: 'var(--text-muted)', border: 'rgba(100,116,139,0.2)', label: role };
 
   if (role === 'super_admin') {
     config = { bg: 'rgba(168,85,247,0.15)', color: '#c084fc', border: 'rgba(168,85,247,0.3)', label: 'Super Admin' };

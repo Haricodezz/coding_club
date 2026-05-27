@@ -24,8 +24,8 @@ export async function GET(req: NextRequest) {
     const difficulty = searchParams.get('difficulty') || '';
 
     let query = (adminSupabase as any)
-      .from('contest_problems')
-      .select('id, slug, title, difficulty, points, time_limit, tags, is_public, created_at')
+      .from('question_bank')
+      .select('id, slug, title, difficulty, points, time_limit, tags, is_published, available_for_practice, available_for_contests, available_for_qotd, created_at')
       .order('created_at', { ascending: false });
 
     if (search) query = query.ilike('title', `%${search}%`);
@@ -52,8 +52,8 @@ export async function POST(req: NextRequest) {
     const adminSupabase = createAdminSupabaseClient();
     const slug = slugify(title) + '-' + Date.now().toString(36);
     const { data, error } = await (adminSupabase as any)
-      .from('contest_problems')
-      .insert({ title, slug, statement, difficulty, points, time_limit, tags, created_by: session!.user.id })
+      .from('question_bank')
+      .insert({ title, slug, statement, difficulty, points, time_limit, tags, author_id: session!.user.id })
       .select('id, slug')
       .single();
 
@@ -62,13 +62,13 @@ export async function POST(req: NextRequest) {
     // Insert testcases if provided
     if (body.testcases && Array.isArray(body.testcases) && body.testcases.length > 0) {
       const tcPayload = body.testcases.map((tc: any, i: number) => ({
-        problem_id: data.id,
+        question_id: data.id,
         input: tc.input,
         expected_output: tc.expected_output,
         is_hidden: !!tc.is_hidden,
         display_order: i
       }));
-      await (adminSupabase as any).from('problem_testcases').insert(tcPayload);
+      await (adminSupabase as any).from('question_bank_testcases').insert(tcPayload);
     }
 
     return NextResponse.json({ success: true, id: data.id, slug: data.slug }, { status: 201 });

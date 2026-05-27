@@ -55,7 +55,7 @@ export default function ForgotPasswordPage() {
               <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>✅</div>
               <h3 style={{ marginBottom: '0.75rem' }}>Check your inbox</h3>
               <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-                We sent a reset link to <strong style={{ color: '#e2e8f0' }}>{email}</strong>
+                We sent a reset link to <strong style={{ color: 'var(--text-secondary)' }}>{email}</strong>
               </p>
               <Link href="/login" className="btn btn-secondary" style={{ width: '100%' }}>
                 ← Back to Login

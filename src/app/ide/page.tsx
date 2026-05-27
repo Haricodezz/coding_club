@@ -4,6 +4,8 @@ import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { LANGUAGES, STARTER_CODE } from '@/lib/piston';
 import type { ExecutionResult } from '@/types';
+import { PanelGroup, Panel } from 'react-resizable-panels';
+import PanelDivider from '@/components/workspace/PanelDivider';
 
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), {
   ssr: false,
@@ -113,65 +115,71 @@ export default function IDEPage() {
           </div>
         </div>
 
-        {/* Editor + Output layout */}
-        <div 
-          style={isFullscreen ? {
-            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
-            zIndex: 9999, background: 'var(--color-bg)', padding: '1.5rem',
-            display: 'grid', gridTemplateColumns: '1fr 400px', gap: '1.5rem',
-            overflow: 'hidden'
-          } : {
-            display: 'grid', gridTemplateColumns: '1fr 380px', gap: '1rem' 
-          }}
-        >
-          {isFullscreen && (
-            <button 
-              className="btn btn-ghost btn-sm" 
-              style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', zIndex: 10000 }}
-              onClick={() => setIsFullscreen(false)}
-            >
-              ✕ Exit Fullscreen
-            </button>
-          )}
-          {/* Editor */}
-          <div className="editor-container animate-slide-in">
-            <div className="editor-toolbar">
-              <div className="editor-toolbar-dots">
-                <div className="editor-toolbar-dot red" />
-                <div className="editor-toolbar-dot yellow" />
-                <div className="editor-toolbar-dot green" />
-              </div>
-              <span style={{ color: '#64748b', fontSize: '0.78rem' }}>
-                {LANGUAGES.find(l => l.id === language)?.displayName || language}
-              </span>
-              <span style={{ marginLeft: 'auto', color: '#475569', fontSize: '0.72rem' }}>
-                Powered by Judge0 API
-              </span>
-            </div>
-            <MonacoEditor
-              height={isFullscreen ? "calc(100vh - 4rem)" : "520px"}
-              language={LANGUAGES.find(l => l.id === language)?.monacoLanguage || language}
-              value={code}
-              onChange={v => setCode(v || '')}
-              theme="vs-dark"
-              options={{
-                fontSize: 14,
-                minimap: { enabled: false },
-                scrollBeyondLastLine: false,
-                padding: { top: 16, bottom: 16 },
-                fontFamily: 'JetBrains Mono, Fira Code, monospace',
-                fontLigatures: true,
-                automaticLayout: true,
-                lineNumbers: 'on',
-                roundedSelection: true,
-                cursorBlinking: 'smooth',
-                wordWrap: 'on',
-              }}
-            />
-          </div>
+          {/* Editor + Output layout */}
+          <div 
+            style={isFullscreen ? {
+              position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
+              zIndex: 9999, background: 'var(--color-bg)', padding: '1.5rem',
+              display: 'flex', gap: '1.5rem',
+              overflow: 'hidden'
+            } : {
+              display: 'flex', gap: '1rem', height: '600px',
+            }}
+          >
+            {isFullscreen && (
+              <button 
+                className="btn btn-ghost btn-sm" 
+                style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', zIndex: 10000 }}
+                onClick={() => setIsFullscreen(false)}
+              >
+                ✕ Exit Fullscreen
+              </button>
+            )}
 
-          {/* Right panel: stdin + output */}
-          <div className="flex-col gap-3" style={{ height: isFullscreen ? "calc(100vh - 3rem)" : "auto", overflowY: isFullscreen ? 'auto' : 'visible', paddingTop: isFullscreen ? '2.5rem' : 0 }}>
+            <PanelGroup direction="horizontal" autoSaveId="practice-workspace-layout-v1">
+              {/* Editor */}
+              <Panel defaultSize={60} minSize={30} className="editor-container animate-slide-in" style={{ display: 'flex', flexDirection: 'column' }}>
+                <div className="editor-toolbar">
+                  <div className="editor-toolbar-dots">
+                    <div className="editor-toolbar-dot red" />
+                    <div className="editor-toolbar-dot yellow" />
+                    <div className="editor-toolbar-dot green" />
+                  </div>
+                  <span style={{ color: '#64748b', fontSize: '0.78rem' }}>
+                    {LANGUAGES.find(l => l.id === language)?.displayName || language}
+                  </span>
+                  <span style={{ marginLeft: 'auto', color: '#475569', fontSize: '0.72rem' }}>
+                    Powered by Judge0 API
+                  </span>
+                </div>
+                <div style={{ flex: 1, minHeight: 0 }}>
+                  <MonacoEditor
+                    height="100%"
+                    language={LANGUAGES.find(l => l.id === language)?.monacoLanguage || language}
+                    value={code}
+                    onChange={v => setCode(v || '')}
+                    theme="vs-dark"
+                    options={{
+                      fontSize: 14,
+                      minimap: { enabled: false },
+                      scrollBeyondLastLine: false,
+                      padding: { top: 16, bottom: 16 },
+                      fontFamily: 'JetBrains Mono, Fira Code, monospace',
+                      fontLigatures: true,
+                      automaticLayout: true,
+                      lineNumbers: 'on',
+                      roundedSelection: true,
+                      cursorBlinking: 'smooth',
+                      wordWrap: 'on',
+                    }}
+                  />
+                </div>
+              </Panel>
+
+              <PanelDivider direction="horizontal" />
+
+              {/* Right panel: stdin + output */}
+              <Panel defaultSize={40} minSize={25} className="flex-col gap-3" style={{ height: "100%", overflowY: 'auto', paddingTop: isFullscreen ? '2.5rem' : 0 }}>
             {/* Stdin */}
             {showStdin && (
               <div className="animate-slide-in">
@@ -253,7 +261,7 @@ export default function IDEPage() {
                       }}
                       onClick={() => handleLanguageChange(l.id)}
                     >
-                      <span style={{ fontSize: '0.85rem', color: language === l.id ? 'var(--accent-3)' : '#94a3b8' }}>
+                      <span style={{ fontSize: '0.85rem', color: language === l.id ? 'var(--accent-3)' : 'var(--text-muted)' }}>
                         {l.displayName}
                       </span>
                       <span style={{ fontSize: '0.72rem', color: '#475569' }}>v{l.version}</span>
@@ -262,9 +270,10 @@ export default function IDEPage() {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
+          </Panel>
+        </PanelGroup>
       </div>
     </div>
+  </div>
   );
 }

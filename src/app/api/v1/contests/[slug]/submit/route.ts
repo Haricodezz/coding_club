@@ -125,9 +125,17 @@ export async function POST(
     // ── 12. Judge (Synchronous for now, simulates worker) ────────
     if (queueId) await markJudgeStarted(adminSupabase, queueId);
     
+    let finalCode = code;
+    if (problem.execution_mode === 'function' && problem.function_templates) {
+      const tpl = problem.function_templates[language];
+      if (tpl && tpl.driver) {
+        finalCode = tpl.driver.replace('// USER_CODE_HERE', code);
+      }
+    }
+
     let judgeResult: any;
     try {
-      judgeResult = await runAgainstTestcases(code, language, testcases, problem.time_limit || 2000);
+      judgeResult = await runAgainstTestcases(finalCode, language, testcases, problem.time_limit || 2000);
       if (queueId) await markJudgeDone(adminSupabase, queueId);
     } catch (e: any) {
       if (queueId) await markJudgeFailed(adminSupabase, queueId, e.message);
