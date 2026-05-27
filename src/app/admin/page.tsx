@@ -48,12 +48,62 @@ interface EventItem {
   dayIndex: number; // 0=Sun, 1=Mon...
 }
 
+/** Groups real DB rows into chart-friendly weekly/daily buckets */
+function buildWeekBuckets(users: any[], submissions: any[]) {
+  const now = new Date();
+
+  // Helper: get bucket label for a date
+  const getWeekLabel = (d: Date) => {
+    const diffMs = now.getTime() - d.getTime();
+    const diffDays = Math.floor(diffMs / 86400000);
+    if (diffDays < 7) {
+      return d.toLocaleDateString('en-US', { weekday: 'short' }); // Mon, Tue…
+    }
+    const weekNum = Math.floor(diffDays / 7);
+    return `Week -${weekNum}`;
+  };
+
+  const buckets: Record<string, { Users: number; Submissions: number }> = {};
+
+  const addToBucket = (label: string, field: 'Users' | 'Submissions') => {
+    if (!buckets[label]) buckets[label] = { Users: 0, Submissions: 0 };
+    buckets[label][field]++;
+  };
+
+  users.forEach((u: any) => {
+    if (!u.created_at) return;
+    addToBucket(getWeekLabel(new Date(u.created_at)), 'Users');
+  });
+
+  submissions.forEach((s: any) => {
+    if (!s.created_at) return;
+    addToBucket(getWeekLabel(new Date(s.created_at)), 'Submissions');
+  });
+
+  // Sort chronologically
+  const sorted = Object.entries(buckets)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([name, vals]) => ({ name, ...vals }));
+
+  return sorted.length > 0 ? sorted : [{ name: 'No data', Users: 0, Submissions: 0 }];
+}
+
 export default function AdminOverviewPage() {
   const router = useRouter();
   const [metrics, setMetrics] = useState<any>(null);
   const [recentUsers, setRecentUsers] = useState<any[]>([]);
   const [dbPendingBlogs, setDbPendingBlogs] = useState<BlogItem[]>([]);
+  const [dbEvents, setDbEvents] = useState<EventItem[]>([]);
+  const [chartData, setChartData] = useState<any[]>([]);
+  const [trendingTopic, setTrendingTopic] = useState<string>('—');
+  const [solveRate, setSolveRate] = useState<string>('—');
+  const [contestAttendance, setContestAttendance] = useState<string>('—');
+  const [flaggedUsers, setFlaggedUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // System health (real latency measured via supabase round-trip)
+  const [dbLatency, setDbLatency] = useState<number | null>(null);
+  const [latencyHistory, setLatencyHistory] = useState<number[]>([]);
 
   // Filter & tab controls
   const [moderationTab, setModerationTab] = useState<'All' | 'Pending' | 'Flagged'>('Pending');
@@ -62,80 +112,141 @@ export default function AdminOverviewPage() {
   const [expandedReviews, setExpandedReviews] = useState<Record<string, boolean>>({});
   const [dateRange, setDateRange] = useState<'7days' | '30days' | 'year'>('30days');
 
-  // Real-time Health Simulation States
-  const [dbLatency, setDbLatency] = useState(12);
-  const [authLatency, setAuthLatency] = useState(45);
-  const [networkUptime, setNetworkUptime] = useState(100);
-  const [latencyHistory, setLatencyHistory] = useState<number[]>([12, 14, 11, 15, 13, 12, 14, 12]);
-
   // Mobile navigation active tab selection
   const [mobileTab, setMobileTab] = useState<'overview' | 'moderation' | 'analytics' | 'quick'>('overview');
   const [mobileActionsOpen, setMobileActionsOpen] = useState(false);
 
-  // 1. Fetch Real Database metrics
+  // 1. Fetch all real data from the database
   useEffect(() => {
     async function fetchData() {
       try {
         const supabase = getSupabase();
-        
+
+        // ── Core counts ──
         const [
           { count: blogsCount },
           { count: announcementsCount },
           { count: eventsCount },
           { count: usersCount },
           { data: latestUsers },
-          { data: pendingBlogs }
+          { data: pendingBlogs },
+          { data: eventsData },
+          { data: contestsData },
+          { data: submissionsData },
+          { data: usersWeekData },
         ] = await Promise.all([
           supabase.from('cms_blogs').select('*', { count: 'exact', head: true }),
           supabase.from('cms_announcements').select('*', { count: 'exact', head: true }),
           supabase.from('cms_events').select('*', { count: 'exact', head: true }),
           supabase.from('users').select('*', { count: 'exact', head: true }),
-          supabase.from('users').select('id, username, created_at').order('created_at', { ascending: false }).limit(8),
-          supabase.from('cms_blogs').select('*').eq('is_published', false).order('created_at', { ascending: false })
+          supabase.from('users').select('id, username, created_at, role').order('created_at', { ascending: false }).limit(10),
+          supabase.from('cms_blogs').select('id, title, author_name, author_id, excerpt, created_at').eq('is_published', false).order('created_at', { ascending: false }),
+          supabase.from('cms_events').select('id, title, date, status, registration_link').order('date', { ascending: true }).limit(5),
+          (supabase as any).from('contests').select('id, title, start_date, end_date, status').order('start_date', { ascending: false }).limit(3),
+          (supabase as any).from('contest_submissions').select('id, created_at').order('created_at', { ascending: false }).limit(500),
+          supabase.from('users').select('id, created_at').order('created_at', { ascending: false }).limit(500),
         ]);
 
         setMetrics({
           blogs: blogsCount || 0,
           announcements: announcementsCount || 0,
           events: eventsCount || 0,
-          users: usersCount || 0
+          users: usersCount || 0,
         });
 
+        // ── Activity Feed: only real user registrations ──
         if (latestUsers) {
-          // Construct timeline logs utilizing actual users
-          const mappedUsers = latestUsers.map((u, idx) => ({
+          const mapped = latestUsers.map((u: any) => ({
             id: u.id,
             action: 'registered on platform',
-            target: `(Roll Number validation)`,
+            target: u.role ? `as ${u.role}` : '',
             user: u.username,
             time: u.created_at ? new Date(u.created_at).toLocaleDateString() : 'N/A',
             icon: '👤',
-            type: idx % 3 === 0 ? 'Users' : idx % 3 === 1 ? 'Content' : 'System'
+            type: 'Users',
           }));
-          
-          // Prepend some simulated security audits for complete visuals
-          const simulatedAudits = [
-            { id: 'sec-1', action: 'blocked cross-origin request', target: 'on Edge node', user: 'System security', time: '1h ago', icon: '🛡️', type: 'Security' },
-            { id: 'sec-2', action: 'triggered rate limit rule', target: 'on /api/auth', user: 'Auth API Gateway', time: '4h ago', icon: '🛡️', type: 'Security' }
-          ];
-
-          setRecentUsers([...simulatedAudits, ...mappedUsers]);
+          setRecentUsers(mapped);
         }
 
+        // ── Pending blog moderation ──
         if (pendingBlogs) {
           const formatted = pendingBlogs.map((b: any) => ({
             id: b.id,
             title: b.title,
-            author: b.author_name || b.author_id || 'Student Programmer',
+            author: b.author_name || 'Unknown',
             created_at: b.created_at,
             status: 'pending',
-            priority: (b.title.length % 3 === 0 ? 'Urgent' : b.title.length % 3 === 1 ? 'High' : 'Normal') as any,
-            reviewer: 'Faculty Admin',
-            deadline: 'In 2 days',
-            description: b.excerpt || 'Technical blog post submission awaiting validation.'
+            priority: 'Normal' as const,
+            description: b.excerpt || 'Blog post awaiting review.',
           }));
           setDbPendingBlogs(formatted);
         }
+
+        // ── Real Events ──
+        if (eventsData) {
+          const mapped: EventItem[] = eventsData.map((e: any, i: number) => {
+            const d = new Date(e.date);
+            const now = new Date();
+            let status: 'Active' | 'Upcoming' | 'Ended' = 'Upcoming';
+            if (e.status === 'active' || (d <= now)) status = 'Active';
+            if (e.status === 'ended' || e.status === 'completed') status = 'Ended';
+            return {
+              id: e.id,
+              title: e.title,
+              date: d.toLocaleString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
+              participants: 0,
+              status,
+              link: e.registration_link || '#',
+              dayIndex: d.getDay(),
+            };
+          });
+          setDbEvents(mapped);
+        }
+
+        // ── Real Chart Data: users & submissions per week bucket ──
+        const bucketData = buildWeekBuckets(usersWeekData || [], submissionsData || []);
+        setChartData(bucketData);
+
+        // ── Trending topic: most common tag in recent approved blogs ──
+        const { data: recentBlogTags } = await supabase
+          .from('cms_blogs')
+          .select('tags')
+          .eq('is_published', true)
+          .order('created_at', { ascending: false })
+          .limit(20);
+        if (recentBlogTags) {
+          const tagFreq: Record<string, number> = {};
+          recentBlogTags.forEach((b: any) => {
+            const tags: string[] = Array.isArray(b.tags) ? b.tags : [];
+            tags.forEach(t => { tagFreq[t] = (tagFreq[t] || 0) + 1; });
+          });
+          const sorted = Object.entries(tagFreq).sort((a, b) => b[1] - a[1]);
+          setTrendingTopic(sorted[0] ? `#${sorted[0][0]}` : '—');
+        }
+
+        // ── Solve Rate: % submissions with AC verdict ──
+        const { data: acData, count: acCount } = await (supabase as any)
+          .from('contest_submissions')
+          .select('id', { count: 'exact', head: true })
+          .eq('verdict', 'AC');
+        const { count: totalSubs } = await (supabase as any)
+          .from('contest_submissions')
+          .select('id', { count: 'exact', head: true });
+        if (totalSubs && (totalSubs as number) > 0) {
+          const rate = Math.round(((acCount as number || 0) / (totalSubs as number)) * 100);
+          setSolveRate(`${rate}%`);
+        }
+
+        // ── Contest Attendance: participants in latest contest ──
+        if (contestsData && contestsData.length > 0) {
+          const latestContest = contestsData[0];
+          const { count: participants } = await (supabase as any)
+            .from('contest_participants')
+            .select('id', { count: 'exact', head: true })
+            .eq('contest_id', latestContest.id);
+          setContestAttendance(participants ? String(participants) + ' participants' : '—');
+        }
+
       } catch (err) {
         console.error('Error fetching admin data:', err);
       } finally {
@@ -146,57 +257,31 @@ export default function AdminOverviewPage() {
     fetchData();
   }, []);
 
-  // 2. Real-time Latency (WebSocket Connection Simulation)
+  // 2. Real DB latency — measured via actual Supabase round-trip
   useEffect(() => {
-    const timer = setInterval(() => {
-      // Simulate minor fluctuations in database latency (warn boundary: 50ms, critical: 100ms)
-      setDbLatency(prev => {
-        const delta = Math.floor(Math.random() * 5) - 2;
-        const next = Math.max(8, Math.min(24, prev + delta));
-        setLatencyHistory(hist => [...hist.slice(1), next]);
-        return next;
-      });
-
-      // Simulate Auth latency updates
-      setAuthLatency(prev => {
-        const delta = Math.floor(Math.random() * 7) - 3;
-        return Math.max(35, Math.min(58, prev + delta));
-      });
-
-      // Maintain stable edge network status
-      setNetworkUptime(prev => (Math.random() > 0.98 ? 99 : 100));
-    }, 2500);
-
+    async function measureLatency() {
+      try {
+        const supabase = getSupabase();
+        const t0 = Date.now();
+        await supabase.from('users').select('id', { count: 'exact', head: true }).limit(1);
+        const ms = Date.now() - t0;
+        setDbLatency(ms);
+        setLatencyHistory(prev => [...prev.slice(-7), ms]);
+      } catch (_) {}
+    }
+    measureLatency();
+    const timer = setInterval(measureLatency, 10000);
     return () => clearInterval(timer);
   }, []);
 
-  // 3. Simulated Events & Review Queue (in case DB is empty)
-  const defaultEvents: EventItem[] = useMemo(() => [
-    { id: 'e-1', title: 'Summer Hackathon 2026', date: 'June 05, 09:00 AM', participants: 120, status: 'Active', link: '#', dayIndex: 5 },
-    { id: 'e-2', title: 'LeetCode Weekly Contest Sync', date: 'May 30, 06:00 PM', participants: 45, status: 'Upcoming', link: '#', dayIndex: 6 },
-    { id: 'e-3', title: 'Introduction to Next.js App Router Workshop', date: 'May 25, 03:00 PM', participants: 85, status: 'Ended', link: '#', dayIndex: 1 }
-  ], []);
+  // 3. Real moderation data only
+  const pendingReviews = dbPendingBlogs;
 
-  const defaultPendingBlogs: BlogItem[] = useMemo(() => [
-    { id: 'blog-sim-1', title: 'Understanding CSS Grid vs Flexbox in 2026', author: 'rahul_dev', status: 'pending', priority: 'High', preview_img: '⚡', description: 'Detailed visual walk-through highlighting alignments, auto-flows, and performance constraints.', reviewer: 'admin_team', deadline: 'Today, 05 PM' },
-    { id: 'blog-sim-2', title: 'Optimizing Supabase Edge Queries for Next.js', author: 'harsh_aiml', status: 'pending', priority: 'Urgent', preview_img: '🔥', description: 'Comprehensive code profiling showing connection pools, server caching, and network roundtrip graphs.', reviewer: 'super_admin', deadline: 'Tomorrow' }
-  ], []);
-
-  // Compute actual list of reviews
-  const pendingReviews = dbPendingBlogs.length > 0 ? dbPendingBlogs : defaultPendingBlogs;
-
-  // Active moderation list based on selected Tab filter
   const activeModerationQueue = useMemo(() => {
-    if (moderationTab === 'Pending') {
-      return pendingReviews;
-    }
-    if (moderationTab === 'Flagged') {
-      return [
-        { id: 'flag-1', title: 'Flagged User: spammer_99', author: 'System Sentinel', status: 'flagged', priority: 'Urgent', description: 'User triggered spam alerts by posting 15 identical forum replies within 40 seconds.', reviewer: 'Security Team', deadline: 'Immediate action' }
-      ] as any[];
-    }
-    return [...pendingReviews, { id: 'flag-1', title: 'Flagged User: spammer_99', author: 'System Sentinel', status: 'flagged', priority: 'Urgent', description: 'User triggered spam alerts by posting 15 identical forum replies within 40 seconds.', reviewer: 'Security Team', deadline: 'Immediate action' }];
-  }, [moderationTab, pendingReviews]);
+    if (moderationTab === 'Pending') return pendingReviews;
+    if (moderationTab === 'Flagged') return flaggedUsers;
+    return [...pendingReviews, ...flaggedUsers];
+  }, [moderationTab, pendingReviews, flaggedUsers]);
 
   // Bulk selectors
   const toggleBulk = (id: string) => {
@@ -210,14 +295,8 @@ export default function AdminOverviewPage() {
 
   const handleApproveBlog = async (id: string) => {
     try {
-      const supabase = getSupabase();
-      const isSim = id.startsWith('blog-sim-');
-      if (!isSim) {
-        await fetch(`/api/admin/blogs/${id}/approve`, { method: 'POST' });
-        setDbPendingBlogs(prev => prev.filter(b => b.id !== id));
-      } else {
-        alert('Simulated item approved successfully!');
-      }
+      await fetch(`/api/admin/blogs/${id}/approve`, { method: 'POST' });
+      setDbPendingBlogs(prev => prev.filter(b => b.id !== id));
     } catch (err) {
       console.error(err);
     }
@@ -225,13 +304,8 @@ export default function AdminOverviewPage() {
 
   const handleRejectBlog = async (id: string) => {
     try {
-      const isSim = id.startsWith('blog-sim-');
-      if (!isSim) {
-        await fetch(`/api/admin/blogs/${id}/reject`, { method: 'POST' });
-        setDbPendingBlogs(prev => prev.filter(b => b.id !== id));
-      } else {
-        alert('Simulated item rejected successfully!');
-      }
+      await fetch(`/api/admin/blogs/${id}/reject`, { method: 'POST' });
+      setDbPendingBlogs(prev => prev.filter(b => b.id !== id));
     } catch (err) {
       console.error(err);
     }
@@ -243,36 +317,17 @@ export default function AdminOverviewPage() {
     return recentUsers.filter(a => a.type === activityFilter);
   }, [activityFilter, recentUsers]);
 
-  // Date Range Chart Metrics
-  const chartData = useMemo(() => {
-    const data30 = [
-      { name: 'Week 1', Users: 120, Submissions: 45, Heat: 2 },
-      { name: 'Week 2', Users: 180, Submissions: 85, Heat: 5 },
-      { name: 'Week 3', Users: 245, Submissions: 120, Heat: 8 },
-      { name: 'Week 4', Users: 320, Submissions: 190, Heat: 12 }
-    ];
-    const data7 = [
-      { name: 'Mon', Users: 280, Submissions: 12, Heat: 1 },
-      { name: 'Tue', Users: 285, Submissions: 18, Heat: 2 },
-      { name: 'Wed', Users: 295, Submissions: 25, Heat: 4 },
-      { name: 'Thu', Users: 300, Submissions: 30, Heat: 6 },
-      { name: 'Fri', Users: 310, Submissions: 45, Heat: 9 },
-      { name: 'Sat', Users: 315, Submissions: 60, Heat: 11 },
-      { name: 'Sun', Users: 320, Submissions: 75, Heat: 12 }
-    ];
-    return dateRange === '7days' ? data7 : data30;
-  }, [dateRange]);
-
+  // Pie chart uses real counts from metrics
   const pieData = useMemo(() => [
-    { name: 'Blogs', value: metrics?.blogs || 4, color: 'var(--accent-green)' },
-    { name: 'Announcements', value: metrics?.announcements || 3, color: 'var(--accent-purple)' },
-    { name: 'Events', value: metrics?.events || 3, color: 'var(--accent-amber)' }
+    { name: 'Blogs', value: metrics?.blogs || 0, color: 'var(--accent-green)' },
+    { name: 'Announcements', value: metrics?.announcements || 0, color: 'var(--accent-purple)' },
+    { name: 'Events', value: metrics?.events || 0, color: 'var(--accent-amber)' },
   ], [metrics]);
 
   // Dynamic Audit CSV Export
   const exportToCSV = () => {
     const headers = 'ID,User,Action,Target,Time,Type\n';
-    const rows = filteredActivities.map(a => `"${a.id}","${a.user}","${a.action}","${a.target}","${a.time}","${a.type}"`).join('\n');
+    const rows = filteredActivities.map((a: any) => `"${a.id}","${a.user}","${a.action}","${a.target}","${a.time}","${a.type}"`).join('\n');
     const blob = new Blob([headers + rows], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -313,10 +368,10 @@ export default function AdminOverviewPage() {
       {/* KPI Stats Top bar (Donezo premium styles) */}
       <KPIBar 
         metrics={[
-          { label: 'Active Users', value: metrics?.users || 4, trend: '+12% WoW', positive: true },
-          { label: 'Published Blogs', value: metrics?.blogs || 2, trend: '3 new submissions', positive: true },
-          { label: 'Active Events', value: metrics?.events || 3, trend: '2 upcoming', positive: true },
-          { label: 'Pending Reviews', value: pendingReviews.length, trend: 'Action needed', positive: false },
+          { label: 'Total Users', value: metrics?.users || 0, trend: 'Registered students', positive: true },
+          { label: 'Published Blogs', value: metrics?.blogs || 0, trend: `${pendingReviews.length} pending review`, positive: true },
+          { label: 'Active Events', value: metrics?.events || 0, trend: 'Total events', positive: true },
+          { label: 'Pending Reviews', value: pendingReviews.length, trend: pendingReviews.length > 0 ? 'Action needed' : 'All clear', positive: pendingReviews.length === 0 },
         ]} 
       />
 
@@ -396,7 +451,7 @@ export default function AdminOverviewPage() {
                         paddingAngle={3}
                         dataKey="value"
                       >
-                        {pieData.map((entry, index) => (
+                        {pieData.map((entry: any, index: number) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
@@ -406,7 +461,7 @@ export default function AdminOverviewPage() {
                 </div>
                 {/* Custom Legends */}
                 <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center', marginTop: '0.5rem' }}>
-                  {pieData.map(entry => (
+                  {pieData.map((entry: any) => (
                     <div key={entry.name} style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.65rem' }}>
                       <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: entry.color }}></span>
                       <span style={{ color: 'var(--text-secondary)' }}>{entry.name} ({entry.value})</span>
@@ -460,7 +515,7 @@ export default function AdminOverviewPage() {
                   onClick={() => setModerationTab(tab)}
                 >
                   <span>{tab === 'All' ? '📂' : tab === 'Pending' ? '⏳' : '🚩'}</span>
-                  <span>{tab === 'All' ? `All (${pendingReviews.length + 1})` : tab === 'Pending' ? `Pending (${pendingReviews.length})` : 'Flagged (1)'}</span>
+                  <span>{tab === 'All' ? `All (${pendingReviews.length + flaggedUsers.length})` : tab === 'Pending' ? `Pending (${pendingReviews.length})` : `Flagged (${flaggedUsers.length})`}</span>
                 </button>
               ))}
             </div>
@@ -487,7 +542,7 @@ export default function AdminOverviewPage() {
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                {activeModerationQueue.map((item) => {
+                {activeModerationQueue.map((item: any) => {
                   const isChecked = selectedBulk.includes(item.id);
                   const isFlag = item.status === 'flagged';
                   
@@ -700,135 +755,96 @@ export default function AdminOverviewPage() {
             </div>
           </div>
 
-          {/* Quick Stats Toggles */}
+          {/* Trending & Engagement — real data */}
           <div className="donezo-card" style={{ padding: '1.25rem' }}>
             <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.75rem' }}>Trending & Engagement</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', fontSize: '0.75rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.35rem 0', borderBottom: '1px solid var(--color-border)' }}>
-                <span style={{ color: 'var(--text-tertiary)' }}>Trending Topic</span>
-                <span style={{ color: 'var(--accent-green)', fontWeight: 600 }}>#NextJS16</span>
+                <span style={{ color: 'var(--text-tertiary)' }}>Top Blog Tag</span>
+                <span style={{ color: 'var(--accent-green)', fontWeight: 600 }}>{trendingTopic}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.35rem 0', borderBottom: '1px solid var(--color-border)' }}>
-                <span style={{ color: 'var(--text-tertiary)' }}>User Solve Rate</span>
-                <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>82.4%</span>
+                <span style={{ color: 'var(--text-tertiary)' }}>Submission Solve Rate</span>
+                <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{solveRate}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.35rem 0' }}>
-                <span style={{ color: 'var(--text-tertiary)' }}>Contest attendance</span>
-                <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>+12% WoW</span>
+                <span style={{ color: 'var(--text-tertiary)' }}>Latest Contest</span>
+                <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{contestAttendance}</span>
               </div>
             </div>
           </div>
 
-          {/* Platform System Health widget with circular indicators */}
+          {/* System Health — real measured DB latency */}
           <div className="donezo-card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
               <div>
                 <h3 style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-primary)' }}>System Health</h3>
                 <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Warn at 50ms, Critical at 100ms</span>
               </div>
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: dbLatency > 50 ? 'var(--accent-amber)' : 'var(--accent-green)' }}></div>
+              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: (dbLatency ?? 0) > 100 ? '#ef4444' : (dbLatency ?? 0) > 50 ? 'var(--accent-amber)' : 'var(--accent-green)' }}></div>
             </div>
 
-            {/* Circular Progress Row */}
-            <div style={{ display: 'flex', justifyContent: 'space-around', gap: '0.5rem', marginBottom: '0.75rem' }}>
-              
-              {/* Database Indicator */}
+            {/* Real DB latency ring */}
+            <div style={{ display: 'flex', justifyContent: 'center', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
               <div className="circular-indicator-container">
                 <svg width="60" height="60" className="circular-progress-svg">
                   <circle cx="30" cy="30" r="24" stroke="rgba(255,255,255,0.04)" strokeWidth="4" fill="transparent" />
-                  <circle cx="30" cy="30" r="24" stroke="var(--accent-green)" strokeWidth="4" fill="transparent"
+                  <circle cx="30" cy="30" r="24"
+                    stroke={(dbLatency ?? 0) > 100 ? '#ef4444' : (dbLatency ?? 0) > 50 ? 'var(--accent-amber)' : 'var(--accent-green)'}
+                    strokeWidth="4" fill="transparent"
                     strokeDasharray={2 * Math.PI * 24}
-                    strokeDashoffset={2 * Math.PI * 24 * (1 - Math.min(dbLatency, 100) / 100)}
+                    strokeDashoffset={2 * Math.PI * 24 * (1 - Math.min((dbLatency ?? 0), 200) / 200)}
                   />
                 </svg>
                 <div className="circular-center-label">
-                  <span style={{ fontSize: '0.7rem', fontWeight: 700 }}>{dbLatency}ms</span>
-                  <span style={{ fontSize: '0.5rem', color: 'var(--text-muted)' }}>DB</span>
-                </div>
-                {/* Historical Latency Sparkline hover card */}
-                <div className="sparkline-hover-panel">
-                  <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#FFF', marginBottom: '0.4rem' }}>DB latency sparkline history</div>
-                  <div style={{ display: 'flex', gap: '2px', alignItems: 'flex-end', height: '30px', background: 'rgba(255,255,255,0.03)', padding: '4px', borderRadius: '4px' }}>
-                    {latencyHistory.map((val, idx) => (
-                      <div key={idx} style={{ flex: 1, background: 'var(--accent-green)', height: `${Math.min(val * 2, 30)}px` }}></div>
-                    ))}
-                  </div>
+                  <span style={{ fontSize: '0.7rem', fontWeight: 700 }}>{dbLatency !== null ? `${dbLatency}ms` : '…'}</span>
+                  <span style={{ fontSize: '0.5rem', color: 'var(--text-muted)' }}>DB Ping</span>
                 </div>
               </div>
 
-              {/* Auth API Indicator */}
-              <div className="circular-indicator-container">
-                <svg width="60" height="60" className="circular-progress-svg">
-                  <circle cx="30" cy="30" r="24" stroke="rgba(255,255,255,0.04)" strokeWidth="4" fill="transparent" />
-                  <circle cx="30" cy="30" r="24" stroke="var(--accent-purple)" strokeWidth="4" fill="transparent"
-                    strokeDasharray={2 * Math.PI * 24}
-                    strokeDashoffset={2 * Math.PI * 24 * (1 - authLatency / 100)}
-                  />
-                </svg>
-                <div className="circular-center-label">
-                  <span style={{ fontSize: '0.7rem', fontWeight: 700 }}>{authLatency}ms</span>
-                  <span style={{ fontSize: '0.5rem', color: 'var(--text-muted)' }}>Auth</span>
+              {/* Sparkline */}
+              {latencyHistory.length > 0 && (
+                <div style={{ display: 'flex', gap: '2px', alignItems: 'flex-end', height: '24px', width: '100%', padding: '0 0.5rem' }}>
+                  {latencyHistory.map((val, idx) => (
+                    <div key={idx} style={{ flex: 1, borderRadius: '2px', background: val > 100 ? '#ef4444' : val > 50 ? 'var(--accent-amber)' : 'var(--accent-green)', height: `${Math.min(Math.round((val / 200) * 24), 24)}px` }} />
+                  ))}
                 </div>
-              </div>
-
-              {/* Edge Network Indicator */}
-              <div className="circular-indicator-container">
-                <svg width="60" height="60" className="circular-progress-svg">
-                  <circle cx="30" cy="30" r="24" stroke="rgba(255,255,255,0.04)" strokeWidth="4" fill="transparent" />
-                  <circle cx="30" cy="30" r="24" stroke="var(--accent-green)" strokeWidth="4" fill="transparent"
-                    strokeDasharray={2 * Math.PI * 24}
-                    strokeDashoffset={2 * Math.PI * 24 * (1 - networkUptime / 100)}
-                  />
-                </svg>
-                <div className="circular-center-label">
-                  <span style={{ fontSize: '0.7rem', fontWeight: 700 }}>{networkUptime}%</span>
-                  <span style={{ fontSize: '0.5rem', color: 'var(--text-muted)' }}>Edge</span>
-                </div>
-              </div>
-
+              )}
+              <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)' }}>Last {latencyHistory.length} measurements</span>
             </div>
           </div>
 
-          {/* Active Events Widget card */}
+          {/* Active Events Widget — real DB events */}
           <div className="donezo-card">
             <h3 style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>Active Events</h3>
-            <span style={{ fontSize: '0.675rem', color: 'var(--text-tertiary)', display: 'block', marginBottom: '0.75rem' }}>Current schedule and participant density</span>
+            <span style={{ fontSize: '0.675rem', color: 'var(--text-tertiary)', display: 'block', marginBottom: '0.75rem' }}>Current schedule from database</span>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-              {defaultEvents.map(event => (
-                <div key={event.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.01)', border: '1px solid var(--color-border)', borderRadius: '8px', padding: '0.5rem 0.75rem' }}>
-                  <div>
-                    <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-primary)' }}>{event.title}</div>
-                    <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>{event.date} • {event.participants} registered</div>
+            {dbEvents.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '1.5rem', color: 'var(--text-muted)', fontSize: '0.75rem' }}>No events found in database.</div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                {dbEvents.map(event => (
+                  <div key={event.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.01)', border: '1px solid var(--color-border)', borderRadius: '8px', padding: '0.5rem 0.75rem' }}>
+                    <div>
+                      <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-primary)' }}>{event.title}</div>
+                      <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>{event.date}</div>
+                    </div>
+                    <span style={{ fontSize: '0.6rem', fontWeight: 700, padding: '0.1rem 0.35rem', borderRadius: '4px', background: event.status === 'Active' ? 'rgba(0,200,83,0.1)' : event.status === 'Ended' ? 'rgba(239,68,68,0.08)' : 'rgba(255,255,255,0.05)', color: event.status === 'Active' ? 'var(--accent-green)' : event.status === 'Ended' ? 'var(--accent-rose)' : 'var(--text-secondary)' }}>
+                      {event.status}
+                    </span>
                   </div>
-                  <span 
-                    style={{ 
-                      fontSize: '0.6rem', 
-                      fontWeight: 700, 
-                      padding: '0.1rem 0.35rem', 
-                      borderRadius: '4px',
-                      background: event.status === 'Active' ? 'rgba(0, 200, 83, 0.1)' : 'rgba(255,255,255,0.05)',
-                      color: event.status === 'Active' ? 'var(--accent-green)' : 'var(--text-secondary)'
-                    }}
-                  >
-                    {event.status}
-                  </span>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
 
-            {/* Mini Calendar widget showing event distribution */}
+            {/* Weekly calendar grid using real event days */}
             <div style={{ marginTop: '1rem', borderTop: '1px solid var(--color-border)', paddingTop: '0.75rem' }}>
               <span style={{ fontSize: '0.675rem', fontWeight: 700, color: 'var(--text-tertiary)' }}>Weekly Calendar Grid</span>
               <div className="donezo-calendar-grid">
                 {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, idx) => {
-                  const hasEvent = defaultEvents.some(e => e.dayIndex === idx);
+                  const hasEvent = dbEvents.some(e => e.dayIndex === idx);
                   return (
-                    <div 
-                      key={idx} 
-                      className={`calendar-day-cell ${hasEvent ? 'active-event' : ''}`}
-                      title={hasEvent ? 'Event scheduled' : 'No events scheduled'}
-                    >
+                    <div key={idx} className={`calendar-day-cell ${hasEvent ? 'active-event' : ''}`} title={hasEvent ? 'Event scheduled' : 'No events'}>
                       {day}
                     </div>
                   );
