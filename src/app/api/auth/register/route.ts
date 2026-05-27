@@ -29,6 +29,22 @@ export async function POST(req: NextRequest) {
 
     const admin = createAdminSupabaseClient();
 
+    // Pre-flight: Check for duplicate username or email in the public users table
+    const { data: existing } = await (admin as any)
+      .from('users')
+      .select('id, username, email')
+      .or(`username.eq.${username.toLowerCase()},email.eq.${email}`)
+      .maybeSingle();
+
+    if (existing) {
+      if (existing.email === email) {
+        return NextResponse.json({ error: 'A user with this email already exists.' }, { status: 409 });
+      }
+      if (existing.username === username.toLowerCase()) {
+        return NextResponse.json({ error: 'Username is already taken. Please choose another.' }, { status: 409 });
+      }
+    }
+
     // Create auth user
     const { data: authData, error: authError } = await admin.auth.admin.createUser({
       email,
@@ -40,21 +56,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: authError?.message || 'Failed to create user' }, { status: 400 });
     }
 
-    // Create user profile row
-    const { error: profileError } = await admin.from('users').insert({
+    // Upsert user profile row — a DB trigger may have already inserted a row
+    // for this user's id when the auth user was created, so we use upsert to
+    // avoid "duplicate key value violates unique constraint users_pkey".
+    const { error: profileError } = await (admin as any).from('users').upsert({
       id: authData.user.id,
       email,
       username: username.toLowerCase(),
-      batch_id,
+      batch_id: batch_id || null,
       role,
       avatar_url: 'avatar_0.svg',
       platform_profiles: {},
       platform_stats: {},
       platform_points: 0,
-    });
+    }, { onConflict: 'id' });
 
     if (profileError) {
-      // Rollback auth user
+      // Rollback auth user on failure
       await admin.auth.admin.deleteUser(authData.user.id);
       return NextResponse.json({ error: profileError.message }, { status: 400 });
     }
