@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser();
 
     // Base query for public problems
-    let query = supabase
+    let query = (supabase as any)
       .from('question_bank')
       .select('id, slug, title, difficulty, points, tags, is_published, available_for_practice')
       .eq('available_for_practice', true)
@@ -35,18 +35,18 @@ export async function GET(req: NextRequest) {
     const { data: problems, error } = await query;
     if (error) throw error;
 
-    let finalProblems = problems || [];
+    let finalProblems: any[] = problems || [];
 
     // Process user status if logged in
     if (user) {
-      const { data: submissions, error: subErr } = await supabase
+      const { data: submissions, error: subErr } = await (supabase as any)
         .from('contest_submissions')
         .select('problem_id, verdict')
         .eq('user_id', user.id);
       
       if (!subErr && submissions) {
-        const solvedSet = new Set(submissions.filter(s => s.verdict === 'AC').map(s => s.problem_id));
-        const attemptedSet = new Set(submissions.map(s => s.problem_id));
+        const solvedSet = new Set(submissions.filter((s: any) => s.verdict === 'AC').map((s: any) => s.problem_id));
+        const attemptedSet = new Set(submissions.map((s: any) => s.problem_id));
 
         finalProblems = finalProblems.map(p => ({
           ...p,

@@ -20,7 +20,7 @@ export function AcademicDetails({ profile, isOwnProfile, onSave }: AcademicDetai
   });
 
   const handleSave = () => {
-    if (onSave) onSave(formData);
+    if (onSave) onSave(formData as any);
     setEditing(false);
   };
 

@@ -12,7 +12,7 @@ export default async function PracticeProblemPage({ params }: { params: Promise<
   const supabase = await createServerSupabaseClient();
 
   // Fetch the problem
-  const { data: problem } = await supabase
+  const { data: problem } = await (supabase as any)
     .from('question_bank')
     .select('*')
     .eq('slug', slug)
@@ -23,7 +23,7 @@ export default async function PracticeProblemPage({ params }: { params: Promise<
   if (!problem) return notFound();
 
   // Fetch testcases (only visible ones for the statement)
-  const { data: testcases } = await supabase
+  const { data: testcases } = await (supabase as any)
     .from('question_bank_testcases')
     .select('*')
     .eq('question_id', problem.id)

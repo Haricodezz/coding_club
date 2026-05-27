@@ -5,7 +5,7 @@ import { Trophy, Calendar, Clock, Filter } from 'lucide-react';
 import type { Contest } from '@/types';
 
 export function ContestsWidget({ contests }: { contests: Contest[] }) {
-  const [activeTab, setActiveTab] = useState<'active' | 'upcoming' | 'past'>('active');
+  const [activeTab, setActiveTab] = useState<'active' | 'upcoming' | 'completed'>('active');
   const [now, setNow] = useState(new Date());
 
   useEffect(() => {
@@ -16,7 +16,7 @@ export function ContestsWidget({ contests }: { contests: Contest[] }) {
   const filteredContests = contests.filter(c => {
     if (activeTab === 'active') return c.status === 'active';
     if (activeTab === 'upcoming') return c.status === 'upcoming';
-    return c.status === 'past' || c.status === 'completed';
+    return c.status === 'completed';
   });
 
   const getCountdown = (dateString: string) => {
@@ -41,7 +41,7 @@ export function ContestsWidget({ contests }: { contests: Contest[] }) {
       </div>
 
       <div className="flex gap-2" style={{ marginBottom: '1rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.5rem' }}>
-        {(['active', 'upcoming', 'past'] as const).map(tab => (
+        {(['active', 'upcoming', 'completed'] as const).map(tab => (
           <button 
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -81,10 +81,10 @@ export function ContestsWidget({ contests }: { contests: Contest[] }) {
                       border: isActive ? '1px solid rgba(248,113,113,0.3)' : '1px solid rgba(108,99,255,0.2)'
                     }}
                   >
-                    {isActive ? '● LIVE' : (activeTab === 'past' ? 'Completed' : 'Upcoming')}
+                    {isActive ? '● LIVE' : (activeTab === 'completed' ? 'Completed' : 'Upcoming')}
                   </span>
                   
-                  {activeTab !== 'past' && (
+                  {activeTab !== 'completed' && (
                     <span className="flex items-center gap-1" style={{ fontSize: '0.75rem', color: isActive ? 'var(--color-error)' : '#64748b', fontWeight: 600 }}>
                       <Clock size={12} /> {getCountdown(isActive ? contest.end_date : contest.start_date)}
                     </span>
@@ -103,7 +103,7 @@ export function ContestsWidget({ contests }: { contests: Contest[] }) {
                     className={`btn btn-sm ${isActive ? 'btn-primary' : 'btn-secondary'}`}
                     style={{ padding: '0.25rem 0.6rem', fontSize: '0.75rem' }}
                   >
-                    {isActive ? 'Enter Now' : (activeTab === 'past' ? 'View Results' : 'Register')}
+                    {isActive ? 'Enter Now' : (activeTab === 'completed' ? 'View Results' : 'Register')}
                   </Link>
                 </div>
               </div>
@@ -112,7 +112,7 @@ export function ContestsWidget({ contests }: { contests: Contest[] }) {
         ) : (
           <div className="empty-state text-center" style={{ padding: '2rem 0' }}>
             <Calendar size={32} color="var(--text-tertiary)" style={{ margin: '0 auto 0.5rem' }} />
-            <p style={{ fontSize: '0.85rem', color: '#64748b' }}>No {activeTab} contests found.</p>
+            <p style={{ fontSize: '0.85rem', color: '#64748b' }}>No {activeTab === 'completed' ? 'past' : activeTab} contests found.</p>
             {activeTab === 'active' && (
               <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
                 Keep practicing in the meantime!

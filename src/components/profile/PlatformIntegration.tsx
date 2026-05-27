@@ -123,7 +123,7 @@ export function PlatformIntegration({
     setLoadingPlatform(platformId);
     try {
       const supabase = getSupabase();
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('users')
         .update({ [dbField]: inputValue.trim() })
         .eq('id', profile.id);
@@ -150,7 +150,7 @@ export function PlatformIntegration({
     setLoadingPlatform(platformId);
     try {
       const supabase = getSupabase();
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('users')
         .update({ [dbField]: null })
         .eq('id', profile.id);
@@ -226,7 +226,7 @@ export function PlatformIntegration({
                 </div>
 
                 {/* Platform Value / Link / Action Buttons */}
-                <div style={{ display: 'flex', itemsAlign: 'center', gap: '0.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   {isEditing ? (
                     <div className="flex gap-1">
                       <button 

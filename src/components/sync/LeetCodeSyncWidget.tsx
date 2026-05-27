@@ -93,7 +93,7 @@ export function LeetCodeSyncWidget({ profile, isOwnProfile, onProfileUpdate }: {
   async function handleDisconnect() {
     if (!confirm("Are you sure you want to disconnect your LeetCode account?")) return;
     const supabase = getSupabase();
-    await supabase.from('users').update({ leetcode_username: null }).eq('id', profile.id);
+    await (supabase as any).from('users').update({ leetcode_username: null }).eq('id', profile.id);
     onProfileUpdate({ ...profile, leetcode_username: undefined });
     setSyncStatus('idle');
   }

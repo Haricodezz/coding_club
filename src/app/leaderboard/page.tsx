@@ -80,7 +80,7 @@ export default function LeaderboardPage() {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [shareUser, setShareUser] = useState<LeaderboardUser | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const userRowRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const userRowRefs = useRef<Record<string, HTMLElement | null>>({});
 
   // Weekly selector
   const [selectedWeeklyRange, setSelectedWeeklyRange] = useState('Last 7 Days');
@@ -99,10 +99,10 @@ export default function LeaderboardPage() {
             .single();
           
           if (data) {
-            setCurrentUserProfile(data as AppUser);
+            setCurrentUserProfile(data as unknown as AppUser);
             // Apply Smart Defaults: Pre-select current year and student's branch
-            if (data.branch) setBranchFilter(data.branch);
-            if (data.academic_year) setYearFilter(String(data.academic_year));
+            if ((data as any).branch) setBranchFilter((data as any).branch);
+            if ((data as any).academic_year) setYearFilter(String((data as any).academic_year));
           }
         }
       } catch (err) {
@@ -1115,7 +1115,7 @@ export default function LeaderboardPage() {
                 <Link 
                   href={`/profile/${entry.username}`}
                   key={entry.id}
-                  ref={el => { userRowRefs.current[entry.id] = el; }}
+                  ref={el => { userRowRefs.current[entry.id] = el as HTMLElement | null; }}
                   className={`lb-card flex items-center gap-4 ${isTop1Percent ? 'top-tier-glow' : ''}`}
                   style={{ 
                     padding: '0.75rem 1.25rem',
@@ -1172,7 +1172,7 @@ export default function LeaderboardPage() {
                         
                         {/* Institutional verification badge */}
                         {verified && (
-                          <UserCheck size={13} color="#10B981" title="Institutional Verified Student" />
+                          <UserCheck size={13} color="#10B981" />
                         )}
                       </div>
                       <div style={{ fontSize: '0.72rem', color: '#64748B' }}>
@@ -1347,7 +1347,7 @@ export default function LeaderboardPage() {
             }}
           >
             <div className="flex items-center gap-3">
-              <div style={{ background: 'var(--accent-gradient)', width: '2.2rem', height: '2.2rem', borderRadius: '50%', display: 'flex', alignItems: 'center', justifycenter: 'center', fontWeight: 800, fontSize: '0.9rem', color: '#FFF', justifyContent: 'center' }}>
+              <div style={{ background: 'var(--accent-gradient)', width: '2.2rem', height: '2.2rem', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.9rem', color: '#FFF' }}>
                 #{myPositionMetrics.rank}
               </div>
               <div style={{ fontSize: '0.85rem' }}>

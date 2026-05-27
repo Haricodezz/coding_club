@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Find the problem globally
-    const { data: problem, error: pErr } = await supabase
+    const { data: problem, error: pErr } = await (supabase as any)
       .from('question_bank')
       .select('*')
       .eq('slug', problem_slug)

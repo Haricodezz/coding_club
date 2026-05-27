@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Fetch the question + test cases
-  const { data: question, error: qErr } = await supabase
+  const { data: question, error: qErr } = await (supabase as any)
     .from('question_bank')
     .select('*')
     .eq('slug', problem_slug)

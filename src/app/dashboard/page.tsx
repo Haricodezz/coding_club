@@ -98,7 +98,7 @@ export default function DashboardPage() {
         setUser(userData);
       }
 
-      const { data: lb } = await supabase.from('leaderboard').select('*').order('total_points', { ascending: false });
+      const { data: lb } = await (supabase as any).from('leaderboard').select('*').order('total_points', { ascending: false });
       if (lb) {
         const entries = lb as unknown as LeaderboardEntry[];
         const idx = entries.findIndex(e => e.id === userId);
@@ -108,7 +108,7 @@ export default function DashboardPage() {
       const today = new Date().toISOString().split('T')[0];
       const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
       
-      const { data: calendar } = await supabase
+      const { data: calendar } = await (supabase as any)
         .from('qotd_calendar')
         .select('date, question_bank(*)')
         .in('date', [today, yesterday])
@@ -124,13 +124,13 @@ export default function DashboardPage() {
             .eq('user_id', userId)
             .eq('question_id', q.id);
           
-          const isSolved = subs?.some(s => s.total_tests > 0 && s.passed_tests === s.total_tests) || false;
+          const isSolved = subs?.some(s => (s.total_tests ?? 0) > 0 && s.passed_tests === s.total_tests) || false;
           questionsArr.push({ ...q, isSolved, dateLabel: c.date === today ? 'Today' : 'Yesterday' });
         }
         setQotdQuestions(questionsArr.sort((a, b) => b.dateLabel === 'Today' ? 1 : -1));
       }
 
-      const { count } = await supabase.from('user_progress').select('*', { count: 'exact', head: true }).eq('user_id', userId).eq('completed', true);
+      const { count } = await (supabase as any).from('user_progress').select('*', { count: 'exact', head: true }).eq('user_id', userId).eq('completed', true);
       setCompletedCount(count || 0);
 
       const { data: subsData } = await supabase
@@ -145,8 +145,8 @@ export default function DashboardPage() {
       if (contestsData) setAllContests(contestsData as unknown as Contest[]);
 
       // Fetch real analytics & streaks
-      const { data: analytics } = await supabase.from('user_performance_analytics').select('*').eq('user_id', userId).single();
-      const { data: streakData } = await supabase.from('streaks').select('*').eq('user_id', userId).single();
+      const { data: analytics } = await (supabase as any).from('user_performance_analytics').select('*').eq('user_id', userId).single();
+      const { data: streakData } = await (supabase as any).from('streaks').select('*').eq('user_id', userId).single();
       
       setStats({
         winRate: analytics?.win_rate || 0,
@@ -177,7 +177,7 @@ export default function DashboardPage() {
         <div className="container">
           <div className="flex-col gap-6">
             <div className="flex items-center justify-between">
-              <SkeletonText lines={2} style={{ width: '300px' }} />
+              <SkeletonText lines={2} lastLineWidth="300px" />
               <Skeleton style={{ width: '120px', height: '120px', borderRadius: '50%' }} />
             </div>
             <div className="grid-4">

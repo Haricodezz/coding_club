@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { data: history, error } = await supabase
+    const { data: history, error } = await (supabase as any)
       .from('leetcode_sync_history')
       .select('*')
       .eq('user_id', session.user.id)

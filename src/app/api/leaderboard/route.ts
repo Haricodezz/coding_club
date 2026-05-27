@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
     }
 
     // 2. Fetch recent snapshot ranks to calculate trends
-    const { data: recentDateRow } = await supabase
+    const { data: recentDateRow } = await (supabase as any)
       .from('leaderboard_snapshots')
       .select('snapshot_date')
       .order('snapshot_date', { ascending: false })
@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
 
     const snapshotMap = new Map<string, number>();
     if (recentDateRow?.snapshot_date) {
-      const { data: snaps } = await supabase
+      const { data: snaps } = await (supabase as any)
         .from('leaderboard_snapshots')
         .select('user_id, rank')
         .eq('snapshot_date', recentDateRow.snapshot_date);
@@ -68,14 +68,14 @@ export async function GET(req: NextRequest) {
     });
 
     // 4. Compute Dynamic Branch & Academic Year distributions for active users
-    const { data: allUsersMeta } = await supabase
+    const { data: allUsersMeta } = await (supabase as any)
       .from('users')
       .select('branch, academic_year');
 
     const branchCounts: Record<string, number> = {};
     const yearCounts: Record<string, number> = {};
     
-    for (const u of allUsersMeta || []) {
+    for (const u of (allUsersMeta || []) as any[]) {
       if (u.branch) {
         branchCounts[u.branch] = (branchCounts[u.branch] || 0) + 1;
       }
@@ -90,13 +90,13 @@ export async function GET(req: NextRequest) {
     
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-    const { data: weeklyActive } = await supabase.from('credit_ledger')
+    const { data: weeklyActive } = await (supabase as any).from('credit_ledger')
       .select('user_id', { count: 'exact' })
       .eq('source', 'leetcode_sync')
       .gte('created_at', oneWeekAgo.toISOString());
-    const weeklyCount = new Set(weeklyActive?.map(w => w.user_id) || []).size;
+    const weeklyCount = new Set((weeklyActive as any[] || []).map((w: any) => w.user_id)).size;
 
-    const { count: contestCount } = await supabase.from('contest_leaderboard').select('*', { count: 'exact', head: true });
+    const { count: contestCount } = await (supabase as any).from('contest_leaderboard').select('*', { count: 'exact', head: true });
 
     // Internal count represents students who have solved QotDs or earned non-leetcode points
     const { count: internalCount } = await supabase.from('users').select('*', { count: 'exact', head: true });

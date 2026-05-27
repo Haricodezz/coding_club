@@ -42,8 +42,8 @@ export default function ProfilePage() {
 
       // Fetch leaderboard and streaks
       const [{ data: streakData }, { data: lb }] = await Promise.all([
-        supabase.from('streaks').select('current_streak').eq('user_id', user.id).single(),
-        supabase.from('leaderboard').select('*').eq('id', user.id).single()
+        (supabase as any).from('streaks').select('current_streak').eq('user_id', user.id).single(),
+        (supabase as any).from('leaderboard').select('*').eq('id', user.id).single()
       ]);
 
       setProfileStats({
@@ -66,7 +66,7 @@ export default function ProfilePage() {
   async function handleSaveProfile() {
     if (!profile) return;
     const supabase = getSupabase();
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('users')
       .update({ avatar_url: editForm.avatar_url, cover_url: editForm.cover_url })
       .eq('id', profile.id);

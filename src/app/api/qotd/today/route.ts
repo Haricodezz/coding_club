@@ -6,7 +6,7 @@ export async function GET() {
   const supabase = await createServerSupabaseClient();
   const today = new Date().toISOString().split('T')[0];
 
-  let { data, error } = await supabase
+  let { data, error } = await (supabase as any)
     .from('qotd_calendar')
     .select('question_id, question_bank(*)')
     .eq('date', today)
@@ -15,7 +15,7 @@ export async function GET() {
 
   // Graceful fallback if schema wasn't migrated
   if (error && error.message.includes('Could not find')) {
-    const res = await supabase
+    const res = await (supabase as any)
       .from('qotd_calendar')
       .select('question_id, questions(*)')
       .eq('date', today)

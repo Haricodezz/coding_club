@@ -76,7 +76,7 @@ export default function QotDPage() {
                   <span className={`badge badge-${question.difficulty.toLowerCase()}`}>{question.difficulty}</span>
                 </div>
                 <div style={{ fontSize: '0.9rem', color: '#cbd5e1', lineHeight: 1.8 }}>
-                  <Markdown content={(question as any).statement || (question as any).description || ''} />
+                  <Markdown text={(question as any).statement || (question as any).description || ''} />
                 </div>
               </div>
 
@@ -92,11 +92,11 @@ export default function QotDPage() {
             <div style={{ borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--color-border)', boxShadow: '0 8px 24px rgba(0,0,0,0.2)', background: 'var(--color-bg)' }}>
               <MonacoIDE 
                 contestSlug="qotd" 
-                problemSlug={question.slug} 
+                problemSlug={(question as any).slug} 
                 problemTitle={question.title} 
-                storageKey={`qotd-${question.slug}`} 
-                executionMode={question.execution_mode}
-                functionTemplates={question.function_templates}
+                storageKey={`qotd-${(question as any).slug}`} 
+                executionMode={(question as any).execution_mode}
+                functionTemplates={(question as any).function_templates}
                 disableCopyPaste={true}
                 onSubmissionComplete={(res) => {
                   if (res.points_earned > 0) {

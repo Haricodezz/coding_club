@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: `Unsupported language: ${language}` }, { status: 400 });
     }
 
-    const { data: problem, error: pErr } = await supabase
+    const { data: problem, error: pErr } = await (supabase as any)
       .from('question_bank')
       .select('*')
       .eq('slug', problem_slug)

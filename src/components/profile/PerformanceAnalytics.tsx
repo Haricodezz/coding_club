@@ -15,7 +15,7 @@ export function PerformanceAnalytics({ userId }: { userId: string }) {
     async function load() {
       if (!userId) return;
       const supabase = getSupabase();
-      const { data } = await supabase.from('user_performance_analytics').select('*').eq('user_id', userId).single();
+      const { data } = await (supabase as any).from('user_performance_analytics').select('*').eq('user_id', userId).single();
       if (data) setAnalytics(data);
     }
     load();

@@ -25,6 +25,8 @@ interface Problem {
   tags?: string[];
   label: string;
   displayOrder: number;
+  execution_mode?: string;
+  function_templates?: Record<string, any>;
 }
 
 interface Testcase {
@@ -259,7 +261,7 @@ export default function ProblemPage({
           problemTitle={problem.title}
           timeLimit={problem.time_limit}
           storageKey={`${contestSlug}:${problemSlug}`}
-          executionMode={problem.execution_mode}
+          executionMode={problem.execution_mode as 'function' | 'full' | undefined}
           functionTemplates={problem.function_templates}
         />
         </Panel>

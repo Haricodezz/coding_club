@@ -95,7 +95,7 @@ export function CarouselQotD({ questions }: CarouselQotDProps) {
 
         <div className="flex gap-3" style={{ marginTop: '0.5rem' }}>
           <Link 
-            href={currentQ.dateLabel === 'Today' ? '/qotd' : `/practice/${currentQ.slug}`} 
+            href={currentQ.dateLabel === 'Today' ? '/qotd' : `/practice/${(currentQ as any).slug}`} 
             className="btn btn-primary" 
             style={{ flex: 1, justifyContent: 'center' }}
             onClick={() => setIsTimerRunning(true)}
