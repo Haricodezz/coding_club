@@ -34,8 +34,22 @@ export default function ResourcesLayout({ children }: { children: React.ReactNod
   const [filterStatus, setFilterStatus] = useState<string>('All');
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
-  const [filterStatus, setFilterStatus] = useState<string>('All');
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [sortOption, setSortOption] = useState<'custom' | 'newest' | 'alphabetical'>('custom');
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        document.getElementById('resource-search-input')?.focus();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+        e.preventDefault();
+        setShowCreate(true);
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   useEffect(() => {
     const saved = localStorage.getItem('lms_sidebar_collapsed');
@@ -138,12 +152,37 @@ export default function ResourcesLayout({ children }: { children: React.ReactNod
     loadCourses();
   }
 
+  function handleExportCSV() {
+    if (filtered.length === 0) return;
+    const headers = ['Title', 'Slug', 'Difficulty', 'Status', 'Modules', 'Created At'];
+    const rows = filtered.map(c => [
+      `"${c.title.replace(/"/g, '""')}"`,
+      c.slug,
+      c.difficulty_level,
+      c.is_published ? 'Published' : 'Draft',
+      c.resource_modules?.length || 0,
+      new Date(c.created_at).toISOString().split('T')[0]
+    ]);
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(e => e.join(','))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "lms_courses_export.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
   const filtered = courses.filter(c => {
     const s = search.toLowerCase();
     const matchSearch = !s || c.title.toLowerCase().includes(s) || c.slug.includes(s);
     const matchDiff = filterLevels.length === 0 || filterLevels.includes(c.difficulty_level);
     const matchStatus = filterStatus === 'All' || (filterStatus === 'Published' ? c.is_published : !c.is_published);
     return matchSearch && matchDiff && matchStatus;
+  }).sort((a, b) => {
+    if (sortOption === 'newest') return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+    if (sortOption === 'alphabetical') return a.title.localeCompare(b.title);
+    return a.display_order - b.display_order;
   });
 
   const activeFilterCount = (filterStatus !== 'All' ? 1 : 0) + filterLevels.length;
@@ -218,19 +257,35 @@ export default function ResourcesLayout({ children }: { children: React.ReactNod
               </button>
               
               {!isCollapsed && (
-                <button
-                  onClick={() => setShowCreate(true)}
-                  style={{
-                    height: '32px', padding: '0 0.85rem', borderRadius: '8px', border: 'none',
-                    background: 'var(--accent-1)', color: 'white', fontSize: '0.85rem', fontWeight: 700,
-                    cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem',
-                    transition: 'filter 0.15s', flexShrink: 0, boxShadow: '0 4px 12px rgba(108,99,255,0.25)'
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.filter = 'brightness(1.15)')}
-                  onMouseLeave={e => (e.currentTarget.style.filter = 'brightness(1)')}
-                >
-                  <span style={{ fontSize: '1.1rem' }}>+</span> New Course
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <button
+                    onClick={handleExportCSV}
+                    style={{
+                      width: '32px', height: '32px', borderRadius: '8px', border: '1px solid var(--color-border)',
+                      background: 'var(--color-surface-2)', color: 'var(--color-text-muted)', fontSize: '0.9rem',
+                      cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      transition: 'all 0.15s', flexShrink: 0,
+                    }}
+                    onMouseEnter={e => { (e.currentTarget.style.color = 'var(--accent-1)'); (e.currentTarget.style.borderColor = 'var(--accent-1)'); }}
+                    onMouseLeave={e => { (e.currentTarget.style.color = 'var(--color-text-muted)'); (e.currentTarget.style.borderColor = 'var(--color-border)'); }}
+                    title="Export CSV"
+                  >
+                    📥
+                  </button>
+                  <button
+                    onClick={() => setShowCreate(true)}
+                    style={{
+                      height: '32px', padding: '0 0.85rem', borderRadius: '8px', border: 'none',
+                      background: 'var(--accent-1)', color: 'white', fontSize: '0.85rem', fontWeight: 700,
+                      cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem',
+                      transition: 'filter 0.15s', flexShrink: 0, boxShadow: '0 4px 12px rgba(108,99,255,0.25)'
+                    }}
+                    onMouseEnter={e => (e.currentTarget.style.filter = 'brightness(1.15)')}
+                    onMouseLeave={e => (e.currentTarget.style.filter = 'brightness(1)')}
+                  >
+                    <span style={{ fontSize: '1.1rem' }}>+</span> New Course
+                  </button>
+                </div>
               )}
             </div>
           </div>
@@ -240,11 +295,12 @@ export default function ResourcesLayout({ children }: { children: React.ReactNod
             <div style={{ position: 'relative' }}>
               <span style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', fontSize: '1rem', opacity: searchFocused ? 0.8 : 0.4, color: searchFocused ? 'var(--accent-1)' : 'inherit', transition: 'all 0.2s', pointerEvents: 'none' }}>🔍</span>
               <input
+                id="resource-search-input"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 onFocus={() => setSearchFocused(true)}
                 onBlur={() => setSearchFocused(false)}
-                placeholder="Search courses, modules..."
+                placeholder="Search courses, modules... (Ctrl+K)"
                 style={{
                   width: '100%', height: '48px', padding: '0 0.85rem 0 2.5rem',
                   background: searchFocused ? 'var(--color-bg)' : 'var(--color-surface-2)', 
@@ -362,6 +418,30 @@ export default function ResourcesLayout({ children }: { children: React.ReactNod
                 </button>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Sort Options */}
+        {!isCollapsed && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 1.25rem', borderBottom: '1px solid var(--color-border)', background: 'var(--color-surface-2)' }}>
+            <span style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', fontWeight: 600 }}>
+              {filtered.length} Course{filtered.length !== 1 ? 's' : ''}
+            </span>
+            <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+              <span style={{ fontSize: '0.65rem', color: 'var(--color-text-muted)' }}>Sort by:</span>
+              <select
+                value={sortOption}
+                onChange={(e: any) => setSortOption(e.target.value)}
+                style={{
+                  background: 'transparent', border: 'none', color: 'var(--text-secondary)',
+                  fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer', outline: 'none'
+                }}
+              >
+                <option value="custom">Custom Order</option>
+                <option value="newest">Newest First</option>
+                <option value="alphabetical">A-Z</option>
+              </select>
+            </div>
           </div>
         )}
 
