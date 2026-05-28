@@ -27,7 +27,8 @@ interface LeaderboardEntry {
 interface Submission {
   id: string; language: string; verdict: string; runtime_ms: number;
   submitted_at: string;
-  contest_problems: { slug: string; title: string };
+  contest_problems?: { slug: string; title: string };
+  question_bank?: { slug: string; title: string };
 }
 
 const DIFF_COLOR: Record<string, string> = { Easy: '#22c55e', Medium: '#f59e0b', Hard: '#ef4444' };
@@ -114,7 +115,7 @@ export default function ContestArenaPage({ params }: { params: Promise<{ slug: s
     if (res.ok) {
       const d = await res.json();
       setSubmissions(d.submissions || []);
-      const solved = new Set<string>(d.submissions.filter((s: Submission) => s.verdict === 'AC').map((s: Submission) => s.contest_problems?.slug));
+      const solved = new Set<string>(d.submissions.filter((s: Submission) => s.verdict === 'AC').map((s: Submission) => (s.question_bank || s.contest_problems)?.slug));
       setSolvedSet(solved);
     }
   }, [slug]);
@@ -360,7 +361,7 @@ export default function ContestArenaPage({ params }: { params: Promise<{ slug: s
                     padding: '0.7rem 1rem', alignItems: 'center',
                     borderBottom: i < submissions.length - 1 ? '1px solid var(--color-border)' : 'none',
                   }}>
-                    <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sub.contest_problems?.title}</span>
+                    <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{(sub.question_bank || sub.contest_problems)?.title}</span>
                     <span style={{ fontSize: '0.75rem', fontWeight: 700, color: VERDICT_COLOR[sub.verdict] || '#64748b' }}>{sub.verdict}</span>
                     <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', fontFamily: 'monospace' }}>{sub.language}</span>
                     <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', fontFamily: 'monospace' }}>{sub.runtime_ms ? `${sub.runtime_ms}ms` : '—'}</span>

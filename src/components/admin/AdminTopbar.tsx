@@ -134,7 +134,7 @@ export default function AdminTopbar({ user }: { user: User }) {
         const supabase = getSupabase();
         const query = searchQuery.trim();
 
-        // Query users, blogs, events, announcements, contest_events, contest_problems in parallel directly from Supabase
+        // Query users, blogs, events, announcements, contest_events, question_bank in parallel directly from Supabase
         const [
           { data: matchedUsers },
           { data: matchedBlogs },
@@ -148,7 +148,7 @@ export default function AdminTopbar({ user }: { user: User }) {
           (supabase as any).from('cms_events').select('id, title').ilike('title', `%${query}%`).limit(2),
           (supabase as any).from('cms_announcements').select('id, title').ilike('title', `%${query}%`).limit(2),
           (supabase as any).from('contest_events').select('id, title').ilike('title', `%${query}%`).limit(2),
-          (supabase as any).from('contest_problems').select('id, title').ilike('title', `%${query}%`).limit(2)
+          (supabase as any).from('question_bank').select('id, title').ilike('title', `%${query}%`).limit(2)
         ]);
 
         const results: { id: string; label: string; type: string; href: string }[] = [];

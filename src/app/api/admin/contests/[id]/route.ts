@@ -47,7 +47,7 @@ export async function GET(
 
     const { data: problemMap } = await (adminSupabase as any)
       .from('contest_problem_map')
-      .select('*, contest_problems(id, slug, title, difficulty, points, time_limit, tags)')
+      .select('*, question_bank(id, slug, title, difficulty, points, time_limit, tags)')
       .eq('contest_id', id)
       .order('display_order');
 
@@ -59,7 +59,7 @@ export async function GET(
 
     const { data: recentSubs } = await (adminSupabase as any)
       .from('contest_submissions')
-      .select('id, verdict, language, submitted_at, users(display_name), contest_problems(title)')
+      .select('id, verdict, language, submitted_at, users(display_name), question_bank(title)')
       .eq('contest_id', id)
       .order('submitted_at', { ascending: false })
       .limit(50);

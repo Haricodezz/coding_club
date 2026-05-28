@@ -79,7 +79,7 @@ export default function ProblemPage({
       const subRes = await fetch(`/api/v1/contests/${contestSlug}/submissions`);
       if (subRes.ok) {
         const subData = await subRes.json();
-        const solved = new Set<string>(subData.submissions?.filter((s: any) => s.verdict === 'AC').map((s: any) => s.contest_problems?.slug));
+        const solved = new Set<string>(subData.submissions?.filter((s: any) => s.verdict === 'AC').map((s: any) => (s.question_bank || s.contest_problems)?.slug));
         setSolvedSet(solved);
       }
     } finally {

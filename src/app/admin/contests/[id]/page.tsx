@@ -46,11 +46,11 @@ export default function ContestAdminPage({ params }: { params: Promise<{ id: str
         });
         setProblems((d.problemMap || []).map((pm: any) => ({
           mapId: pm.id,
-          problem_id: pm.contest_problems.id,
-          slug: pm.contest_problems.slug,
-          title: pm.contest_problems.title,
-          difficulty: pm.contest_problems.difficulty,
-          points: pm.custom_points ?? pm.contest_problems.points,
+          problem_id: pm.question_bank.id,
+          slug: pm.question_bank.slug,
+          title: pm.question_bank.title,
+          difficulty: pm.question_bank.difficulty,
+          points: pm.custom_points ?? pm.question_bank.points,
           label: pm.label,
           display_order: pm.display_order
         })));

@@ -92,7 +92,7 @@ export async function getUserSubmissions(
     .select(`
       id, language, verdict, runtime_ms, testcases_total, testcases_passed,
       error_message, compile_output, submitted_at,
-      contest_problems(slug, title)
+      question_bank(slug, title)
     `)
     .eq('contest_id', contestId)
     .eq('user_id', userId)
@@ -118,7 +118,7 @@ export async function getAllContestSubmissions(
     .select(`
       id, language, verdict, runtime_ms, submitted_at,
       users(display_name, username),
-      contest_problems(title, slug)
+      question_bank(title, slug)
     `)
     .eq('contest_id', contestId)
     .order('submitted_at', { ascending: false })

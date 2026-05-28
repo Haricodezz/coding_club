@@ -66,7 +66,7 @@ export async function getContestProblems(supabase: SupabaseClient<any, 'public',
     .from('contest_problem_map')
     .select(`
       id, label, custom_points, display_order, is_locked,
-      contest_problems (
+      question_bank (
         id, slug, title, difficulty, points, time_limit, tags,
         execution_mode, function_params, function_return_type, function_templates
       )
@@ -78,10 +78,10 @@ export async function getContestProblems(supabase: SupabaseClient<any, 'public',
   return (data || []).map((row: any) => ({
     mapId:        row.id,
     label:        row.label,
-    points:       row.custom_points ?? row.contest_problems?.points ?? 100,
+    points:       row.custom_points ?? row.question_bank?.points ?? 100,
     displayOrder: row.display_order,
     isLocked:     row.is_locked,
-    ...row.contest_problems,
+    ...row.question_bank,
   }));
 }
 
@@ -187,7 +187,7 @@ export async function reorderProblems(supabase: SupabaseClient<any, 'public', an
 
 export async function searchQuestionBank(supabase: SupabaseClient<any, 'public', any>, params: { search?: string; difficulty?: string; category?: string; tags?: string[] }) {
   let query = (supabase as any)
-    .from('contest_problems')
+    .from('question_bank')
     .select('id, slug, title, difficulty, points, tags, usage_count, acceptance_rate, is_public')
     .order('created_at', { ascending: false });
 
