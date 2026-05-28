@@ -129,14 +129,11 @@ export async function getContestLeaderboard(
   return data || [];
 }
 
-// -----------------------------------------------
-// Get the global leaderboard (reads users directly)
-// -----------------------------------------------
 export async function getGlobalLeaderboard(
   supabase: SupabaseClient<any, 'public', any>,
   opts: { platform?: string; limit?: number } = {},
 ) {
-  let query = (supabase as any)
+  const query = (supabase as any)
     .from('users')
     .select(`
       id, full_name, username, avatar_url, total_points, branch, academic_year, roll_number, email, role,
@@ -145,24 +142,62 @@ export async function getGlobalLeaderboard(
       leetcode_user_streaks (current_streak, highest_streak)
     `);
 
-  // Rank users by selected platform score
-  if (opts.platform === 'leetcode') {
-    query = query.order('lc_points', { ascending: false });
-  } else {
-    query = query.order('total_points', { ascending: false });
-  }
-
-  if (opts.limit) {
-    query = query.limit(opts.limit);
-  }
-
   const { data, error } = await query;
   if (error) {
     console.error('Error fetching global leaderboard:', error);
     throw new Error(error.message);
   }
 
-  return data || [];
+  let users = data || [];
+
+  // Compute live scores and set platform-specific points for display
+  users.forEach((u: any) => {
+    const totalPoints = u.total_points || 0; // From DB trigger (includes LeetCode via points_history)
+    const leetcodePoints = u.lc_points || 0;
+    
+    // Overall = Total Points
+    u.overall_points = totalPoints;
+
+    // Determine what to display based on selected tab
+    if (opts.platform === 'leetcode') {
+      u.display_points = leetcodePoints;
+    } else if (opts.platform === 'internal') {
+      u.display_points = Math.max(0, totalPoints - leetcodePoints);
+    } else if (opts.platform === 'contest') {
+      // Placeholder if global contest points aren't fully aggregated in 'users' yet
+      u.display_points = 0; 
+    } else {
+      // 'overall'
+      u.display_points = u.overall_points;
+    }
+    
+    // The frontend always reads 'total_points' for the score column
+    u.total_points = u.display_points;
+  });
+
+  // Sort with proper tie-breakers
+  users.sort((a: any, b: any) => {
+    // Primary sort: Points
+    if (b.display_points !== a.display_points) {
+      return b.display_points - a.display_points;
+    }
+    // Tie-breaker 1: Total solved
+    if (b.lc_total_solved !== a.lc_total_solved) {
+      return (b.lc_total_solved || 0) - (a.lc_total_solved || 0);
+    }
+    // Tie-breaker 2: Hard solved
+    if (b.lc_hard_solved !== a.lc_hard_solved) {
+      return (b.lc_hard_solved || 0) - (a.lc_hard_solved || 0);
+    }
+    // Tie-breaker 3: Alphabetical by username
+    return (a.username || '').localeCompare(b.username || '');
+  });
+
+  if (opts.limit) {
+    users = users.slice(0, opts.limit);
+  }
+
+  return users;
 }
 
 // -----------------------------------------------

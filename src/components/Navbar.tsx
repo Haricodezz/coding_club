@@ -81,11 +81,6 @@ const NAV_GROUPS = [
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         ), public: true,
       },
-      {
-        href: 'https://discord.gg/em2hPagZ', label: 'Discord', icon: (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><path d="M7.5 20c0 0-2-1.5-2.5-3.5c0 0-1.5-4 0-9c0 0 2-2.5 7-2.5s7 2.5 7 2.5c1.5 5 0 9 0 9c-.5 2-2.5 3.5-2.5 3.5l-1-1.5c0 0-2.5 .5-3.5 .5s-3.5-.5-3.5-.5l-1 1.5z"/></svg>
-        ), public: true,
-      },
     ],
   },
 ];
@@ -216,7 +211,7 @@ export function Navbar() {
 
           {/* ── Logo ── */}
           <Link
-            href={user ? '/dashboard' : '/'}
+            href="/"
             className="navbar-logo"
             aria-label="CodingClub — Home"
           >
@@ -303,6 +298,24 @@ export function Navbar() {
           {/* ── Right Section ── */}
           <div className="navbar-right" role="toolbar" aria-label="Account and settings">
 
+            {/* Dashboard pill */}
+            {user && (
+              <Link
+                href="/dashboard"
+                className="nav-admin-pill"
+                style={{ background: 'var(--color-surface-2)', color: 'var(--text-primary)', border: '1px solid var(--color-border)', marginRight: '0.5rem' }}
+                title="Student Dashboard"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="14" width="7" height="7"></rect>
+                  <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+                Dashboard
+              </Link>
+            )}
+
             {/* Admin Console pill */}
             {isAdmin && (
               <Link
@@ -313,7 +326,7 @@ export function Navbar() {
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                 </svg>
-                Admin
+                Console
               </Link>
             )}
 
@@ -446,7 +459,7 @@ export function Navbar() {
                           onClick={() => setUserDropOpen(false)}
                         >
                           <span>🛡️</span>
-                          <span>Switch to Admin</span>
+                          <span>Switch to Console</span>
                         </Link>
                       </>
                     )}
@@ -539,9 +552,9 @@ export function Navbar() {
 
           {isAdmin && (
             <div className="mobile-drawer-group">
-              <p className="mobile-drawer-group-label">ADMIN</p>
+              <p className="mobile-drawer-group-label">CONSOLE</p>
               <Link href="/admin" className="mobile-drawer-link mobile-drawer-link--admin" onClick={() => setMenuOpen(false)}>
-                <span>🛡️</span> Admin Console
+                <span>🛡️</span> Platform Console
               </Link>
             </div>
           )}

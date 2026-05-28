@@ -23,7 +23,7 @@ export default function ProfilePage() {
   
   // Edit Profile State
   const [isEditing, setIsEditing] = useState(false);
-  const [editForm, setEditForm] = useState({ avatar_url: '', cover_url: '' });
+  const [editForm, setEditForm] = useState({ full_name: '', avatar_url: '', cover_url: '', bio: '' });
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   useEffect(() => {
@@ -32,23 +32,28 @@ export default function ProfilePage() {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) setCurrentUserId(session.user.id);
 
+      const decodedUsername = decodeURIComponent(username);
       const { data: user } = await supabase
         .from('users')
         .select('*')
-        .eq('username', username)
+        .eq('username', decodedUsername)
         .single();
 
       if (!user) { setLoading(false); return; }
       setProfile(user as unknown as AppUser);
 
       // Fetch leaderboard and streaks
-      const [{ data: streakData }, { data: lb }] = await Promise.all([
+      const [{ data: streakData }, { data: lb }, { data: lcStreakData }] = await Promise.all([
         (supabase as any).from('streaks').select('current_streak').eq('user_id', user.id).single(),
-        (supabase as any).from('leaderboard').select('*').eq('id', user.id).single()
+        (supabase as any).from('leaderboard').select('*').eq('id', user.id).single(),
+        (supabase as any).from('leetcode_user_streaks').select('current_streak').eq('user_id', user.id).single()
       ]);
 
+      const qStreak = streakData?.current_streak || 0;
+      const lStreak = lcStreakData?.current_streak || 0;
+
       setProfileStats({
-        streak: streakData?.current_streak || 0,
+        streak: Math.max(qStreak, lStreak),
         qotdPoints: lb?.qotd_points || 0,
         contestPoints: lb?.contest_points || 0
       });
@@ -64,12 +69,26 @@ export default function ProfilePage() {
     }
   }
 
+  async function handleAcademicSave(data: Partial<AppUser>) {
+    if (!profile) return;
+    const supabase = getSupabase();
+    const { error } = await (supabase as any)
+      .from('users')
+      .update(data)
+      .eq('id', profile.id);
+    if (!error) {
+      setProfile({ ...profile, ...data } as AppUser);
+    } else {
+      alert('Error updating academic details');
+    }
+  }
+
   async function handleSaveProfile() {
     if (!profile) return;
     const supabase = getSupabase();
     const { error } = await (supabase as any)
       .from('users')
-      .update({ avatar_url: editForm.avatar_url, cover_url: editForm.cover_url })
+      .update({ full_name: editForm.full_name, avatar_url: editForm.avatar_url, cover_url: editForm.cover_url, bio: editForm.bio })
       .eq('id', profile.id);
     
     if (!error) {
@@ -80,7 +99,7 @@ export default function ProfilePage() {
 
   function openEditModal() {
     if (profile) {
-      setEditForm({ avatar_url: profile.avatar_url || '', cover_url: profile.cover_url || '' });
+      setEditForm({ full_name: profile.full_name || '', avatar_url: profile.avatar_url || '', cover_url: profile.cover_url || '', bio: profile.bio || '' });
       setIsEditing(true);
     }
   }
@@ -164,7 +183,7 @@ export default function ProfilePage() {
           <div className="empty-state">
             <span style={{ fontSize: '3rem', marginBottom: '1rem', display: 'block' }}>👤</span>
             <h3>User not found</h3>
-            <p>The profile "{username}" doesn't exist.</p>
+            <p>The profile "{decodeURIComponent(username)}" doesn't exist.</p>
             <button className="btn btn-primary mt-4" onClick={() => router.push('/leaderboard')}>View Leaderboard</button>
           </div>
         </div>
@@ -213,7 +232,7 @@ export default function ProfilePage() {
           <div className="grid-2 animate-slide-in" style={{ gap: '2rem', alignItems: 'start' }}>
             <div className="flex-col gap-6">
               <UnifiedStats profile={profile} stats={profileStats} />
-              <AcademicDetails profile={profile} isOwnProfile={isOwnProfile} />
+              <AcademicDetails profile={profile} isOwnProfile={isOwnProfile} onSave={handleAcademicSave} />
             </div>
             <div className="flex-col gap-6">
               <PlatformIntegration profile={profile} isOwnProfile={isOwnProfile} onSyncLeetCode={handleSyncLeetCode} syncing={syncing} />
@@ -231,9 +250,32 @@ export default function ProfilePage() {
       {isEditing && (
         <div className="modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
           <div className="card glass" style={{ width: '100%', maxWidth: '500px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '16px', padding: '2rem', boxShadow: '0 24px 80px rgba(0,0,0,0.6)' }}>
-            <h3 style={{ marginBottom: '1.5rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.75rem' }}>Edit Profile Images</h3>
+            <h3 style={{ marginBottom: '1.5rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.75rem' }}>Edit Profile</h3>
             
             <div className="flex-col gap-5">
+              {/* Full Name Input */}
+              <div>
+                <label className="form-label">Full Name</label>
+                <input 
+                  type="text" 
+                  className="form-input" 
+                  value={editForm.full_name}
+                  onChange={(e) => setEditForm({...editForm, full_name: e.target.value})}
+                  placeholder="e.g. Aditi Sharma"
+                />
+              </div>
+
+              {/* Bio Input */}
+              <div>
+                <label className="form-label">Bio</label>
+                <textarea 
+                  className="form-textarea" 
+                  value={editForm.bio}
+                  onChange={(e) => setEditForm({...editForm, bio: e.target.value})}
+                  placeholder="Tell us about yourself..."
+                  style={{ minHeight: '80px', width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--text-primary)', fontFamily: 'inherit', resize: 'vertical' }}
+                />
+              </div>
               {/* Image Preview Area */}
               <div className="flex gap-4 items-center" style={{ background: 'var(--color-surface-2)', padding: '1rem', borderRadius: '12px' }}>
                 <img 

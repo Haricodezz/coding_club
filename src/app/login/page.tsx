@@ -85,12 +85,12 @@ export default function LoginPage() {
           <form onSubmit={handleLogin}>
             <div className="flex-col gap-4">
               <div className="form-group">
-                <label className="form-label" htmlFor="email">Email / Batch Email</label>
+                <label className="form-label" htmlFor="email">Email Address</label>
                 <input
                   id="email"
                   type="email"
                   className="form-input"
-                  placeholder="user_001@club.local"
+                  placeholder="user@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required

@@ -67,12 +67,27 @@ function SocialLinks({ member }: { member: CmsTeamMember }) {
   );
 }
 
+const TEAM_ROLES: Record<string, string> = {
+  super_admin: 'Founder 👑',
+  president: 'President 🏛️',
+  vice_president: 'Vice President 👔',
+  lead_mentor: 'Lead Mentor 🌟',
+  mentor: 'Mentor ⭐',
+  moderator: 'Moderator 🛡️',
+  content_creator: 'Content Creator ✍️',
+  contributor: 'Contributor 🛠️',
+  community_manager: 'Community Manager 🤝',
+  team: 'Core Team 👥',
+};
+
 function TeamMemberModal({ member, onClose }: { member: CmsTeamMember, onClose: () => void }) {
   // Prevent body scroll when modal is open
   useEffect(() => {
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = 'auto'; };
   }, []);
+
+  const roleLabel = TEAM_ROLES[member.role] || member.role.replace('_', ' ').toUpperCase();
 
   return (
     <div className="team-modal-backdrop" onClick={onClose} style={{
@@ -108,7 +123,7 @@ function TeamMemberModal({ member, onClose }: { member: CmsTeamMember, onClose: 
             <div>
               <h2 style={{ margin: 0, fontSize: '2rem' }}>{member.name}</h2>
               <p style={{ margin: '0.25rem 0 0 0', color: 'var(--brand-primary)', fontWeight: 600 }}>
-                {member.title ? `${member.title} · ${member.role}` : member.role}
+                {member.title ? `${member.title} · ${roleLabel}` : roleLabel}
               </p>
               {member.department && <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)' }}>{member.department}</p>}
             </div>
@@ -267,6 +282,16 @@ export default function TeamPage() {
                 <span className="team-stat-label">Expertise Domains</span>
               </div>
             </div>
+
+            {settings?.connect_links && settings.connect_links.length > 0 && (
+              <div className="flex gap-3 justify-center flex-wrap" style={{ marginTop: '2.5rem' }}>
+                {settings.connect_links.map((link, idx) => (
+                  <a key={idx} href={link.url} target="_blank" rel="noreferrer" className="btn btn-secondary" style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', backdropFilter: 'blur(10px)' }}>
+                    {link.platform === 'Discord' ? '👾 ' : ''}{link.label}
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
         </section>
 
@@ -369,7 +394,7 @@ export default function TeamPage() {
 
                       <h3 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--text-primary)' }}>{member.name}</h3>
                       <p style={{ margin: '0.25rem 0 1rem 0', color: isLeadership ? 'var(--brand-primary)' : 'var(--text-secondary)', fontWeight: isLeadership ? 600 : 400, fontSize: '0.95rem' }}>
-                        {member.title || member.role.replace('_', ' ').toUpperCase()}
+                        {member.title ? `${member.title} · ${TEAM_ROLES[member.role] || member.role.replace('_', ' ').toUpperCase()}` : (TEAM_ROLES[member.role] || member.role.replace('_', ' ').toUpperCase())}
                       </p>
 
                       {member.expertise_tags && member.expertise_tags.length > 0 && (

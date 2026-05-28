@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { executePiston } from '@/lib/piston';
+import { PointsService } from '@/lib/services/points.service';
 import type { TestCase, TestCaseResult } from '@/types';
 
 // POST /api/qotd/submit
@@ -79,6 +80,17 @@ export async function POST(req: NextRequest) {
     total_tests: judgeResult.testcases_total,
     points_earned: points,
   });
+
+  if (points > 0) {
+    await PointsService.awardPoints(
+      adminSupabase,
+      session.user.id,
+      'qotd',
+      points,
+      `qotd:${question_id}`,
+      `Solved QotD: ${question.title}`
+    );
+  }
 
   return NextResponse.json({
     ...judgeResult,

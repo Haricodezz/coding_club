@@ -6,12 +6,13 @@ interface DropdownProps {
   onSuspend: () => void;
   onTerminate: () => void;
   canRestrict: boolean;
+  canTerminate?: boolean;
   isSuspended?: boolean;
   isOpen: boolean;
   onToggle: () => void;
 }
 
-export default function UserActionsDropdown({ onSuspend, onTerminate, canRestrict, isSuspended, isOpen, onToggle }: DropdownProps) {
+export default function UserActionsDropdown({ onSuspend, onTerminate, canRestrict, canTerminate = true, isSuspended, isOpen, onToggle }: DropdownProps) {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -56,19 +57,23 @@ export default function UserActionsDropdown({ onSuspend, onTerminate, canRestric
           >
             {isSuspended ? '▶️ Activate' : '⏸️ Suspend'}
           </button>
-          <div style={{ height: '1px', background: 'var(--color-border)', margin: '0.25rem 0' }}></div>
-          <button 
-            onClick={() => { onToggle(); onTerminate(); }}
-            style={{ 
-              display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%', padding: '0.5rem',
-              background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer',
-              borderRadius: 'var(--radius-sm)', textAlign: 'left', fontSize: '0.85rem'
-            }}
-            onMouseOver={e => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}
-            onMouseOut={e => e.currentTarget.style.background = 'transparent'}
-          >
-            🗑️ Terminate
-          </button>
+          {canTerminate && (
+            <>
+              <div style={{ height: '1px', background: 'var(--color-border)', margin: '0.25rem 0' }}></div>
+              <button 
+                onClick={() => { onToggle(); onTerminate(); }}
+                style={{ 
+                  display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%', padding: '0.5rem',
+                  background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer',
+                  borderRadius: 'var(--radius-sm)', textAlign: 'left', fontSize: '0.85rem'
+                }}
+                onMouseOver={e => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}
+                onMouseOut={e => e.currentTarget.style.background = 'transparent'}
+              >
+                🗑️ Terminate
+              </button>
+            </>
+          )}
         </div>
       )}
     </div>

@@ -18,6 +18,7 @@ interface SidebarGroup {
 export default function AdminSidebar({ user, onLogout }: { user: User; onLogout: () => void }) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
+  const [imgError, setImgError] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
     content: true,
     community: true,
@@ -290,11 +291,11 @@ export default function AdminSidebar({ user, onLogout }: { user: User; onLogout:
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', overflow: 'hidden' }}>
             <div
               style={{
-                width: 32,
-                height: 32,
-                borderRadius: '8px',
-                background: 'var(--accent-purple)',
-                color: '#FFF',
+                width: '40px',
+                height: '40px',
+                borderRadius: '10px',
+                background: 'var(--accent-1)',
+                color: '#fff',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -302,9 +303,19 @@ export default function AdminSidebar({ user, onLogout }: { user: User; onLogout:
                 fontWeight: 700,
                 flexShrink: 0,
                 boxShadow: '0 4px 10px rgba(139,92,246,0.2)',
+                overflow: 'hidden',
               }}
             >
-              {user.username.charAt(0).toUpperCase()}
+              {user.avatar_url && !imgError ? (
+                <img 
+                  src={user.avatar_url} 
+                  alt={user.full_name || user.username || user.email} 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                  onError={() => setImgError(true)} 
+                />
+              ) : (
+                (user.full_name || user.username || user.email || 'A').charAt(0).toUpperCase()
+              )}
             </div>
             {!collapsed && (
               <div style={{ flex: 1, minWidth: 0 }}>
@@ -318,10 +329,10 @@ export default function AdminSidebar({ user, onLogout }: { user: User; onLogout:
                     textOverflow: 'ellipsis',
                   }}
                 >
-                  {user.username}
+                  {user.full_name ? user.full_name.split(' ')[0] : (user.username || user.email?.split('@')[0])}
                 </div>
                 <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'capitalize' }}>
-                  {user.role.replace('_', ' ')}
+                  {user.role === 'super_admin' ? 'Founder 👑' : user.role.replace('_', ' ')}
                 </div>
               </div>
             )}

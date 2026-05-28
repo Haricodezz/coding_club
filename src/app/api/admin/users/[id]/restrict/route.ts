@@ -40,6 +40,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const adminSupabase = createAdminSupabaseClient();
 
     if (action === 'terminate') {
+      if (currentUser.role === 'team') {
+        return NextResponse.json({ error: 'Team members are not allowed to terminate users' }, { status: 403 });
+      }
       // Delete user
       const { error } = await adminSupabase.auth.admin.deleteUser(id);
       if (error) throw error;

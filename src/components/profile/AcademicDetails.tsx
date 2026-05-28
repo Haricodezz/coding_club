@@ -16,6 +16,7 @@ export function AcademicDetails({ profile, isOwnProfile, onSave }: AcademicDetai
   const [formData, setFormData] = useState({
     roll_number: profile.roll_number || '',
     academic_year: profile.academic_year || '',
+    batch_id: profile.batch_id || '',
     branch: profile.branch || '',
   });
 
@@ -71,6 +72,19 @@ export function AcademicDetails({ profile, isOwnProfile, onSave }: AcademicDetai
                   </select>
                 </div>
                 <div className="form-group">
+                  <label className="form-label" style={{ fontSize: '0.75rem' }}>Batch (Graduation Year)</label>
+                  <select 
+                    className="form-input" 
+                    value={formData.batch_id} 
+                    onChange={e => setFormData({...formData, batch_id: e.target.value})}
+                  >
+                    <option value="">Select Batch</option>
+                    {[2022, 2023, 2024, 2025, 2026, 2027, 2028, 2029].map(yr => (
+                      <option key={yr} value={yr.toString()}>{yr}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="form-group">
                   <label className="form-label" style={{ fontSize: '0.75rem' }}>Branch</label>
                   <select 
                     className="form-input" 
@@ -98,6 +112,10 @@ export function AcademicDetails({ profile, isOwnProfile, onSave }: AcademicDetai
               <div className="flex justify-between items-center border-b" style={{ paddingBottom: '0.5rem', borderColor: 'var(--color-border)' }}>
                 <span style={{ color: 'var(--text-muted)' }}>Year</span>
                 <span style={{ fontWeight: 600 }}>{profile.academic_year ? `Year ${profile.academic_year}` : '—'}</span>
+              </div>
+              <div className="flex justify-between items-center border-b" style={{ paddingBottom: '0.5rem', borderColor: 'var(--color-border)' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Batch</span>
+                <span style={{ fontWeight: 600 }}>{profile.batch_id || '—'}</span>
               </div>
               <div className="flex justify-between items-center border-b" style={{ paddingBottom: '0.5rem', borderColor: 'var(--color-border)' }}>
                 <span style={{ color: 'var(--text-muted)' }}>Branch</span>

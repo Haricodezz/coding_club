@@ -600,6 +600,15 @@ export async function deleteResourceCourse(id: string) {
   revalidatePath('/resources');
 }
 
+export async function updateResourceCourseOrders(updates: { id: string, display_order: number }[]) {
+  const { supabase } = await checkAdminAuth();
+  for (const u of updates) {
+    const { error } = await supabase.from('resource_courses' as any).update({ display_order: u.display_order }).eq('id', u.id);
+    if (error) throw new Error(error.message);
+  }
+  revalidatePath('/resources');
+}
+
 export async function saveResourceModule(id: string | null, payload: any) {
   const { supabase } = await checkAdminAuth();
   let error, result;
@@ -642,5 +651,21 @@ export async function deleteResourceItem(id: string) {
   const { supabase } = await checkAdminAuth();
   const { error } = await supabase.from('resource_items' as any).delete().eq('id', id);
   if (error) throw new Error(error.message);
+  revalidatePath('/resources');
+}
+
+export async function updateResourceModuleOrders(updates: { id: string, display_order: number }[]) {
+  const { supabase } = await checkAdminAuth();
+  for (const update of updates) {
+    await supabase.from('resource_modules' as any).update({ display_order: update.display_order }).eq('id', update.id);
+  }
+  revalidatePath('/resources');
+}
+
+export async function updateResourceItemOrders(updates: { id: string, display_order: number }[]) {
+  const { supabase } = await checkAdminAuth();
+  for (const update of updates) {
+    await supabase.from('resource_items' as any).update({ display_order: update.display_order }).eq('id', update.id);
+  }
   revalidatePath('/resources');
 }

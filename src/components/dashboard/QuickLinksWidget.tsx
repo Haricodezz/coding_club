@@ -18,7 +18,7 @@ interface LinkItem {
 const INITIAL_LINKS: LinkItem[] = [
   { id: 'ide', href: '/ide', label: 'Launch Online IDE', icon: 'terminal', desc: 'Write & compile in 6 languages' },
   { id: 'lb', href: '/leaderboard', label: 'Global Leaderboard', icon: 'trophy', desc: 'Compare your score & rank' },
-  { id: 'learn', href: '/learn', label: 'Learning Resources', icon: 'book', desc: 'Master DSA & Web Dev', badge: 2 },
+  { id: 'learn', href: '/resources', label: 'Learning Resources', icon: 'book', desc: 'Master DSA & Web Dev', badge: 2 },
   { id: 'profile', href: '/profile/me', label: 'Manage Profile', icon: 'user', desc: 'Link Codeforces & LeetCode' },
 ];
 
@@ -100,7 +100,7 @@ export function QuickLinksWidget() {
 
   useEffect(() => {
     setIsClient(true);
-    const saved = localStorage.getItem('dashboard_quick_links');
+    const saved = localStorage.getItem('dashboard_quick_links_v2');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
@@ -113,7 +113,7 @@ export function QuickLinksWidget() {
 
   useEffect(() => {
     if (isClient) {
-      localStorage.setItem('dashboard_quick_links', JSON.stringify(links));
+      localStorage.setItem('dashboard_quick_links_v2', JSON.stringify(links));
     }
   }, [links, isClient]);
 

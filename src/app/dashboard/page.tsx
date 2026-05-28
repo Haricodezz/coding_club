@@ -91,10 +91,6 @@ export default function DashboardPage() {
       const { data: profile } = await supabase.from('users').select('*').eq('id', userId).single();
       if (profile) {
         const userData = profile as unknown as AppUser;
-        if (['super_admin', 'team'].includes(userData.role)) {
-          router.push('/admin');
-          return;
-        }
         setUser(userData);
       }
 
@@ -141,18 +137,43 @@ export default function DashboardPage() {
         .limit(10);
       if (subsData) setRecentSubmissions(subsData);
 
-      const { data: contestsData } = await supabase.from('contests').select('*').order('start_date', { ascending: false });
-      if (contestsData) setAllContests(contestsData as unknown as Contest[]);
+      const { data: contestsData } = await (supabase as any).from('contest_events').select('*').order('start_time', { ascending: false });
+      if (contestsData) {
+        // Map backend fields to Contest component fields if needed, but it seems ContestsWidget accepts them.
+        // Actually ContestsWidget uses start_date/end_date in types! We must map start_time to start_date.
+        const now = new Date();
+        const mappedContests = contestsData.map((c: any) => {
+          let status = 'upcoming';
+          const start = new Date(c.start_time);
+          const end = new Date(c.end_time);
+          if (now < start) status = 'upcoming';
+          else if (now >= start && now <= end) status = 'active';
+          else status = 'completed'; // use 'completed' to match the widget tab
+          
+          return {
+            ...c,
+            start_date: c.start_time,
+            end_date: c.end_time,
+            status
+          };
+        });
+        setAllContests(mappedContests as unknown as Contest[]);
+      }
 
       // Fetch real analytics & streaks
       const { data: analytics } = await (supabase as any).from('user_performance_analytics').select('*').eq('user_id', userId).single();
       const { data: streakData } = await (supabase as any).from('streaks').select('*').eq('user_id', userId).single();
+      const { data: lcStreakData } = await (supabase as any).from('leetcode_user_streaks').select('*').eq('user_id', userId).single();
       
+      const qStreak = streakData?.current_streak || 0;
+      const lStreak = lcStreakData?.current_streak || 0;
+      const bestStreak = Math.max(qStreak, lStreak);
+
       setStats({
         winRate: analytics?.win_rate || 0,
         accuracy: analytics?.accuracy || 0,
         trend: analytics?.improvement_trend || 0,
-        streak: streakData?.current_streak || 0,
+        streak: bestStreak,
         nextMilestone: streakData?.next_milestone || 7
       });
 
@@ -169,7 +190,7 @@ export default function DashboardPage() {
     return                         { label: 'Good Night',     emoji: '🌙' };
   }
 
-  const totalPoints = userLb?.total_points ?? user?.platform_points ?? 0;
+  const totalPoints = user?.total_points ?? userLb?.total_points ?? user?.platform_points ?? 0;
 
   if (loading) {
     return (

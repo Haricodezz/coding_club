@@ -354,7 +354,7 @@ export function LeetCodeSyncWidget({ profile, isOwnProfile, onProfileUpdate }: {
             {/* Simple confetti placeholder */}
             <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🎉</div>
             <h2 style={{ color: 'var(--text-primary)', marginBottom: '0.5rem' }}>Sync Complete!</h2>
-            <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>You earned <strong style={{ color: 'var(--accent)' }}>{breakdown.baseCredits * breakdown.streakMultiplier * breakdown.timeMultiplier}</strong> credits.</p>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>You earned <strong style={{ color: 'var(--accent)' }}>{breakdown.baseCredits * breakdown.streakMultiplier}</strong> credits.</p>
             
             <div className="flex-col gap-2 text-left" style={{ background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: 'var(--radius)', marginBottom: '2rem' }}>
               <div className="flex justify-between">
@@ -373,10 +373,6 @@ export function LeetCodeSyncWidget({ profile, isOwnProfile, onProfileUpdate }: {
               <div className="flex justify-between">
                 <span>🔥 Streak Multiplier</span>
                 <strong style={{ color: '#f97316' }}>{breakdown.streakMultiplier}x</strong>
-              </div>
-              <div className="flex justify-between">
-                <span>🌙 Time Multiplier</span>
-                <strong style={{ color: '#38bdf8' }}>{breakdown.timeMultiplier}x</strong>
               </div>
             </div>
 

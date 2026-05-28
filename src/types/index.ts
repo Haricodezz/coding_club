@@ -9,6 +9,7 @@ export interface User {
   full_name?: string;
   roll_number?: string;
   academic_year?: number;
+  batch_id?: string;
   branch?: string;
   phone?: string;
   bio?: string;

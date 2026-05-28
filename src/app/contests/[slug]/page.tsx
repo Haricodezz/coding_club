@@ -171,7 +171,7 @@ export default function ContestArenaPage({ params }: { params: Promise<{ slug: s
     </div>
   );
 
-  if (joined === false) {
+  if (joined === false && contest.status !== 'ended') {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', background: 'var(--color-bg)' }}>
         <div style={{ display: 'flex', alignItems: 'center', padding: '0 1.5rem', height: '3.5rem', flexShrink: 0, background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)' }}>
@@ -238,12 +238,21 @@ export default function ContestArenaPage({ params }: { params: Promise<{ slug: s
         {/* PROBLEMS TAB */}
         {tab === 'problems' && (
           <div style={{ maxWidth: '760px', margin: '0 auto' }}>
-            {!joined && (
+            {!joined && contest.status !== 'ended' && (
               <div style={{ padding: '1.25rem', borderRadius: '10px', background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.2)', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <span style={{ fontSize: '1.2rem' }}>⚠️</span>
                 <div>
                   <p style={{ color: '#f59e0b', fontWeight: 700, margin: 0, fontSize: '0.85rem' }}>Join the contest to submit solutions</p>
                   <p style={{ color: 'var(--color-text-muted)', fontSize: '0.78rem', margin: 0 }}>You can view problem statements but cannot submit until you join.</p>
+                </div>
+              </div>
+            )}
+            {contest.status === 'ended' && (
+              <div style={{ padding: '1.25rem', borderRadius: '10px', background: 'rgba(100,116,139,0.06)', border: '1px solid rgba(100,116,139,0.2)', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <span style={{ fontSize: '1.2rem' }}>ℹ️</span>
+                <div>
+                  <p style={{ color: '#64748b', fontWeight: 700, margin: 0, fontSize: '0.85rem' }}>This contest has ended</p>
+                  <p style={{ color: 'var(--color-text-muted)', fontSize: '0.78rem', margin: 0 }}>You are viewing past contest problems and the final leaderboard.</p>
                 </div>
               </div>
             )}

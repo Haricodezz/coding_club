@@ -98,6 +98,7 @@ export interface CmsTeamSettings {
   featured_member_ids?: string[];
   display_mode: string;
   card_size: string;
+  connect_links?: { platform: string; url: string; label: string }[];
   updated_at: string;
 }
 

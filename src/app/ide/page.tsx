@@ -64,10 +64,18 @@ export default function IDEPage() {
           <p>Write and execute code in 6 languages. Results appear instantly below.</p>
         </div>
 
+        {/* Fullscreen Wrapper */}
+        <div style={isFullscreen ? {
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
+          zIndex: 9999, background: 'var(--color-bg)', padding: '1.5rem',
+          display: 'flex', flexDirection: 'column', gap: '1rem',
+          overflow: 'hidden'
+        } : { display: 'flex', flexDirection: 'column' }}>
+
         {/* Toolbar */}
         <div
           className="glass"
-          style={{ padding: '0.875rem 1.25rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}
+          style={{ padding: '0.875rem 1.25rem', marginBottom: isFullscreen ? '0' : '1rem', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', flexShrink: 0 }}
         >
           {/* Language selector */}
           <div className="flex items-center gap-2">
@@ -116,25 +124,7 @@ export default function IDEPage() {
         </div>
 
           {/* Editor + Output layout */}
-          <div 
-            style={isFullscreen ? {
-              position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
-              zIndex: 9999, background: 'var(--color-bg)', padding: '1.5rem',
-              display: 'flex', gap: '1.5rem',
-              overflow: 'hidden'
-            } : {
-              display: 'flex', gap: '1rem', height: '600px',
-            }}
-          >
-            {isFullscreen && (
-              <button 
-                className="btn btn-ghost btn-sm" 
-                style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', zIndex: 10000 }}
-                onClick={() => setIsFullscreen(false)}
-              >
-                ✕ Exit Fullscreen
-              </button>
-            )}
+          <div style={{ display: 'flex', gap: isFullscreen ? '1.5rem' : '1rem', height: isFullscreen ? '100%' : '600px', flex: 1, minHeight: 0 }}>
 
             <PanelGroup direction="horizontal" autoSaveId="practice-workspace-layout-v1">
               {/* Editor */}
@@ -272,6 +262,7 @@ export default function IDEPage() {
             </div>
           </Panel>
         </PanelGroup>
+        </div>
       </div>
     </div>
   </div>

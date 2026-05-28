@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS public.cms_team_settings (
   featured_member_ids UUID[] DEFAULT '{}',
   display_mode VARCHAR(20) DEFAULT 'Grid',
   card_size VARCHAR(20) DEFAULT 'Standard',
+  connect_links JSONB DEFAULT '[]'::jsonb,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 

@@ -144,11 +144,8 @@ export class LeetCodeService {
     if (currentStreak >= 7) streakMultiplier = 1.5;
     else if (currentStreak >= 3) streakMultiplier = 1.2;
 
-    const currentHour = new Date().getHours();
-    const timeMultiplier = (currentHour >= 0 && currentHour < 6) ? 1.2 : 1.0; // Off-peak bonus
-
     const baseCredits = (easyDelta * 5) + (mediumDelta * 15) + (hardDelta * 30);
-    const earnedCredits = Math.round(baseCredits * streakMultiplier * timeMultiplier);
+    const earnedCredits = Math.round(baseCredits * streakMultiplier);
 
     // 6. DB Updates
     const cooldownDate = new Date();
@@ -162,9 +159,10 @@ export class LeetCodeService {
       last_solved_date: lastSolvedDate?.toISOString().split('T')[0]
     });
 
+    const totalPoints = (prevStats?.points_awarded || 0) + earnedCredits;
+
     if (totalDelta > 0 || force) {
       // Upsert Platform Stats
-      const totalPoints = (prevStats?.points_awarded || 0) + earnedCredits;
       await supabase.from('user_platform_stats').upsert({
         user_id: userId, platform: 'leetcode',
         easy_solved: stats.easy, medium_solved: stats.medium, hard_solved: stats.hard, total_solved: stats.total,
@@ -198,19 +196,19 @@ export class LeetCodeService {
         user_id: userId, amount: earnedCredits, source: 'leetcode_sync',
         description: `Sync: ${easyDelta}E, ${mediumDelta}M, ${hardDelta}H (Streak: ${currentStreak}x)`
       });
-      
-      // Update global points logic
-      await PointsService.awardPoints(
-        supabase, userId, 'leetcode', earnedCredits, 'leetcode_sync',
-        `LeetCode Sync (+${earnedCredits} credits)`
-      );
     }
+
+    // Always update global points logic to ensure total_points is correct in history
+    await PointsService.awardPoints(
+      supabase, userId, 'leetcode', totalPoints, 'leetcode_sync',
+      `LeetCode Sync (Updated total: ${totalPoints})`
+    );
 
     return { 
       success: true, 
       data: stats, 
       points: earnedCredits,
-      breakdown: { easyDelta, mediumDelta, hardDelta, streakMultiplier, timeMultiplier, baseCredits }
+      breakdown: { easyDelta, mediumDelta, hardDelta, streakMultiplier, baseCredits }
     };
   }
 }

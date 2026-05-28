@@ -207,6 +207,7 @@ export default function AdminUsersPage() {
                 const isTeam = currentUser?.role === 'team';
                 const canRestrict = (isSuperAdmin && u.role !== 'super_admin' && u.id !== currentUser?.id) || 
                                    (isTeam && u.role === 'student');
+                const canTerminate = isSuperAdmin && u.role !== 'super_admin' && u.id !== currentUser?.id;
                 const isDropdownOpen = openDropdownId === u.id;
                 
                 return (
@@ -240,6 +241,7 @@ export default function AdminUsersPage() {
                     <td style={{ padding: '1rem 1.5rem', textAlign: 'right' }}>
                       <UserActionsDropdown 
                         canRestrict={canRestrict!} 
+                        canTerminate={canTerminate!}
                         onSuspend={() => handleRestrict(u.id!, u.isSuspended ? 'activate' : 'suspend')}
                         onTerminate={() => handleRestrict(u.id!, 'terminate')}
                         isSuspended={u.isSuspended || false}

@@ -325,11 +325,12 @@ export default function LeaderboardPage() {
     if (index === -1) return null;
     const myRow = entries[index];
     const totalUsers = entries.length;
-    const percentile = Math.round(((totalUsers - myRow.rank) / totalUsers) * 100);
+    // Calculate true "Top X%"
+    const topPercent = Math.max(1, Math.ceil((myRow.rank / totalUsers) * 100));
     return {
       rank: myRow.rank,
       points: platform === 'weekly_leetcode' ? (myRow.weekly_credits || 0) : myRow.total_points,
-      percentile,
+      percentile: topPercent,
       totalUsers,
       user: myRow
     };
@@ -338,19 +339,33 @@ export default function LeaderboardPage() {
   // Handle Scroll to Position
   const handleViewMyPosition = () => {
     if (myPositionMetrics?.user) {
-      // Switch filters to default so the user is guaranteed to be in the list
-      handleResetFilters();
+      // Find the user's exact index in default rank order to determine their page
+      const sorted = [...entries].sort((a, b) => a.rank - b.rank);
+      const myIndex = sorted.findIndex(e => e.id === myPositionMetrics.user.id);
       
-      setTimeout(() => {
-        const rowElement = userRowRefs.current[myPositionMetrics.user.id];
-        if (rowElement) {
-          rowElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          rowElement.classList.add('neon-pulse-gold');
-          setTimeout(() => {
-            rowElement.classList.remove('neon-pulse-gold');
-          }, 3000);
-        }
-      }, 300);
+      if (myIndex !== -1) {
+        const targetPage = Math.floor(myIndex / pageSize) + 1;
+        
+        // Reset filters and navigate to their specific page
+        setYearFilter('all');
+        setBranchFilter('all');
+        setSearchQuery('');
+        setSortBy('rank');
+        setSortOrder('asc');
+        setCurrentPage(targetPage);
+        
+        // Wait for React to render the target page rows, then scroll
+        setTimeout(() => {
+          const rowElement = userRowRefs.current[myPositionMetrics.user.id];
+          if (rowElement) {
+            rowElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            rowElement.classList.add('neon-pulse-gold');
+            setTimeout(() => {
+              rowElement.classList.remove('neon-pulse-gold');
+            }, 3000);
+          }
+        }, 150);
+      }
     }
   };
 

@@ -44,7 +44,8 @@ export default function AdminTeam() {
   const [settingsData, setSettingsData] = useState<Partial<CmsTeamSettings>>({
     page_title: 'Meet the CodingClub Team',
     page_description: 'The passionate people behind the platform...',
-    display_mode: 'Grid', card_size: 'Standard'
+    display_mode: 'Grid', card_size: 'Standard',
+    connect_links: []
   });
 
   useEffect(() => {
@@ -220,6 +221,29 @@ export default function AdminTeam() {
     m.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
     m.role.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const addConnectLink = () => {
+    setSettingsData(prev => ({
+      ...prev,
+      connect_links: [...(prev.connect_links || []), { platform: 'Discord', url: '', label: 'Join Discord' }]
+    }));
+  };
+
+  const updateConnectLink = (index: number, field: string, value: string) => {
+    setSettingsData(prev => {
+      const newLinks = [...(prev.connect_links || [])];
+      newLinks[index] = { ...newLinks[index], [field]: value };
+      return { ...prev, connect_links: newLinks };
+    });
+  };
+
+  const removeConnectLink = (index: number) => {
+    setSettingsData(prev => {
+      const newLinks = [...(prev.connect_links || [])];
+      newLinks.splice(index, 1);
+      return { ...prev, connect_links: newLinks };
+    });
+  };
 
   if (loading) return <div className="flex justify-center items-center" style={{ minHeight: '300px' }}><div className="admin-loading-spinner" /></div>;
 
@@ -458,6 +482,51 @@ export default function AdminTeam() {
                 </select>
               </div>
             </div>
+
+            {/* Connect Links Management */}
+            <div style={{ background: 'var(--color-surface-2)', padding: '1.5rem', borderRadius: '8px', marginTop: '1rem' }}>
+              <div className="flex justify-between items-center" style={{ marginBottom: '1rem' }}>
+                <h4 style={{ margin: 0, color: 'var(--text-primary)' }}>Connect Links (e.g. Discord, GitHub)</h4>
+                <button type="button" className="btn btn-secondary btn-sm" onClick={addConnectLink}>+ Add Link</button>
+              </div>
+              
+              {!settingsData.connect_links?.length ? (
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>No connect links configured.</p>
+              ) : (
+                <div className="flex-col gap-3">
+                  {settingsData.connect_links.map((link, idx) => (
+                    <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr auto', gap: '0.5rem', alignItems: 'center' }}>
+                      <input 
+                        type="text" 
+                        className="form-input" 
+                        placeholder="Platform (e.g. Discord)" 
+                        value={link.platform} 
+                        onChange={e => updateConnectLink(idx, 'platform', e.target.value)} 
+                        required 
+                      />
+                      <input 
+                        type="url" 
+                        className="form-input" 
+                        placeholder="URL (https://...)" 
+                        value={link.url} 
+                        onChange={e => updateConnectLink(idx, 'url', e.target.value)} 
+                        required 
+                      />
+                      <input 
+                        type="text" 
+                        className="form-input" 
+                        placeholder="Label" 
+                        value={link.label} 
+                        onChange={e => updateConnectLink(idx, 'label', e.target.value)} 
+                        required 
+                      />
+                      <button type="button" className="btn btn-ghost btn-sm" onClick={() => removeConnectLink(idx)} style={{ color: '#ff4444' }}>🗑️</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <button type="submit" className="btn btn-primary" disabled={saving} style={{ marginTop: '1rem' }}>
               {saving ? 'Saving Settings...' : 'Save Settings'}
             </button>
