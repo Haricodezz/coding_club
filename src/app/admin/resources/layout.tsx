@@ -275,15 +275,16 @@ export default function ResourcesLayout({ children }: { children: React.ReactNod
                   <button
                     onClick={() => setShowCreate(true)}
                     style={{
-                      height: '32px', padding: '0 0.85rem', borderRadius: '8px', border: 'none',
-                      background: 'var(--accent-1)', color: 'white', fontSize: '0.85rem', fontWeight: 700,
-                      cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem',
-                      transition: 'filter 0.15s', flexShrink: 0, boxShadow: '0 4px 12px rgba(108,99,255,0.25)'
+                    style={{
+                      height: '32px', padding: '0 0.75rem', borderRadius: '8px', border: 'none',
+                      background: 'linear-gradient(135deg, #6c63ff 0%, #8b5cf6 100%)', color: 'white', fontSize: '0.8rem', fontWeight: 700,
+                      cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.35rem',
+                      transition: 'transform 0.15s, opacity 0.15s', flexShrink: 0, boxShadow: '0 4px 12px rgba(108,99,255,0.3)'
                     }}
-                    onMouseEnter={e => (e.currentTarget.style.filter = 'brightness(1.15)')}
-                    onMouseLeave={e => (e.currentTarget.style.filter = 'brightness(1)')}
+                    onMouseEnter={e => { (e.currentTarget.style.opacity = '0.9'); (e.currentTarget.style.transform = 'translateY(-1px)'); }}
+                    onMouseLeave={e => { (e.currentTarget.style.opacity = '1'); (e.currentTarget.style.transform = 'translateY(0)'); }}
                   >
-                    <span style={{ fontSize: '1.1rem' }}>+</span> New Course
+                    <span style={{ fontSize: '1rem', lineHeight: 1 }}>+</span> New Course
                   </button>
                 </div>
               )}
@@ -293,7 +294,7 @@ export default function ResourcesLayout({ children }: { children: React.ReactNod
           {/* Search */}
           {!isCollapsed && (
             <div style={{ position: 'relative' }}>
-              <span style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', fontSize: '1rem', opacity: searchFocused ? 0.8 : 0.4, color: searchFocused ? 'var(--accent-1)' : 'inherit', transition: 'all 0.2s', pointerEvents: 'none' }}>🔍</span>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', opacity: searchFocused ? 0.8 : 0.4, color: searchFocused ? '#6c63ff' : 'inherit', transition: 'all 0.2s', pointerEvents: 'none' }}><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
               <input
                 id="resource-search-input"
                 value={search}
@@ -302,13 +303,13 @@ export default function ResourcesLayout({ children }: { children: React.ReactNod
                 onBlur={() => setSearchFocused(false)}
                 placeholder="Search courses, modules... (Ctrl+K)"
                 style={{
-                  width: '100%', height: '48px', padding: '0 0.85rem 0 2.5rem',
-                  background: searchFocused ? 'var(--color-bg)' : 'var(--color-surface-2)', 
-                  border: `1px solid ${searchFocused ? 'var(--accent-1)' : 'var(--color-border)'}`,
-                  borderRadius: '10px', color: 'var(--text-primary)', fontSize: '0.9rem',
+                  width: '100%', height: '42px', padding: '0 0.85rem 0 2.4rem',
+                  background: searchFocused ? '#0d1117' : '#141824', 
+                  border: `1px solid ${searchFocused ? 'rgba(108,99,255,0.5)' : 'rgba(255,255,255,0.08)'}`,
+                  borderRadius: '10px', color: '#e2e8f0', fontSize: '0.82rem',
                   outline: 'none', boxSizing: 'border-box',
-                  boxShadow: searchFocused ? '0 0 0 3px rgba(108,99,255,0.15)' : 'none',
-                  transition: 'all 0.2s ease'
+                  boxShadow: searchFocused ? '0 0 0 3px rgba(108,99,255,0.1)' : 'none',
+                  transition: 'all 0.2s ease', fontFamily: 'inherit'
                 }}
               />
               <button 
@@ -349,27 +350,25 @@ export default function ResourcesLayout({ children }: { children: React.ReactNod
                 key={s.label} 
                 onClick={() => setFilterStatus(s.type)}
                 style={{ 
-                  background: 'linear-gradient(145deg, rgba(108,99,255,0.1) 0%, rgba(59,130,246,0.05) 100%)', 
-                  border: '1px solid rgba(108,99,255,0.2)',
+                  background: '#141824', 
+                  border: '1px solid rgba(255,255,255,0.07)',
                   borderRadius: '12px', padding: '0.85rem', 
                   cursor: 'pointer', transition: 'all 0.2s ease',
                   position: 'relative', overflow: 'hidden'
                 }} 
                 onMouseEnter={e => {
-                  (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)';
-                  (e.currentTarget as HTMLElement).style.boxShadow = '0 6px 16px rgba(108,99,255,0.15)';
-                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(108,99,255,0.4)';
+                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(108,99,255,0.3)';
+                  (e.currentTarget as HTMLElement).style.background = 'rgba(108,99,255,0.03)';
                 }}
                 onMouseLeave={e => {
-                  (e.currentTarget as HTMLElement).style.transform = 'translateY(0)';
-                  (e.currentTarget as HTMLElement).style.boxShadow = 'none';
-                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(108,99,255,0.2)';
+                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.07)';
+                  (e.currentTarget as HTMLElement).style.background = '#141824';
                 }}
               >
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <p style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 0.25rem', lineHeight: 1, letterSpacing: '-0.02em' }}>{s.value}</p>
-                  <p style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 0.5rem' }}>{s.label}</p>
-                  {s.trending && <span style={{ fontSize: '0.65rem', color: '#10B981', fontWeight: 600, display: 'flex', alignItems: 'center' }}>{s.trending}</span>}
+                  <p style={{ fontSize: '1.75rem', fontWeight: 800, color: '#f1f5f9', margin: '0 0 0.15rem', lineHeight: 1, letterSpacing: '-0.02em' }}>{s.value}</p>
+                  <p style={{ fontSize: '0.65rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 0.35rem' }}>{s.label}</p>
+                  {s.trending && <span style={{ fontSize: '0.6rem', color: '#10b981', fontWeight: 600, display: 'flex', alignItems: 'center' }}>{s.trending}</span>}
                 </div>
               </div>
             ))}
@@ -381,12 +380,12 @@ export default function ResourcesLayout({ children }: { children: React.ReactNod
           <div style={{ padding: '0.85rem 1.25rem', borderBottom: '1px solid var(--color-border)' }}>
             <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: activeFilterCount > 0 ? '0.75rem' : '0' }}>
               {/* Segmented Status Control */}
-              <div style={{ display: 'flex', background: 'var(--color-surface-2)', padding: '2px', borderRadius: '8px', border: '1px solid var(--color-border)' }}>
+              <div style={{ display: 'flex', background: '#141824', padding: '2px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.07)' }}>
                 {['All', 'Published', 'Draft'].map(s => (
                   <button key={s} onClick={() => setFilterStatus(s)} style={{
-                    padding: '0.35rem 0.75rem', borderRadius: '6px', border: 'none', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer',
-                    background: filterStatus === s ? 'var(--color-surface)' : 'transparent',
-                    color: filterStatus === s ? 'var(--text-primary)' : 'var(--color-text-muted)',
+                    padding: '0.35rem 0.6rem', borderRadius: '6px', border: 'none', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer',
+                    background: filterStatus === s ? '#2e364f' : 'transparent',
+                    color: filterStatus === s ? '#e2e8f0' : '#64748b',
                     boxShadow: filterStatus === s ? '0 2px 4px rgba(0,0,0,0.2)' : 'none',
                     transition: 'all 0.2s',
                   }}>{s}</button>
