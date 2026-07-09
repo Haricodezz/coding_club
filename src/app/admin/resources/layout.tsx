@@ -119,13 +119,6 @@ export default function ResourcesLayout({ children }: { children: React.ReactNod
     }
   }
 
-  function toggleSidebar() {
-    setIsCollapsed(prev => {
-      const next = !prev;
-      localStorage.setItem('lms_sidebar_collapsed', String(next));
-      return next;
-    });
-  }
 
   // Auto-generate slug from title
   useEffect(() => {
