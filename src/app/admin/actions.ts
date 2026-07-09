@@ -609,7 +609,7 @@ export async function updateResourceCourseOrders(updates: { id: string, display_
   revalidatePath('/resources');
 }
 
-export async function saveResourceModule(id: string | null, payload: any) {
+export async function saveResourceModule(id: string | null, payload: any): Promise<any> {
   const { supabase } = await checkAdminAuth();
   let error, result;
   if (id) {
