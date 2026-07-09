@@ -70,14 +70,15 @@ export async function POST(req: NextRequest) {
       testcases_passed: 0,
     });
 
-    const { enqueueSubmission, markJudgeStarted, markJudgeDone, markJudgeFailed, logJudgeEvent } = await import('@/lib/services/queue.service');
     let queueId: string | undefined;
     try {
       const { data: qData } = await (adminSupabase as any).from('submission_queue').insert({ submission_id: submissionId, status: 'PENDING' }).select('id').single();
       queueId = qData?.id;
     } catch (e) { console.error('Queue err:', e); }
 
-    if (queueId) await markJudgeStarted(adminSupabase, queueId);
+    if (queueId) {
+      await (adminSupabase as any).from('submission_queue').update({ status: 'JUDGING', judge_started: new Date().toISOString() }).eq('id', queueId);
+    }
     
     let finalCode = code;
     if (problem.execution_mode === 'function' && problem.function_templates) {
@@ -90,10 +91,14 @@ export async function POST(req: NextRequest) {
     let judgeResult: any;
     try {
       judgeResult = await runAgainstTestcases(finalCode, language, testcases, problem.time_limit || 2000);
-      if (queueId) await markJudgeDone(adminSupabase, queueId);
+      if (queueId) {
+        await (adminSupabase as any).from('submission_queue').update({ status: 'DONE', judge_done: new Date().toISOString() }).eq('id', queueId);
+      }
     } catch (e: any) {
-      if (queueId) await markJudgeFailed(adminSupabase, queueId, e.message);
-      await logJudgeEvent(adminSupabase, 'ERROR', `Judge crashed: ${e.message}`, submissionId);
+      if (queueId) {
+        await (adminSupabase as any).from('submission_queue').update({ status: 'FAILED', judge_done: new Date().toISOString(), error_detail: e.message }).eq('id', queueId);
+      }
+      await (adminSupabase as any).from('judge_logs').insert({ level: 'ERROR', message: `Judge crashed: ${e.message}`, submission_id: submissionId });
       throw e;
     }
 

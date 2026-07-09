@@ -6,7 +6,7 @@ import Link from 'next/link';
 import ProblemList, { ContestProblem } from '@/components/contest/ProblemList';
 import QuestionBankDrawer from '@/components/contest/QuestionBankDrawer';
 import QuestionEditorModal from '@/components/contest/QuestionEditorModal';
-import { fromLocalDatetimeLocal } from '@/lib/utils/date';
+
 
 const STEPS = ['Details', 'Problems', 'Rules', 'Preview', 'Publish'];
 
@@ -113,8 +113,8 @@ export default function NewContestPage() {
       const contestPayload = {
         title: form.title, slug: form.slug, description: form.description,
         banner_url: form.banner_url, 
-        start_time: fromLocalDatetimeLocal(form.start_time), 
-        end_time: fromLocalDatetimeLocal(form.end_time),
+        start_time: form.start_time ? new Date(form.start_time).toISOString() : null, 
+        end_time: form.end_time ? new Date(form.end_time).toISOString() : null,
         contest_type: form.contest_type, visibility: form.visibility,
         practice_mode: form.practice_mode, freeze_at, is_published: isPublished
       };

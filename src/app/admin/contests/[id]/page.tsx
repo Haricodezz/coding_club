@@ -7,7 +7,7 @@ import QuestionBankDrawer from '@/components/contest/QuestionBankDrawer';
 import QuestionEditorModal from '@/components/contest/QuestionEditorModal';
 import ContestMonitor from '@/components/contest/ContestMonitor';
 import AnnouncementPanel from '@/components/contest/AnnouncementPanel';
-import { toLocalDatetimeLocal, fromLocalDatetimeLocal } from '@/lib/utils/date';
+
 
 const TABS = ['Settings', 'Problems', 'Monitor', 'Announcements'];
 
@@ -37,8 +37,8 @@ export default function ContestAdminPage({ params }: { params: Promise<{ id: str
         setForm({
           title: d.contest.title, slug: d.contest.slug, description: d.contest.description || '',
           banner_url: d.contest.banner_url || '', 
-          start_time: toLocalDatetimeLocal(d.contest.start_time),
-          end_time: toLocalDatetimeLocal(d.contest.end_time), 
+          start_time: d.contest.start_time ? new Date(d.contest.start_time).toISOString().slice(0, 16) : '',
+          end_time: d.contest.end_time ? new Date(d.contest.end_time).toISOString().slice(0, 16) : '',
           contest_type: d.contest.contest_type,
           visibility: d.contest.visibility || 'public', practice_mode: !!d.contest.practice_mode,
           freeze_time_mins: d.contest.freeze_at ? Math.round((new Date(d.contest.end_time).getTime() - new Date(d.contest.freeze_at).getTime()) / 60000) : 0,
@@ -70,8 +70,8 @@ export default function ContestAdminPage({ params }: { params: Promise<{ id: str
 
       const payload = { 
         ...form, 
-        start_time: fromLocalDatetimeLocal(form.start_time),
-        end_time: fromLocalDatetimeLocal(form.end_time),
+        start_time: form.start_time ? new Date(form.start_time).toISOString() : null,
+        end_time: form.end_time ? new Date(form.end_time).toISOString() : null,
         freeze_at 
       };
       delete payload.freeze_time_mins;

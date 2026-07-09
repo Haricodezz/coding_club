@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { getContestBySlug } from '@/lib/services/contest.service';
-import { getUserSubmissions } from '@/lib/services/submission.service';
+
 
 export async function GET(
   req: NextRequest,
@@ -17,7 +17,14 @@ export async function GET(
     if (!contest) return NextResponse.json({ error: 'Contest not found' }, { status: 404 });
 
     const problemId = req.nextUrl.searchParams.get('problem_id') || undefined;
-    const submissions = await getUserSubmissions(supabase, contest.id, user.id, problemId);
+    let query = supabase.from('contest_submissions').select(`
+      id, language, verdict, runtime_ms, testcases_total, testcases_passed,
+      error_message, compile_output, submitted_at,
+      question_bank(slug, title)
+    `).eq('contest_id', contest.id).eq('user_id', user.id).order('submitted_at', { ascending: false });
+    if (problemId) query = query.eq('problem_id', problemId);
+    const { data: submissions, error: subErr } = await query;
+    if (subErr) throw new Error(subErr.message);
 
     return NextResponse.json({ submissions });
   } catch (err: any) {
