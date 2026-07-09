@@ -669,3 +669,60 @@ export async function updateResourceItemOrders(updates: { id: string, display_or
   }
   revalidatePath('/resources');
 }
+
+// -------------------------------------------------------------
+// DASHBOARD & MODERATION ACTIONS
+// -------------------------------------------------------------
+export async function approveBlog(id: string) {
+  const { supabase } = await checkAdminAuth();
+  const { error } = await supabase.from('cms_blogs').update({ is_published: true }).eq('id', id);
+  if (error) throw new Error(error.message);
+  revalidatePath('/admin');
+  revalidatePath('/blogs');
+}
+
+export async function rejectBlog(id: string) {
+  const { supabase } = await checkAdminAuth();
+  // Using ponytail principle: simple delete instead of adding 'status' columns if none exist
+  const { error } = await supabase.from('cms_blogs').delete().eq('id', id);
+  if (error) throw new Error(error.message);
+  revalidatePath('/admin');
+}
+
+export async function bulkApproveBlog(ids: string[]) {
+  const { supabase } = await checkAdminAuth();
+  for (const id of ids) {
+    await supabase.from('cms_blogs').update({ is_published: true }).eq('id', id);
+  }
+  revalidatePath('/admin');
+  revalidatePath('/blogs');
+}
+
+export async function getDashboardKpiDeltas() {
+  const { supabase } = await checkAdminAuth();
+  const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+  
+  const [uRes, bRes, eRes] = await Promise.all([
+    supabase.from('users').select('id', { count: 'exact', head: true }).gte('created_at', oneWeekAgo),
+    supabase.from('cms_blogs').select('id', { count: 'exact', head: true }).gte('created_at', oneWeekAgo),
+    supabase.from('cms_events').select('id', { count: 'exact', head: true }).gte('created_at', oneWeekAgo),
+  ]);
+  
+  return {
+    usersDelta: uRes.count || 0,
+    blogsDelta: bRes.count || 0,
+    eventsDelta: eRes.count || 0,
+  };
+}
+
+export async function getLeaderboardTop5() {
+  const { supabase } = await checkAdminAuth();
+  const { data, error } = await supabase
+    .from('users')
+    .select('id, username, total_points')
+    .order('total_points', { ascending: false })
+    .limit(5);
+    
+  if (error) throw new Error(error.message);
+  return data || [];
+}

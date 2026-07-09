@@ -1,34 +1,26 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface KPI {
   label: string;
   value: number | string;
   trend?: string;
   positive?: boolean;
+  icon?: string;
+  href?: string;
 }
 
 export function KPIBar({ metrics }: { metrics: KPI[] }) {
   const [refreshing, setRefreshing] = useState<Record<string, boolean>>({});
+  const router = useRouter();
 
   const triggerRefresh = (label: string) => {
     setRefreshing(prev => ({ ...prev, [label]: true }));
     setTimeout(() => {
       setRefreshing(prev => ({ ...prev, [label]: false }));
     }, 800);
-  };
-
-  // Maps labels to colors: green for healthy, orange for warnings, red for critical
-  const getColorCategory = (label: string) => {
-    const l = label.toLowerCase();
-    if (l.includes('pending') || l.includes('review') || l.includes('flag')) {
-      return 'orange';
-    }
-    if (l.includes('error') || l.includes('warn') || l.includes('critical')) {
-      return 'red';
-    }
-    return 'green';
   };
 
   return (
@@ -44,33 +36,50 @@ export function KPIBar({ metrics }: { metrics: KPI[] }) {
     >
       {metrics.map((metric) => {
         const isRefreshing = refreshing[metric.label];
-        const statusColor = getColorCategory(metric.label);
 
         return (
           <div 
             key={metric.label}
             className="donezo-card metric-card interactive"
+            onClick={() => metric.href && router.push(metric.href)}
             style={{
               padding: '1.25rem 1.5rem',
-              minHeight: '135px'
+              minHeight: '135px',
+              cursor: metric.href ? 'pointer' : 'default',
+              display: 'flex',
+              flexDirection: 'column',
+              position: 'relative',
+              overflow: 'hidden'
             }}
           >
-            {/* Top Color Coded Status Marker */}
-            <div className={`metric-status-marker ${statusColor}`} />
+            {/* Background Icon (subtle) */}
+            {metric.icon && (
+              <span style={{
+                position: 'absolute',
+                right: '-10px',
+                bottom: '-20px',
+                fontSize: '6rem',
+                opacity: 0.03,
+                pointerEvents: 'none'
+              }}>
+                {metric.icon}
+              </span>
+            )}
 
             {/* Header: Label and Action buttons */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-              <span 
-                style={{ 
-                  fontSize: '0.725rem', 
-                  textTransform: 'uppercase', 
-                  letterSpacing: '0.06em', 
-                  color: 'var(--text-tertiary)', 
-                  fontWeight: 700 
-                }}
-              >
-                {metric.label}
-              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                {metric.icon && <span style={{ fontSize: '1rem' }}>{metric.icon}</span>}
+                <span 
+                  style={{ 
+                    fontSize: '0.75rem', 
+                    color: 'var(--text-tertiary)', 
+                    fontWeight: 600 
+                  }}
+                >
+                  {metric.label}
+                </span>
+              </div>
               <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
                 {/* Refresh Trigger */}
                 <button
@@ -97,10 +106,9 @@ export function KPIBar({ metrics }: { metrics: KPI[] }) {
                 >
                   🔄
                 </button>
-                {/* View Details Arrow */}
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', cursor: 'default' }}>
-                  →
-                </span>
+                {metric.href && (
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>→</span>
+                )}
               </div>
             </div>
 
@@ -108,31 +116,29 @@ export function KPIBar({ metrics }: { metrics: KPI[] }) {
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem', marginTop: 'auto' }}>
               <span 
                 style={{ 
-                  fontSize: '1.85rem', 
-                  fontWeight: 700, 
+                  fontSize: '2rem', 
+                  fontWeight: 800, 
                   color: 'var(--text-primary)', 
                   letterSpacing: '-0.03em',
-                  fontFamily: "'Outfit', sans-serif"
                 }}
               >
                 {isRefreshing ? '...' : metric.value}
               </span>
               {metric.trend && !isRefreshing && (
                 <span 
-                  className={`card-trend ${metric.positive ? 'positive' : 'negative'}`}
                   style={{ 
-                    fontSize: '0.7rem', 
+                    fontSize: '0.75rem', 
                     fontWeight: 600, 
-                    padding: '0.15rem 0.4rem',
-                    borderRadius: 'var(--radius-full)',
+                    padding: '0.15rem 0.5rem',
+                    borderRadius: '6px',
                     color: metric.positive ? 'var(--accent-green)' : 'var(--accent-rose)',
                     background: metric.positive ? 'rgba(0, 200, 83, 0.08)' : 'rgba(239, 68, 68, 0.08)',
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '0.15rem'
+                    gap: '0.2rem'
                   }}
                 >
-                  {metric.positive ? '▲' : '▼'} {metric.trend}
+                  {metric.positive ? '↑' : '↓'} {metric.trend}
                 </span>
               )}
             </div>

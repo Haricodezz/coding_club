@@ -5,6 +5,13 @@ import { useRouter } from 'next/navigation';
 import { getSupabase } from '@/lib/supabase';
 import { KPIBar } from '@/components/admin/ui/KPIBar';
 import { ActivityFeed } from '@/components/admin/ui/ActivityFeed';
+import { 
+  approveBlog, 
+  rejectBlog, 
+  bulkApproveBlog, 
+  getDashboardKpiDeltas, 
+  getLeaderboardTop5 
+} from './actions';
 
 // Responsive Recharts Imports
 import {
@@ -99,6 +106,8 @@ export default function AdminOverviewPage() {
   const [solveRate, setSolveRate] = useState<string>('—');
   const [contestAttendance, setContestAttendance] = useState<string>('—');
   const [flaggedUsers, setFlaggedUsers] = useState<any[]>([]);
+  const [kpiDeltas, setKpiDeltas] = useState({ usersDelta: 0, blogsDelta: 0, eventsDelta: 0 });
+  const [leaderboardData, setLeaderboardData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   // System health (real latency measured via supabase round-trip)
@@ -134,6 +143,8 @@ export default function AdminOverviewPage() {
           { data: contestsData },
           { data: submissionsData },
           { data: usersWeekData },
+          kpiDeltasData,
+          leaderboardDataTop5
         ] = await Promise.all([
           supabase.from('cms_blogs').select('*', { count: 'exact', head: true }),
           supabase.from('cms_announcements').select('*', { count: 'exact', head: true }),
@@ -145,7 +156,12 @@ export default function AdminOverviewPage() {
           (supabase as any).from('contests').select('id, title, start_date, end_date, status').order('start_date', { ascending: false }).limit(3),
           (supabase as any).from('contest_submissions').select('id, created_at').order('created_at', { ascending: false }).limit(500),
           supabase.from('users').select('id, created_at').order('created_at', { ascending: false }).limit(500),
+          getDashboardKpiDeltas(),
+          getLeaderboardTop5()
         ]);
+
+        setKpiDeltas(kpiDeltasData || { usersDelta: 0, blogsDelta: 0, eventsDelta: 0 });
+        setLeaderboardData(leaderboardDataTop5 || []);
 
         setMetrics({
           blogs: blogsCount || 0,
@@ -288,14 +304,20 @@ export default function AdminOverviewPage() {
     setSelectedBulk(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
   };
 
-  const handleBulkApprove = () => {
-    alert(`Bulk approved ${selectedBulk.length} items successfully!`);
-    setSelectedBulk([]);
+  const handleBulkApprove = async () => {
+    if (selectedBulk.length === 0) return;
+    try {
+      await bulkApproveBlog(selectedBulk);
+      setDbPendingBlogs(prev => prev.filter(b => !selectedBulk.includes(b.id)));
+      setSelectedBulk([]);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleApproveBlog = async (id: string) => {
     try {
-      await fetch(`/api/admin/blogs/${id}/approve`, { method: 'POST' });
+      await approveBlog(id);
       setDbPendingBlogs(prev => prev.filter(b => b.id !== id));
     } catch (err) {
       console.error(err);
@@ -304,7 +326,7 @@ export default function AdminOverviewPage() {
 
   const handleRejectBlog = async (id: string) => {
     try {
-      await fetch(`/api/admin/blogs/${id}/reject`, { method: 'POST' });
+      await rejectBlog(id);
       setDbPendingBlogs(prev => prev.filter(b => b.id !== id));
     } catch (err) {
       console.error(err);
@@ -368,10 +390,10 @@ export default function AdminOverviewPage() {
       {/* KPI Stats Top bar (Donezo premium styles) */}
       <KPIBar 
         metrics={[
-          { label: 'Total Users', value: metrics?.users || 0, trend: 'Registered students', positive: true },
-          { label: 'Published Blogs', value: metrics?.blogs || 0, trend: `${pendingReviews.length} pending review`, positive: true },
-          { label: 'Active Events', value: metrics?.events || 0, trend: 'Total events', positive: true },
-          { label: 'Pending Reviews', value: pendingReviews.length, trend: pendingReviews.length > 0 ? 'Action needed' : 'All clear', positive: pendingReviews.length === 0 },
+          { label: 'Total Users', value: metrics?.users || 0, trend: `+${kpiDeltas.usersDelta} this week`, positive: true, icon: '👤', href: '/admin/users' },
+          { label: 'Published Blogs', value: metrics?.blogs || 0, trend: `+${kpiDeltas.blogsDelta} this week`, positive: true, icon: '📄', href: '/admin/blogs' },
+          { label: 'Active Events', value: metrics?.events || 0, trend: `+${kpiDeltas.eventsDelta} this week`, positive: true, icon: '📅', href: '/admin/events' },
+          { label: 'Pending Reviews', value: pendingReviews.length, trend: pendingReviews.length > 0 ? 'Action needed' : 'All clear', positive: pendingReviews.length === 0, icon: '🛡️' },
         ]} 
       />
 
@@ -412,7 +434,7 @@ export default function AdminOverviewPage() {
             </div>
 
             {/* Charts Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1.5rem', minHeight: '260px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.5rem', minHeight: '260px' }}>
               <div style={{ minHeight: '260px', width: '100%' }}>
                 <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.5rem', display: 'block' }}>User growth & Submission activity</span>
                 <ResponsiveContainer width="100%" height="100%">
@@ -429,45 +451,11 @@ export default function AdminOverviewPage() {
                     </defs>
                     <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={10} tickLine={false} />
                     <YAxis stroke="var(--text-muted)" fontSize={10} tickLine={false} />
-                    <Tooltip contentStyle={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }} />
+                    <Tooltip contentStyle={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)', borderRadius: '8px' }} />
                     <Area type="monotone" dataKey="Users" stroke="var(--accent-green)" strokeWidth={2} fillOpacity={1} fill="url(#colorUsers)" />
                     <Area type="monotone" dataKey="Submissions" stroke="var(--accent-purple)" strokeWidth={2} fillOpacity={1} fill="url(#colorSub)" />
                   </AreaChart>
                 </ResponsiveContainer>
-              </div>
-
-              {/* Content distribution pie chart */}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.5rem', display: 'block', textAlign: 'center' }}>Content share</span>
-                <div style={{ width: '100%', height: '180px' }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={pieData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={50}
-                        outerRadius={70}
-                        paddingAngle={3}
-                        dataKey="value"
-                      >
-                        {pieData.map((entry: any, index: number) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-                {/* Custom Legends */}
-                <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center', marginTop: '0.5rem' }}>
-                  {pieData.map((entry: any) => (
-                    <div key={entry.name} style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.65rem' }}>
-                      <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: entry.color }}></span>
-                      <span style={{ color: 'var(--text-secondary)' }}>{entry.name} ({entry.value})</span>
-                    </div>
-                  ))}
-                </div>
               </div>
             </div>
           </div>
@@ -609,55 +597,38 @@ export default function AdminOverviewPage() {
             )}
           </div>
 
-          {/* Section: Expandable Pending Reviews list */}
+          {/* Section: Leaderboard Snapshot */}
           <div className="donezo-card">
-            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>Expandable Review Logs</h3>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', display: 'block', marginBottom: '1.25rem' }}>Detailed article previews and submission deadlines</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+              <div>
+                <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)' }}>Leaderboard Snapshot</h3>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>Top 5 global ranked students</span>
+              </div>
+              <button 
+                onClick={() => router.push('/leaderboard')}
+                style={{ background: 'transparent', border: 'none', color: 'var(--accent-purple)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}
+              >
+                View full list →
+              </button>
+            </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              {pendingReviews.map(review => {
-                const isExpanded = !!expandedReviews[review.id];
-                return (
-                  <div 
-                    key={review.id}
-                    style={{
-                      background: 'rgba(255, 255, 255, 0.01)',
-                      border: '1px solid var(--color-border)',
-                      borderRadius: '10px',
-                      overflow: 'hidden',
-                      transition: 'all var(--transition-fast)'
-                    }}
-                  >
-                    {/* Header trigger */}
-                    <div 
-                      onClick={() => setExpandedReviews(prev => ({ ...prev, [review.id]: !isExpanded }))}
-                      style={{ padding: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <span style={{ fontSize: '1.25rem' }}>{review.preview_img || '📄'}</span>
-                        <div>
-                          <div style={{ fontSize: '0.825rem', fontWeight: 600, color: 'var(--text-primary)' }}>{review.title}</div>
-                          <div style={{ fontSize: '0.725rem', color: 'var(--text-muted)' }}>By {review.author} • status: <span style={{ color: 'var(--accent-amber)' }}>{review.status}</span></div>
-                        </div>
-                      </div>
-                      <span style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)' }}>{isExpanded ? '▲' : '▼'}</span>
-                    </div>
-
-                    {/* Expandable Preview Body */}
-                    {isExpanded && (
-                      <div style={{ padding: '0 1rem 1rem 1rem', borderTop: '1px solid var(--color-border)', background: 'rgba(0,0,0,0.08)' }}>
-                        <p style={{ fontSize: '0.775rem', color: 'var(--text-secondary)', lineHeight: 1.5, margin: '0.75rem 0' }}>
-                          {review.description}
-                        </p>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.7rem', color: 'var(--text-muted)', flexWrap: 'wrap', gap: '0.5rem' }}>
-                          <div>Assigned Reviewer: <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{review.reviewer || 'N/A'}</span></div>
-                          <div>Deadline Indicator: <span style={{ color: 'var(--accent-rose)', fontWeight: 600 }}>{review.deadline}</span></div>
-                        </div>
-                      </div>
-                    )}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {leaderboardData.map((user, index) => (
+                <div key={user.id} className="leaderboard-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px solid var(--color-border)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <span style={{ fontSize: '1.2rem', minWidth: '24px', textAlign: 'center' }}>
+                      {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem', fontWeight: 700 }}>{index + 1}.</span>}
+                    </span>
+                    <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>{user.username}</span>
                   </div>
-                );
-              })}
+                  <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--accent-green)', background: 'rgba(0, 200, 83, 0.1)', padding: '0.1rem 0.5rem', borderRadius: '12px' }}>
+                    {user.total_points} pts
+                  </span>
+                </div>
+              ))}
+              {leaderboardData.length === 0 && (
+                <div style={{ textAlign: 'center', padding: '1rem', color: 'var(--text-muted)', fontSize: '0.75rem' }}>No leaderboard data found</div>
+              )}
             </div>
           </div>
 
@@ -727,37 +698,62 @@ export default function AdminOverviewPage() {
           {/* Quick Actions Actions Panel */}
           <div>
             <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', fontWeight: 700, marginBottom: '0.5rem' }}>Quick Actions Panel</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
               <button 
                 onClick={() => router.push('/admin/announcements')}
                 className="donezo-action-button"
+                style={{ flexDirection: 'column', padding: '0.75rem', alignItems: 'center', textAlign: 'center', gap: '0.25rem' }}
               >
-                <span>📢</span>
-                <span style={{ flex: 1 }}>New Announcement</span>
-                <span style={{ opacity: 0.5 }}>→</span>
+                <span style={{ fontSize: '1.2rem' }}>📢</span>
+                <span style={{ fontSize: '0.65rem' }}>Announcement</span>
               </button>
               <button 
                 onClick={() => router.push('/admin/events')}
                 className="donezo-action-button"
+                style={{ flexDirection: 'column', padding: '0.75rem', alignItems: 'center', textAlign: 'center', gap: '0.25rem' }}
               >
-                <span>📅</span>
-                <span style={{ flex: 1 }}>Create Event</span>
-                <span style={{ opacity: 0.5 }}>→</span>
+                <span style={{ fontSize: '1.2rem' }}>📅</span>
+                <span style={{ fontSize: '0.65rem' }}>Create Event</span>
               </button>
               <button 
                 onClick={() => router.push('/admin/homepage-sections')}
                 className="donezo-action-button"
+                style={{ flexDirection: 'column', padding: '0.75rem', alignItems: 'center', textAlign: 'center', gap: '0.25rem' }}
               >
-                <span>🏠</span>
-                <span style={{ flex: 1 }}>Manage Homepage</span>
-                <span style={{ opacity: 0.5 }}>→</span>
+                <span style={{ fontSize: '1.2rem' }}>🏠</span>
+                <span style={{ fontSize: '0.65rem' }}>Homepage</span>
+              </button>
+              <button 
+                onClick={() => router.push('/admin/users')}
+                className="donezo-action-button"
+                style={{ flexDirection: 'column', padding: '0.75rem', alignItems: 'center', textAlign: 'center', gap: '0.25rem' }}
+              >
+                <span style={{ fontSize: '1.2rem' }}>👥</span>
+                <span style={{ fontSize: '0.65rem' }}>Manage Users</span>
               </button>
             </div>
           </div>
 
-          {/* Trending & Engagement — real data */}
+          {/* Combined Insights Card */}
           <div className="donezo-card" style={{ padding: '1.25rem' }}>
-            <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.75rem' }}>Trending & Engagement</h3>
+            <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '1rem' }}>Platform Insights</h3>
+            
+            {/* System Health Compact */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--color-border)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ fontSize: '1.2rem' }}>⚡</span>
+                <div>
+                  <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-primary)' }}>Database Ping</div>
+                  <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Real-time latency</div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: (dbLatency ?? 0) > 100 ? '#ef4444' : (dbLatency ?? 0) > 50 ? 'var(--accent-amber)' : 'var(--accent-green)' }} />
+                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-primary)' }}>{dbLatency !== null ? `${dbLatency}ms` : '…'}</span>
+              </div>
+            </div>
+
+            {/* Engagement metrics */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', fontSize: '0.75rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.35rem 0', borderBottom: '1px solid var(--color-border)' }}>
                 <span style={{ color: 'var(--text-tertiary)' }}>Top Blog Tag</span>
@@ -771,46 +767,6 @@ export default function AdminOverviewPage() {
                 <span style={{ color: 'var(--text-tertiary)' }}>Latest Contest</span>
                 <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{contestAttendance}</span>
               </div>
-            </div>
-          </div>
-
-          {/* System Health — real measured DB latency */}
-          <div className="donezo-card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-              <div>
-                <h3 style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-primary)' }}>System Health</h3>
-                <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Warn at 50ms, Critical at 100ms</span>
-              </div>
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: (dbLatency ?? 0) > 100 ? '#ef4444' : (dbLatency ?? 0) > 50 ? 'var(--accent-amber)' : 'var(--accent-green)' }}></div>
-            </div>
-
-            {/* Real DB latency ring */}
-            <div style={{ display: 'flex', justifyContent: 'center', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
-              <div className="circular-indicator-container">
-                <svg width="60" height="60" className="circular-progress-svg">
-                  <circle cx="30" cy="30" r="24" stroke="rgba(255,255,255,0.04)" strokeWidth="4" fill="transparent" />
-                  <circle cx="30" cy="30" r="24"
-                    stroke={(dbLatency ?? 0) > 100 ? '#ef4444' : (dbLatency ?? 0) > 50 ? 'var(--accent-amber)' : 'var(--accent-green)'}
-                    strokeWidth="4" fill="transparent"
-                    strokeDasharray={2 * Math.PI * 24}
-                    strokeDashoffset={2 * Math.PI * 24 * (1 - Math.min((dbLatency ?? 0), 200) / 200)}
-                  />
-                </svg>
-                <div className="circular-center-label">
-                  <span style={{ fontSize: '0.7rem', fontWeight: 700 }}>{dbLatency !== null ? `${dbLatency}ms` : '…'}</span>
-                  <span style={{ fontSize: '0.5rem', color: 'var(--text-muted)' }}>DB Ping</span>
-                </div>
-              </div>
-
-              {/* Sparkline */}
-              {latencyHistory.length > 0 && (
-                <div style={{ display: 'flex', gap: '2px', alignItems: 'flex-end', height: '24px', width: '100%', padding: '0 0.5rem' }}>
-                  {latencyHistory.map((val, idx) => (
-                    <div key={idx} style={{ flex: 1, borderRadius: '2px', background: val > 100 ? '#ef4444' : val > 50 ? 'var(--accent-amber)' : 'var(--accent-green)', height: `${Math.min(Math.round((val / 200) * 24), 24)}px` }} />
-                  ))}
-                </div>
-              )}
-              <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)' }}>Last {latencyHistory.length} measurements</span>
             </div>
           </div>
 

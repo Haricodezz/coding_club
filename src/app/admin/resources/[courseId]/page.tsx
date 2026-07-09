@@ -40,6 +40,17 @@ function diffColor(level: string) { return DIFF_OPTIONS.find(d => d.value === le
 function typeIcon(type: string) { return RESOURCE_TYPES.find(t => t.value === type)?.icon || '↗'; }
 function typeColor(type: string) { return RESOURCE_TYPES.find(t => t.value === type)?.color || '#6b7280'; }
 
+function getRelativeTime(dateString: string) {
+  if (!dateString) return '';
+  const d = new Date(dateString);
+  const diff = Date.now() - d.getTime();
+  if (diff < 60000) return 'Just now';
+  if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+  if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+  if (diff < 172800000) return 'Yesterday';
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
 /* ═══════════════════════════════ MAIN PAGE ═══════════════════════════════ */
 export default function CourseEditorPage({ params }: { params: Promise<{ courseId: string }> }) {
   const { courseId } = use(params);
@@ -172,50 +183,55 @@ export default function CourseEditorPage({ params }: { params: Promise<{ courseI
         select.cb-input option { background: #141824; }
       `}</style>
 
-      {/* ── HEADER ── */}
-      <div className="cb-header" style={{ padding: '0.75rem 1.5rem', flexShrink: 0, background: '#0d1117' }}>
-        <div className="breadcrumb">
-          <Link href="/admin/resources">Resources</Link>
-          <span>/</span>
-          <span style={{ color: '#94a3b8' }}>{course.title}</span>
-          {tab !== 'builder' && <><span>/</span><span style={{ color: '#e2e8f0' }}>
-            {tab === 'overview' ? 'Settings' : 'Preview'}
-          </span></>}
-          {tab === 'builder' && <><span>/</span><span style={{ color: '#e2e8f0' }}>Module Builder</span></>}
-        </div>
+      {/* ── COMPACT HEADER ── */}
+      <div className="cb-header" style={{ padding: '0.75rem 1.5rem', flexShrink: 0, background: '#0d1117', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+          <div className="breadcrumb">
+            <Link href="/admin/resources">Resources</Link>
+            <span>/</span>
+            <span style={{ color: '#94a3b8' }}>{course.title}</span>
+            {tab !== 'builder' && <><span>/</span><span style={{ color: '#e2e8f0' }}>{tab === 'overview' ? 'Settings' : 'Preview'}</span></>}
+            {tab === 'builder' && <><span>/</span><span style={{ color: '#e2e8f0' }}>Module Builder</span></>}
+          </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: 0 }}>
-            <span style={{ fontSize: '1.3rem', flexShrink: 0 }}>{course.difficulty_level === 'Advanced' ? '🔥' : course.difficulty_level === 'Intermediate' ? '⚡' : '🌱'}</span>
-            <h1 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#f1f5f9', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', letterSpacing: '-0.02em' }}>
+            <span style={{ fontSize: '1.2rem', flexShrink: 0 }}>{course.difficulty_level === 'Advanced' ? '🔥' : course.difficulty_level === 'Intermediate' ? '⚡' : '🌱'}</span>
+            <h1 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#f1f5f9', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', letterSpacing: '-0.02em' }}>
               {course.title}
             </h1>
             <span className="pill" style={{
-              background: course.is_published ? 'rgba(34,197,94,0.12)' : 'rgba(245,158,11,0.12)',
+              background: course.is_published ? 'rgba(34,197,94,0.1)' : 'rgba(245,158,11,0.08)',
               color: course.is_published ? '#22c55e' : '#f59e0b',
-              border: `1px solid ${course.is_published ? 'rgba(34,197,94,0.22)' : 'rgba(245,158,11,0.22)'}`,
+              border: `1px solid ${course.is_published ? 'rgba(34,197,94,0.2)' : 'rgba(245,158,11,0.15)'}`,
               flexShrink: 0,
             }}>
               <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: 'currentColor', display: 'inline-block' }} />
               {course.is_published ? 'Published' : 'Draft'}
             </span>
           </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0 }}>
-            {[
-              { label: 'Modules',   value: moduleCount },
-              { label: 'Resources', value: itemCount },
-              { label: 'Est. Time', value: totalMins ? `${Math.round(totalMins / 60 * 10) / 10}h` : '—' },
-            ].map(s => (
-              <div key={s.label} className="stat-chip">
-                <p style={{ fontSize: '0.88rem', fontWeight: 800, color: '#e2e8f0', margin: 0, lineHeight: 1 }}>{s.value}</p>
-                <p style={{ fontSize: '0.58rem', color: '#475569', textTransform: 'uppercase', letterSpacing: '0.07em', margin: '0.2rem 0 0', whiteSpace: 'nowrap' }}>{s.label}</p>
-              </div>
-            ))}
-            <Link href={`/resources/${course.slug}`} target="_blank" className="view-site-btn">
-              <span style={{ fontSize: '0.75rem' }}>↗</span> View Course
-            </Link>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', color: '#64748b', marginTop: '0.15rem' }}>
+            <span>{moduleCount} modules</span>
+            <span>·</span>
+            <span>{itemCount} resources</span>
+            <span>·</span>
+            <span title={`Modified ${new Date(course.updated_at || course.created_at).toLocaleString()}`}>
+              Updated {getRelativeTime(course.updated_at || course.created_at) || 'recently'}
+            </span>
           </div>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0, marginTop: '1.2rem' }}>
+          <Link href={`/resources/${course.slug}`} target="_blank" className="view-site-btn">
+            <span>↗</span> Preview
+          </Link>
+          <button style={{ 
+            padding: '0.45rem 0.9rem', borderRadius: '9px', border: 'none',
+            background: 'rgba(255,255,255,0.05)', color: '#e2e8f0', fontSize: '0.77rem', fontWeight: 600,
+            cursor: 'pointer', transition: 'all 0.15s'
+          }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>
+            ⋯
+          </button>
         </div>
       </div>
 
@@ -536,16 +552,24 @@ function BuilderTab({ course, courseId, onRefresh }: { course: any; courseId: st
   }
 
   return (
-    <div style={{ padding: '1.5rem 1.75rem', maxWidth: '920px', margin: '0 auto' }}>
+    <div style={{ padding: '1.5rem 1.75rem', maxWidth: '920px', margin: '0 auto', position: 'relative' }}>
       {/* Header row */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+      <div style={{ 
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
+        marginBottom: '1.5rem', position: 'sticky', top: '1rem', zIndex: 10,
+        background: '#0d1117', padding: '0.75rem 1rem', borderRadius: '12px', 
+        border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
+      }}>
         <div>
-          <h2 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#f1f5f9', margin: '0 0 0.2rem', letterSpacing: '-0.02em' }}>Module Builder</h2>
-          <p style={{ fontSize: '0.77rem', color: '#475569', margin: 0 }}>
+          <h2 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#f1f5f9', margin: '0 0 0.15rem', letterSpacing: '-0.02em' }}>Module Builder</h2>
+          <p style={{ fontSize: '0.75rem', color: '#64748b', margin: 0 }}>
             Organize your course into sections, then add curated resources inside each module.
           </p>
         </div>
-        <button className="add-mod-btn" onClick={openAddMod}>
+        <button className="add-mod-btn" onClick={openAddMod} style={{
+          padding: '0.5rem 1rem', borderRadius: '8px', border: 'none',
+          background: 'rgba(108,99,255,0.1)', color: '#8b80ff', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s'
+        }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(108,99,255,0.2)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(108,99,255,0.1)'}>
           <span style={{ fontSize: '1rem', lineHeight: 1 }}>+</span> Add Module
         </button>
       </div>
@@ -724,32 +748,46 @@ export function SortableResource({ item, iIdx, isLast, openEditRes, deleteRes, d
 
   return (
     <div ref={setNodeRef} style={style}>
-      <div className="res-row">
-        <div {...attributes} {...listeners} className="drag-handle">⠿</div>
-        <span style={{ fontSize: '0.58rem', fontFamily: 'monospace', color: '#334155', width: '1.25rem', textAlign: 'right', flexShrink: 0 }}>{iIdx + 1}</span>
+      <div className="res-row" style={{ 
+        display: 'flex', alignItems: 'center', padding: '0.5rem 0.75rem', 
+        borderBottom: isLast ? 'none' : '1px solid rgba(255,255,255,0.03)',
+        transition: 'background 0.15s'
+      }}
+      onMouseEnter={e => {
+        e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
+        const actions = e.currentTarget.querySelector('.res-actions') as HTMLElement;
+        if (actions) actions.style.opacity = '1';
+      }}
+      onMouseLeave={e => {
+        e.currentTarget.style.background = 'transparent';
+        const actions = e.currentTarget.querySelector('.res-actions') as HTMLElement;
+        if (actions) actions.style.opacity = '0';
+      }}>
+        <div {...attributes} {...listeners} className="drag-handle" style={{ cursor: 'grab', padding: '0 0.5rem', color: '#334155' }}>⋮⋮</div>
         <span style={{
-          width: '22px', height: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          background: `${tColor}18`, borderRadius: '5px', border: `1px solid ${tColor}30`,
-          fontSize: '0.75rem', color: tColor, fontFamily: 'monospace', flexShrink: 0,
+          width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: `${tColor}18`, borderRadius: '6px', border: `1px solid ${tColor}30`,
+          fontSize: '0.85rem', color: tColor, flexShrink: 0, marginRight: '0.75rem'
         }}>{typeIcon(item.resource_type)}</span>
-        <p style={{ fontSize: '0.82rem', fontWeight: 600, color: '#cbd5e1', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
+        <p style={{ fontSize: '0.85rem', fontWeight: 500, color: '#e2e8f0', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
           {item.title}
-          {item.topic_name && <span style={{ marginLeft: '0.5rem', fontSize: '0.63rem', color: '#334155', background: 'rgba(255,255,255,0.04)', padding: '0.1rem 0.35rem', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.06)' }}>{item.topic_name}</span>}
+          {item.topic_name && <span style={{ marginLeft: '0.5rem', fontSize: '0.65rem', color: '#64748b', background: 'rgba(255,255,255,0.03)', padding: '0.15rem 0.4rem', borderRadius: '4px' }}>{item.topic_name}</span>}
         </p>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flexShrink: 0 }}>
-          <button onClick={() => toggleResPublish(item)} className="pill" style={{
-            background: item.is_published ? 'rgba(34,197,94,0.1)' : 'rgba(245,158,11,0.08)',
-            color: item.is_published ? '#22c55e' : '#f59e0b',
-            border: `1px solid ${item.is_published ? 'rgba(34,197,94,0.2)' : 'rgba(245,158,11,0.15)'}`,
-            cursor: 'pointer', font: 'inherit',
-          }}>
-            {item.is_published ? '✓ Live' : '○ Draft'}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
+          <button onClick={() => toggleResPublish(item)} style={{
+            background: 'transparent', border: 'none',
+            color: item.is_published ? '#10b981' : '#64748b',
+            cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, padding: '0.2rem 0.5rem', borderRadius: '4px'
+          }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+            {item.is_published ? 'Published' : 'Draft'}
           </button>
-          <div style={{ width: '1px', height: '16px', background: 'rgba(255,255,255,0.06)' }} />
-          <a href={item.url} target="_blank" rel="noopener noreferrer" className="icon-btn" title="Open URL" style={{ textDecoration: 'none' }}>↗</a>
-          <button onClick={() => duplicateRes(item, modId)} className="icon-btn" title="Duplicate">⎘</button>
-          <button onClick={() => openEditRes(item, modId)} className="icon-btn" title="Edit">✏</button>
-          <button onClick={() => deleteRes(item.id)} className="icon-btn danger" title="Delete">✕</button>
+          
+          <div className="res-actions" style={{ display: 'flex', alignItems: 'center', gap: '0.2rem', opacity: 0, transition: 'opacity 0.2s' }}>
+            <a href={item.url} target="_blank" rel="noopener noreferrer" style={{ color: '#94a3b8', textDecoration: 'none', padding: '0.2rem 0.4rem', borderRadius: '4px' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'} title="Open URL">↗</a>
+            <button onClick={() => duplicateRes(item, modId)} style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '0.2rem 0.4rem', borderRadius: '4px' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'} title="Duplicate">⎘</button>
+            <button onClick={() => openEditRes(item, modId)} style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '0.2rem 0.4rem', borderRadius: '4px' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'} title="Edit">✏</button>
+            <button onClick={() => deleteRes(item.id)} style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '0.2rem 0.4rem', borderRadius: '4px' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'} title="Delete">✕</button>
+          </div>
         </div>
       </div>
     </div>
@@ -770,45 +808,53 @@ export function SortableModule({ mod, mIdx, isOpen, toggleOpen, openAddRes, open
     <div ref={setNodeRef} style={style}>
       <div className="module-card">
         {/* Module Header */}
-        <div className="module-header" onClick={toggleOpen}>
-          <div {...attributes} {...listeners} className="drag-handle" onClick={e => e.stopPropagation()}>⠿</div>
-          <span style={{
-            width: '26px', height: '26px', borderRadius: '7px', flexShrink: 0,
-            background: 'linear-gradient(135deg, rgba(108,99,255,0.25) 0%, rgba(139,92,246,0.12) 100%)',
-            border: '1px solid rgba(108,99,255,0.3)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '0.7rem', fontWeight: 800, color: '#a78bfa', fontFamily: 'monospace',
-          }}>{mIdx + 1}</span>
-          <div style={{ minWidth: 0, flex: 1 }}>
-            <p style={{ fontSize: '0.92rem', fontWeight: 700, margin: 0, color: '#e2e8f0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', letterSpacing: '-0.01em' }}>
-              {mod.title}
-            </p>
-            {mod.description && (
-              <p style={{ fontSize: '0.71rem', color: '#475569', margin: '0.1rem 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {mod.description}
-              </p>
-            )}
+        {/* Module Header */}
+        <div className="module-header" onClick={toggleOpen} style={{
+          display: 'flex', alignItems: 'center', padding: '0.85rem 1rem', background: '#141824',
+          border: '1px solid rgba(255,255,255,0.05)', borderRadius: isOpen ? '10px 10px 0 0' : '10px',
+          cursor: 'pointer', transition: 'all 0.2s', gap: '0.75rem'
+        }}
+        onMouseEnter={e => {
+          e.currentTarget.style.background = '#1e2230';
+          const actions = e.currentTarget.querySelector('.mod-actions') as HTMLElement;
+          if (actions) actions.style.opacity = '1';
+        }}
+        onMouseLeave={e => {
+          e.currentTarget.style.background = '#141824';
+          const actions = e.currentTarget.querySelector('.mod-actions') as HTMLElement;
+          if (actions) actions.style.opacity = '0';
+        }}>
+          <div {...attributes} {...listeners} className="drag-handle" style={{ cursor: 'grab', color: '#475569', padding: '0.25rem' }} onClick={e => e.stopPropagation()}>⋮⋮</div>
+          
+          <div style={{ minWidth: 0, flex: 1, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <span style={{ fontSize: '0.95rem', fontWeight: 700, color: '#f1f5f9', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              Module {mIdx + 1}: {mod.title}
+            </span>
+            <span style={{ fontSize: '0.75rem', color: '#64748b', background: 'rgba(255,255,255,0.03)', padding: '0.15rem 0.5rem', borderRadius: '12px' }}>
+              {items.length} {items.length === 1 ? 'Resource' : 'Resources'}
+            </span>
           </div>
-          <span className="pill" style={{ background: 'rgba(108,99,255,0.1)', color: '#8b80ff', border: '1px solid rgba(108,99,255,0.2)', flexShrink: 0 }}>
-            {items.length} {items.length === 1 ? 'Resource' : 'Resources'}
-          </span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }} onClick={e => e.stopPropagation()}>
-            <button onClick={() => openAddRes(mod.id, items)} className="add-res-btn">+ Add</button>
-            <div style={{ width: '1px', height: '16px', background: 'rgba(255,255,255,0.06)', margin: '0 0.2rem' }} />
-            <button onClick={() => duplicateMod(mod)} className="icon-btn" title="Duplicate module">⎘</button>
-            <button onClick={() => openEditMod(mod)} className="icon-btn" title="Edit module">✏</button>
-            <button onClick={() => deleteMod(mod.id)} className="icon-btn danger" title="Delete module">✕</button>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }} onClick={e => e.stopPropagation()}>
+            <div className="mod-actions" style={{ display: 'flex', gap: '0.2rem', opacity: 0, transition: 'opacity 0.2s' }}>
+              <button onClick={() => duplicateMod(mod)} style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '0.3rem', borderRadius: '4px' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'} title="Duplicate">⎘</button>
+              <button onClick={() => openEditMod(mod)} style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '0.3rem', borderRadius: '4px' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'} title="Edit">✏</button>
+              <button onClick={() => deleteMod(mod.id)} style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '0.3rem', borderRadius: '4px' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'} title="Delete">✕</button>
+            </div>
+            
+            <button onClick={() => openAddRes(mod.id, items)} style={{ padding: '0.35rem 0.75rem', borderRadius: '6px', border: 'none', background: 'rgba(108,99,255,0.15)', color: '#a78bfa', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(108,99,255,0.25)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(108,99,255,0.15)'}>+ Resource</button>
+            
+            <span style={{ color: '#475569', fontSize: '0.8rem', padding: '0.25rem', transition: 'transform 0.2s', transform: isOpen ? 'rotate(180deg)' : 'rotate(0)' }}>▾</span>
           </div>
-          <span style={{ color: '#334155', fontSize: '0.7rem', transition: 'transform 0.2s', transform: isOpen ? 'rotate(180deg)' : 'rotate(0)', display: 'inline-block', marginLeft: '0.25rem', flexShrink: 0 }}>▾</span>
         </div>
 
         {/* Resource Items */}
         {isOpen && (
-          <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', background: 'rgba(0,0,0,0.15)' }}>
+          <div style={{ border: '1px solid rgba(255,255,255,0.05)', borderTop: 'none', borderRadius: '0 0 10px 10px', background: '#0d1117', padding: '0.25rem 0' }}>
             {items.length === 0 ? (
-              <div style={{ padding: '1.25rem', textAlign: 'center' }}>
-                <p style={{ fontSize: '0.78rem', color: '#334155', margin: '0 0 0.75rem' }}>No resources yet in this module.</p>
-                <button onClick={() => openAddRes(mod.id, items)} style={{ padding: '0.4rem 0.85rem', borderRadius: '7px', border: '1px dashed rgba(59,130,246,0.35)', background: 'rgba(59,130,246,0.06)', color: '#3b82f6', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer' }}>+ Add First Resource</button>
+              <div style={{ padding: '1.5rem', textAlign: 'center' }}>
+                <p style={{ fontSize: '0.8rem', color: '#475569', margin: '0 0 0.75rem' }}>No resources yet in this module.</p>
+                <button onClick={() => openAddRes(mod.id, items)} style={{ padding: '0.5rem 1rem', borderRadius: '6px', border: '1px dashed rgba(108,99,255,0.3)', background: 'transparent', color: '#8b80ff', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(108,99,255,0.05)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>+ Add First Resource</button>
               </div>
             ) : (
               <SortableContext items={items.map((i: any) => i.id)} strategy={verticalListSortingStrategy}>

@@ -209,8 +209,8 @@ export default function ResourcesLayout({ children }: { children: React.ReactNod
 
       {/* ───────── LEFT SIDEBAR ───────── */}
       <aside style={{
-        width: isCollapsed ? '5rem' : '22rem',
-        minWidth: isCollapsed ? '5rem' : '22rem',
+        width: isCollapsed ? '56px' : '280px',
+        minWidth: isCollapsed ? '56px' : '280px',
         background: 'var(--color-surface)',
         borderRight: '1px solid var(--color-border)',
         display: 'flex',
@@ -220,158 +220,60 @@ export default function ResourcesLayout({ children }: { children: React.ReactNod
       }}>
 
         {/* Header */}
-        <div style={{ padding: isCollapsed ? '1rem 0.5rem' : '1.25rem 1.25rem 1rem', borderBottom: '1px solid var(--color-border)' }}>
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: isCollapsed ? '0' : '1rem' }}>
-            {!isCollapsed && (
-              <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-                <div style={{
-                  width: '40px', height: '40px', borderRadius: '10px',
-                  background: 'linear-gradient(135deg, rgba(108,99,255,0.2) 0%, rgba(108,99,255,0.05) 100%)',
-                  border: '1px solid rgba(108,99,255,0.3)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '1.4rem'
-                }}>
-                  🎓
-                </div>
-                <div>
-                  <h1 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0, lineHeight: 1.2 }}>Learning CMS</h1>
-                  <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', margin: '0.2rem 0 0' }}>Manage courses, modules & resources</p>
-                </div>
-              </div>
-            )}
-            
-            <div style={{ display: 'flex', flexDirection: isCollapsed ? 'column' : 'row', alignItems: 'center', gap: '0.5rem', margin: isCollapsed ? '0 auto' : '0' }}>
-              <button
-                onClick={toggleSidebar}
-                style={{
-                  width: '32px', height: '32px', borderRadius: '8px', border: '1px solid var(--color-border)',
-                  background: 'var(--color-surface-2)', color: 'var(--color-text-muted)', fontSize: '1rem',
-                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  transition: 'all 0.15s', flexShrink: 0,
-                }}
-                onMouseEnter={e => { (e.currentTarget.style.background = 'var(--color-bg)'); (e.currentTarget.style.color = 'var(--text-primary)'); }}
-                onMouseLeave={e => { (e.currentTarget.style.background = 'var(--color-surface-2)'); (e.currentTarget.style.color = 'var(--color-text-muted)'); }}
-                title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
-              >
-                {isCollapsed ? '»' : '«'}
-              </button>
-              
-              {!isCollapsed && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                  <button
-                    onClick={handleExportCSV}
-                    style={{
-                      width: '32px', height: '32px', borderRadius: '8px', border: '1px solid var(--color-border)',
-                      background: 'var(--color-surface-2)', color: 'var(--color-text-muted)', fontSize: '0.9rem',
-                      cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      transition: 'all 0.15s', flexShrink: 0,
-                    }}
-                    onMouseEnter={e => { (e.currentTarget.style.color = 'var(--accent-1)'); (e.currentTarget.style.borderColor = 'var(--accent-1)'); }}
-                    onMouseLeave={e => { (e.currentTarget.style.color = 'var(--color-text-muted)'); (e.currentTarget.style.borderColor = 'var(--color-border)'); }}
-                    title="Export CSV"
-                  >
-                    📥
-                  </button>
-                  <button
-                    onClick={() => setShowCreate(true)}
-                    style={{
-                    style={{
-                      height: '32px', padding: '0 0.75rem', borderRadius: '8px', border: 'none',
-                      background: 'linear-gradient(135deg, #6c63ff 0%, #8b5cf6 100%)', color: 'white', fontSize: '0.8rem', fontWeight: 700,
-                      cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.35rem',
-                      transition: 'transform 0.15s, opacity 0.15s', flexShrink: 0, boxShadow: '0 4px 12px rgba(108,99,255,0.3)'
-                    }}
-                    onMouseEnter={e => { (e.currentTarget.style.opacity = '0.9'); (e.currentTarget.style.transform = 'translateY(-1px)'); }}
-                    onMouseLeave={e => { (e.currentTarget.style.opacity = '1'); (e.currentTarget.style.transform = 'translateY(0)'); }}
-                  >
-                    <span style={{ fontSize: '1rem', lineHeight: 1 }}>+</span> New Course
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Search */}
+        <div style={{ padding: isCollapsed ? '0.75rem 0.5rem' : '1rem', borderBottom: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           {!isCollapsed && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: 'linear-gradient(135deg, rgba(108,99,255,0.2) 0%, rgba(108,99,255,0.05) 100%)', border: '1px solid rgba(108,99,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem' }}>🎓</div>
+              <h1 style={{ fontSize: '1rem', fontWeight: 700, color: '#f1f5f9', margin: 0 }}>Learning CMS</h1>
+            </div>
+          )}
+          
+          <button
+            onClick={toggleSidebar}
+            style={{ width: '28px', height: '28px', borderRadius: '6px', border: '1px solid transparent', background: 'transparent', color: '#64748b', fontSize: '1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s', margin: isCollapsed ? '0 auto' : '0' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#e2e8f0'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#64748b'; }}
+            title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+          >
+            {isCollapsed ? '»' : '«'}
+          </button>
+        </div>
+
+        {/* Search */}
+        {!isCollapsed && (
+          <div style={{ padding: '0.75rem', borderBottom: '1px solid var(--color-border)' }}>
             <div style={{ position: 'relative' }}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', opacity: searchFocused ? 0.8 : 0.4, color: searchFocused ? '#6c63ff' : 'inherit', transition: 'all 0.2s', pointerEvents: 'none' }}><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ position: 'absolute', left: '0.7rem', top: '50%', transform: 'translateY(-50%)', opacity: searchFocused ? 0.8 : 0.4, color: searchFocused ? '#6c63ff' : 'inherit', transition: 'all 0.2s', pointerEvents: 'none' }}><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
               <input
                 id="resource-search-input"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 onFocus={() => setSearchFocused(true)}
                 onBlur={() => setSearchFocused(false)}
-                placeholder="Search courses, modules... (Ctrl+K)"
+                placeholder="Search... (Ctrl+K)"
                 style={{
-                  width: '100%', height: '42px', padding: '0 0.85rem 0 2.4rem',
+                  width: '100%', height: '32px', padding: '0 0.75rem 0 2rem',
                   background: searchFocused ? '#0d1117' : '#141824', 
                   border: `1px solid ${searchFocused ? 'rgba(108,99,255,0.5)' : 'rgba(255,255,255,0.08)'}`,
-                  borderRadius: '10px', color: '#e2e8f0', fontSize: '0.82rem',
+                  borderRadius: '6px', color: '#e2e8f0', fontSize: '0.75rem',
                   outline: 'none', boxSizing: 'border-box',
                   boxShadow: searchFocused ? '0 0 0 3px rgba(108,99,255,0.1)' : 'none',
                   transition: 'all 0.2s ease', fontFamily: 'inherit'
                 }}
               />
-              <button 
-                onClick={() => setShowAdvancedFilters(true)}
-                style={{ position: 'absolute', right: '0.5rem', top: '50%', transform: 'translateY(-50%)', background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', borderRadius: '6px', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--color-text-muted)', transition: 'all 0.15s' }}
-                onMouseEnter={e => { (e.currentTarget.style.color = 'var(--accent-1)'); (e.currentTarget.style.borderColor = 'var(--accent-1)'); }}
-                onMouseLeave={e => { (e.currentTarget.style.color = 'var(--color-text-muted)'); (e.currentTarget.style.borderColor = 'var(--color-border)'); }}
-                title="Advanced Filters"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
-              </button>
-
+              
               {/* Autocomplete Dropdown */}
               {searchFocused && !search && (
-                <div style={{ position: 'absolute', top: 'calc(100% + 0.5rem)', left: 0, right: 0, background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '10px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)', zIndex: 10, padding: '0.5rem', animation: 'slideUp 0.15s ease' }}>
-                  <p style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', padding: '0.5rem' }}>Suggested</p>
+                <div style={{ position: 'absolute', top: 'calc(100% + 0.5rem)', left: 0, right: 0, background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '6px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)', zIndex: 10, padding: '0.25rem', animation: 'slideUp 0.15s ease' }}>
+                  <p style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', padding: '0.25rem 0.5rem' }}>Suggested</p>
                   {courses.slice(0, 3).map(c => (
-                    <div key={c.id} onMouseDown={() => { setSearch(c.title); setSearchFocused(false); }} style={{ padding: '0.5rem', fontSize: '0.85rem', color: 'var(--text-primary)', cursor: 'pointer', borderRadius: '6px' }} className="hover:bg-slate-800/50">
+                    <div key={c.id} onMouseDown={() => { setSearch(c.title); setSearchFocused(false); }} style={{ padding: '0.4rem 0.5rem', fontSize: '0.75rem', color: 'var(--text-primary)', cursor: 'pointer', borderRadius: '4px' }} className="hover:bg-slate-800/50">
                       {c.title}
                     </div>
                   ))}
                 </div>
               )}
             </div>
-          )}
-        </div>
-
-        {/* Stats */}
-        {!isCollapsed && (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', padding: '1rem 1.25rem', borderBottom: '1px solid var(--color-border)', background: 'var(--color-bg)' }}>
-            {[
-              { label: 'Courses', value: stats.total, trending: '+1↑ from last month', type: 'All' },
-              { label: 'Published', value: stats.published, trending: '+2↑ from last month', type: 'Published' },
-              { label: 'Modules', value: stats.modules, trending: '+5↑ from last month', type: 'All' },
-              { label: 'Resources', value: stats.resources, trending: '+12↑ from last month', type: 'All' },
-            ].map((s, i) => (
-              <div 
-                key={s.label} 
-                onClick={() => setFilterStatus(s.type)}
-                style={{ 
-                  background: '#141824', 
-                  border: '1px solid rgba(255,255,255,0.07)',
-                  borderRadius: '12px', padding: '0.85rem', 
-                  cursor: 'pointer', transition: 'all 0.2s ease',
-                  position: 'relative', overflow: 'hidden'
-                }} 
-                onMouseEnter={e => {
-                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(108,99,255,0.3)';
-                  (e.currentTarget as HTMLElement).style.background = 'rgba(108,99,255,0.03)';
-                }}
-                onMouseLeave={e => {
-                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.07)';
-                  (e.currentTarget as HTMLElement).style.background = '#141824';
-                }}
-              >
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <p style={{ fontSize: '1.75rem', fontWeight: 800, color: '#f1f5f9', margin: '0 0 0.15rem', lineHeight: 1, letterSpacing: '-0.02em' }}>{s.value}</p>
-                  <p style={{ fontSize: '0.65rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 0.35rem' }}>{s.label}</p>
-                  {s.trending && <span style={{ fontSize: '0.6rem', color: '#10b981', fontWeight: 600, display: 'flex', alignItems: 'center' }}>{s.trending}</span>}
-                </div>
-              </div>
-            ))}
           </div>
         )}
 
@@ -473,26 +375,41 @@ export default function ResourcesLayout({ children }: { children: React.ReactNod
           )}
         </div>
 
-        {/* Footer */}
-        <div style={{ padding: '0.75rem', borderTop: '1px solid var(--color-border)', display: 'flex', justifyContent: 'center' }}>
-          <Link
-            href="/resources"
-            target="_blank"
-            style={{
-              display: 'flex', alignItems: 'center', gap: '0.5rem',
-              padding: isCollapsed ? '0.5rem' : '0.5rem 0.75rem', borderRadius: '7px',
-              background: 'rgba(108,99,255,0.08)', border: '1px solid rgba(108,99,255,0.2)',
-              color: 'var(--accent-1)', fontSize: '0.75rem', fontWeight: 600,
-              textDecoration: 'none', transition: 'background 0.15s',
-              justifyContent: 'center', width: isCollapsed ? 'auto' : '100%',
-            }}
-            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = 'rgba(108,99,255,0.15)')}
-            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = 'rgba(108,99,255,0.08)')}
-            title="Preview Student View"
-          >
-            <span>↗</span> {!isCollapsed && "Preview Student View"}
-          </Link>
-        </div>
+        {/* Footer actions */}
+        {!isCollapsed && (
+          <div style={{ padding: '0.5rem', borderTop: '1px solid var(--color-border)', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+            <button
+              onClick={() => setShowCreate(true)}
+              style={{ width: '100%', padding: '0.45rem', borderRadius: '6px', border: '1px dashed rgba(255,255,255,0.1)', background: 'transparent', color: '#8b80ff', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(108,99,255,0.05)'; e.currentTarget.style.borderColor = 'rgba(108,99,255,0.3)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+            >
+              + New Course
+            </button>
+            <Link
+              href="/resources"
+              target="_blank"
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem',
+                padding: '0.45rem', borderRadius: '6px',
+                background: 'rgba(108,99,255,0.05)', border: '1px solid transparent',
+                color: 'var(--accent-1)', fontSize: '0.75rem', fontWeight: 600,
+                textDecoration: 'none', transition: 'all 0.15s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(108,99,255,0.1)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(108,99,255,0.05)'; }}
+              title="Preview Student View"
+            >
+              <span>↗</span> Preview Student View
+            </Link>
+          </div>
+        )}
+        
+        {isCollapsed && (
+          <div style={{ padding: '0.5rem', borderTop: '1px solid var(--color-border)', display: 'flex', justifyContent: 'center' }}>
+            <Link href="/resources" target="_blank" style={{ color: 'var(--accent-1)', textDecoration: 'none' }} title="Preview Student View">↗</Link>
+          </div>
+        )}
       </aside>
 
       {/* ───────── RIGHT CONTENT PANEL ───────── */}
@@ -717,93 +634,65 @@ function SortableCourse({ course, isActive, isCollapsed, i, handleDelete }: any)
       <Link
         href={`/admin/resources/${course.id}`}
         style={{
-          display: 'flex', gap: '0.85rem', textDecoration: 'none', borderRadius: '12px', marginBottom: '0.65rem',
-          padding: '0.85rem',
-          background: isActive ? 'var(--color-bg)' : 'var(--color-surface-2)',
-          border: `1px solid ${isActive ? 'var(--accent-1)' : 'var(--color-border)'}`,
-          transition: isDragging ? 'none' : 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+          display: 'flex', gap: '0.65rem', alignItems: 'center', textDecoration: 'none', borderRadius: '8px', marginBottom: '0.25rem',
+          padding: '0.55rem 0.65rem',
+          background: isActive ? 'rgba(108,99,255,0.08)' : 'transparent',
+          border: '1px solid transparent',
+          borderLeft: isActive ? '3px solid #8b5cf6' : '3px solid transparent',
+          transition: isDragging ? 'none' : 'all 0.15s ease',
           position: 'relative', overflow: 'hidden'
         }}
         onMouseEnter={e => { 
           if (!isActive && !isDragging) { 
-            (e.currentTarget as HTMLElement).style.borderColor = 'rgba(108,99,255,0.4)'; 
-            (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)';
-            (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 24px rgba(0,0,0,0.15)';
+            (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)'; 
           } 
         }}
         onMouseLeave={e => { 
           if (!isActive && !isDragging) { 
-            (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-border)'; 
-            (e.currentTarget as HTMLElement).style.transform = 'translateY(0)';
-            (e.currentTarget as HTMLElement).style.boxShadow = 'none';
+            (e.currentTarget as HTMLElement).style.background = 'transparent'; 
           } 
         }}
         className="course-card"
       >
         {/* Drag Handle */}
-        <div {...attributes} {...listeners} style={{ position: 'absolute', top: '0', left: '0', bottom: '0', width: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'grab', opacity: 0, transition: 'opacity 0.2s', background: 'rgba(0,0,0,0.1)' }} className="drag-handle" title="Drag to reorder">
-           <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>⋮⋮</span>
+        <div {...attributes} {...listeners} style={{ position: 'absolute', top: '0', left: '0', bottom: '0', width: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'grab', opacity: 0, transition: 'opacity 0.2s', background: 'rgba(0,0,0,0.2)', zIndex: 5 }} className="drag-handle" title="Drag to reorder" onClick={e => e.preventDefault()}>
+           <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>⋮⋮</span>
         </div>
 
         {/* Thumbnail Icon */}
         <div style={{ 
-          width: isCollapsed ? '40px' : '56px', height: isCollapsed ? '40px' : '56px', borderRadius: '12px', 
+          width: '32px', height: '32px', borderRadius: '6px', 
           background: `linear-gradient(135deg, ${diff.color}20 0%, ${diff.color}05 100%)`, 
           border: `1px solid ${diff.color}40`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: isCollapsed ? '1.2rem' : '1.8rem',
-          flexShrink: 0, transition: 'all 0.3s', marginLeft: '8px'
+          display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem',
+          flexShrink: 0
         }} title={diff.icon}>
           {diff.icon}
         </div>
 
         <div style={{ flex: 1, minWidth: 0, display: isCollapsed ? 'none' : 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-          {/* Top Section */}
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.5rem', marginBottom: '0.4rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.15rem' }}>
             <span style={{
-              fontSize: '0.95rem', fontWeight: 800,
-              color: isActive ? 'var(--text-primary)' : '#f1f5f9',
+              fontSize: '0.85rem', fontWeight: 600,
+              color: isActive ? '#f1f5f9' : '#cbd5e1',
               overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
               lineHeight: 1.2
             }} title={course.title}>{course.title}</span>
             
-            <span style={{ 
-              fontSize: '0.62rem', fontWeight: 700, padding: '0.2rem 0.5rem', borderRadius: '12px',
-              background: course.is_published ? 'rgba(34,197,94,0.15)' : 'rgba(245,158,11,0.15)',
-              color: course.is_published ? '#22c55e' : '#f59e0b', display: 'flex', alignItems: 'center', gap: '0.25rem',
-              border: `1px solid ${course.is_published ? 'rgba(34,197,94,0.3)' : 'rgba(245,158,11,0.3)'}`
-            }} title={course.is_published ? 'Visible to learners' : 'Hidden from learners'}>
-              {course.is_published ? '✓ LIVE' : '✎ DRAFT'}
-            </span>
-          </div>
-          
-          {/* Middle Section: Stats & Progress */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.6rem' }}>
-            <span style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-              {modCount} mods
-            </span>
-            <span style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-              {itemCount} res
-            </span>
-            
-            <div style={{ flex: 1, height: '4px', background: 'var(--color-surface)', borderRadius: '2px', overflow: 'hidden', marginLeft: '0.5rem' }}>
-              <div style={{ width: `${Math.min(100, modCount * 10)}%`, height: '100%', background: 'linear-gradient(90deg, var(--accent-1), var(--accent-2))', borderRadius: '2px' }} />
+            {/* Quick Actions */}
+            <div className="quick-actions" style={{ display: 'flex', alignItems: 'center', opacity: isActive ? 1 : 0, transition: 'all 0.2s', position: 'absolute', right: '0.5rem', top: '50%', transform: 'translateY(-50%)', background: isActive ? '#1e2030' : '#141824', paddingLeft: '0.5rem', boxShadow: '-10px 0 10px ' + (isActive ? '#1e2030' : '#141824') }}>
+              <button onClick={e => handleDelete(course.id, e)} style={{ background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer', padding: '0.2rem', fontSize: '1rem', display: 'flex' }} title="Delete Course" onMouseEnter={e => e.currentTarget.style.color = '#ef4444'} onMouseLeave={e => e.currentTarget.style.color = '#64748b'}>
+                ✕
+              </button>
             </div>
           </div>
           
-          {/* Bottom Section */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: '0.65rem', color: 'rgba(148,163,184,0.6)', display: 'flex', alignItems: 'center', gap: '0.25rem' }} title={`Modified exactly at ${new Date(course.updated_at || course.created_at).toLocaleString()}`}>
-              🕒 {getRelativeTime(course.updated_at || course.created_at)}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.7rem', color: '#64748b' }}>
+            <span>{modCount} mods · {itemCount} res</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: course.is_published ? '#10b981' : '#f59e0b', fontWeight: 500 }}>
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'currentColor' }} />
+              {course.is_published ? 'Published' : 'Draft'}
             </span>
-            
-            {/* Action Buttons (appear on hover) */}
-            <div className="quick-actions" style={{ display: 'flex', gap: '0.35rem', opacity: isActive ? 1 : 0, transition: 'all 0.2s', transform: 'translateX(4px)', position: 'relative', zIndex: 10 }}>
-              <button onClick={e => { e.preventDefault(); e.stopPropagation(); }} style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '4px', color: 'var(--color-text-muted)', cursor: 'pointer', padding: '0.2rem 0.35rem', fontSize: '0.8rem' }} title="Settings">⚙️</button>
-              <button onClick={e => { e.preventDefault(); e.stopPropagation(); }} style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '4px', color: 'var(--color-text-muted)', cursor: 'pointer', padding: '0.2rem 0.35rem', fontSize: '0.8rem' }} title="Duplicate">📑</button>
-              <button onClick={e => handleDelete(course.id, e)} style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '4px', color: '#ef4444', cursor: 'pointer', padding: '0.2rem 0.35rem', fontSize: '0.8rem' }} title="Delete">🗑️</button>
-            </div>
           </div>
         </div>
       </Link>

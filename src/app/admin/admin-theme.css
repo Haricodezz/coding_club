@@ -577,3 +577,13 @@
 [data-theme="light"] .calendar-day-cell:hover {
   background: #F1F5F9 !important;
 }
+
+.leaderboard-row {
+  transition: all var(--transition-fast);
+}
+
+.leaderboard-row:hover {
+  background: rgba(255,255,255,0.05) !important;
+  border-color: var(--color-border-hover) !important;
+  transform: translateX(4px);
+}
