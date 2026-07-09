@@ -20,14 +20,14 @@ import { CSS } from '@dnd-kit/utilities';
 type Tab = 'overview' | 'builder' | 'preview';
 
 const RESOURCE_TYPES = [
-  { value: 'youtube',  label: 'YouTube Video',      icon: '▶', color: '#ef4444' },
-  { value: 'playlist', label: 'YouTube Playlist',   icon: '≡', color: '#ef4444' },
-  { value: 'article',  label: 'Blog / Article',     icon: '✦', color: '#3b82f6' },
-  { value: 'doc',      label: 'Documentation',      icon: '⊟', color: '#8b5cf6' },
-  { value: 'github',   label: 'GitHub Repo',        icon: '⌂', color: '#6b7280' },
-  { value: 'practice', label: 'Practice Platform',  icon: '⚡', color: '#f59e0b' },
-  { value: 'pdf',      label: 'PDF / Cheatsheet',   icon: '⊡', color: '#ec4899' },
-  { value: 'roadmap',  label: 'Roadmap / Guide',    icon: '◈', color: '#14b8a6' },
+  { value: 'youtube',  label: 'YouTube Video',     icon: 'YT', color: '#ef4444' },
+  { value: 'playlist', label: 'YouTube Playlist',  icon: 'PL', color: '#ef4444' },
+  { value: 'article',  label: 'Blog / Article',    icon: 'AR', color: '#3b82f6' },
+  { value: 'doc',      label: 'Documentation',     icon: 'DC', color: '#8b5cf6' },
+  { value: 'github',   label: 'GitHub Repo',       icon: 'GH', color: '#6b7280' },
+  { value: 'practice', label: 'Practice Platform', icon: 'EX', color: '#f59e0b' },
+  { value: 'pdf',      label: 'PDF / Cheatsheet',  icon: 'PDF', color: '#ec4899' },
+  { value: 'roadmap',  label: 'Roadmap / Guide',   icon: 'RM', color: '#14b8a6' },
 ];
 
 const DIFF_OPTIONS = [
@@ -80,10 +80,10 @@ export default function CourseEditorPage({ params }: { params: Promise<{ courseI
   const totalMins = course.resource_modules?.reduce((a: number, m: any) =>
     a + (m.resource_items?.reduce((b: number, i: any) => b + (i.estimated_duration || 0), 0) || 0), 0) || 0;
 
-  const tabs: { key: Tab; label: string; icon: string }[] = [
-    { key: 'overview', label: 'Overview', icon: '◉' },
-    { key: 'builder',  label: 'Builder',  icon: '⊞' },
-    { key: 'preview',  label: 'Preview',  icon: '⊙' },
+  const tabs: { key: Tab; label: string }[] = [
+    { key: 'overview', label: 'Overview' },
+    { key: 'builder',  label: 'Builder'  },
+    { key: 'preview',  label: 'Preview'  },
   ];
 
   return (
@@ -104,8 +104,11 @@ export default function CourseEditorPage({ params }: { params: Promise<{ courseI
           background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); min-width: 56px; }
         .stat-chip:hover { background: rgba(255,255,255,0.07); }
         .module-card { background: #141824; border: 1px solid rgba(255,255,255,0.07);
-          border-radius: 14px; overflow: hidden; transition: border-color 0.2s, box-shadow 0.2s; }
-        .module-card:hover { border-color: rgba(108,99,255,0.25); box-shadow: 0 0 0 1px rgba(108,99,255,0.12), 0 4px 24px rgba(0,0,0,0.3); }
+          border-radius: 14px; overflow: visible; transition: border-color 0.2s, box-shadow 0.2s; position: relative; }
+        .module-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+          background: linear-gradient(180deg, #6c63ff 0%, #8b5cf6 100%); border-radius: 14px 0 0 14px; }
+        .module-card:hover { border-color: rgba(108,99,255,0.3); box-shadow: 0 0 0 1px rgba(108,99,255,0.15), 0 8px 32px rgba(0,0,0,0.35); }
+        .module-card > div { overflow: hidden; border-radius: 14px; }
         .module-header { display: flex; align-items: center; justify-content: space-between;
           padding: 0.95rem 1rem; cursor: pointer; user-select: none; transition: background 0.15s; gap: 0.75rem; }
         .module-header:hover { background: rgba(255,255,255,0.02); }
@@ -118,9 +121,9 @@ export default function CourseEditorPage({ params }: { params: Promise<{ courseI
           justify-content: center; transition: background 0.15s, color 0.15s; flex-shrink: 0; }
         .icon-btn:hover { background: rgba(255,255,255,0.07); color: #e2e8f0; }
         .icon-btn.danger:hover { background: rgba(239,68,68,0.12); color: #ef4444; }
-        .drag-handle { cursor: grab; color: #334155; font-size: 0.7rem; letter-spacing: 2px; line-height: 1;
-          padding: 0.3rem; border-radius: 4px; flex-shrink: 0; transition: color 0.15s; }
-        .drag-handle:hover { color: #64748b; }
+        .drag-handle { cursor: grab; color: #4a5568; font-size: 1rem;
+          padding: 0.25rem 0.2rem; border-radius: 4px; flex-shrink: 0; transition: color 0.15s, background 0.15s; line-height: 1; }
+        .drag-handle:hover { color: #94a3b8; background: rgba(255,255,255,0.06); }
         .add-mod-btn { display: flex; align-items: center; gap: 0.4rem;
           padding: 0.55rem 1.1rem; border-radius: 10px; border: none;
           background: linear-gradient(135deg, #6c63ff 0%, #8b5cf6 100%);
@@ -220,7 +223,7 @@ export default function CourseEditorPage({ params }: { params: Promise<{ courseI
       <div style={{ display: 'flex', alignItems: 'center', padding: '0 1.5rem', height: '44px', flexShrink: 0, borderBottom: '1px solid rgba(255,255,255,0.06)', background: '#0d1117', gap: '0.1rem' }}>
         {tabs.map(t => (
           <button key={t.key} onClick={() => setTab(t.key)} className={`cb-tab-btn${tab === t.key ? ' active' : ''}`}>
-            <span style={{ marginRight: '0.4rem', opacity: 0.7 }}>{t.icon}</span>{t.label}
+            {t.label}
           </button>
         ))}
       </div>
@@ -722,7 +725,7 @@ export function SortableResource({ item, iIdx, isLast, openEditRes, deleteRes, d
   return (
     <div ref={setNodeRef} style={style}>
       <div className="res-row">
-        <div {...attributes} {...listeners} className="drag-handle">⋮⋮</div>
+        <div {...attributes} {...listeners} className="drag-handle">⠿</div>
         <span style={{ fontSize: '0.58rem', fontFamily: 'monospace', color: '#334155', width: '1.25rem', textAlign: 'right', flexShrink: 0 }}>{iIdx + 1}</span>
         <span style={{
           width: '22px', height: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -745,7 +748,7 @@ export function SortableResource({ item, iIdx, isLast, openEditRes, deleteRes, d
           <div style={{ width: '1px', height: '16px', background: 'rgba(255,255,255,0.06)' }} />
           <a href={item.url} target="_blank" rel="noopener noreferrer" className="icon-btn" title="Open URL" style={{ textDecoration: 'none' }}>↗</a>
           <button onClick={() => duplicateRes(item, modId)} className="icon-btn" title="Duplicate">⎘</button>
-          <button onClick={() => openEditRes(item, modId)} className="icon-btn" title="Edit">✎</button>
+          <button onClick={() => openEditRes(item, modId)} className="icon-btn" title="Edit">✏</button>
           <button onClick={() => deleteRes(item.id)} className="icon-btn danger" title="Delete">✕</button>
         </div>
       </div>
@@ -765,10 +768,10 @@ export function SortableModule({ mod, mIdx, isOpen, toggleOpen, openAddRes, open
 
   return (
     <div ref={setNodeRef} style={style}>
-      <div className="module-card" style={{ borderLeft: '3px solid rgba(108,99,255,0.4)' }}>
+      <div className="module-card">
         {/* Module Header */}
         <div className="module-header" onClick={toggleOpen}>
-          <div {...attributes} {...listeners} className="drag-handle" onClick={e => e.stopPropagation()}>⋮⋮</div>
+          <div {...attributes} {...listeners} className="drag-handle" onClick={e => e.stopPropagation()}>⠿</div>
           <span style={{
             width: '26px', height: '26px', borderRadius: '7px', flexShrink: 0,
             background: 'linear-gradient(135deg, rgba(108,99,255,0.25) 0%, rgba(139,92,246,0.12) 100%)',
@@ -793,7 +796,7 @@ export function SortableModule({ mod, mIdx, isOpen, toggleOpen, openAddRes, open
             <button onClick={() => openAddRes(mod.id, items)} className="add-res-btn">+ Add</button>
             <div style={{ width: '1px', height: '16px', background: 'rgba(255,255,255,0.06)', margin: '0 0.2rem' }} />
             <button onClick={() => duplicateMod(mod)} className="icon-btn" title="Duplicate module">⎘</button>
-            <button onClick={() => openEditMod(mod)} className="icon-btn" title="Edit module">✎</button>
+            <button onClick={() => openEditMod(mod)} className="icon-btn" title="Edit module">✏</button>
             <button onClick={() => deleteMod(mod.id)} className="icon-btn danger" title="Delete module">✕</button>
           </div>
           <span style={{ color: '#334155', fontSize: '0.7rem', transition: 'transform 0.2s', transform: isOpen ? 'rotate(180deg)' : 'rotate(0)', display: 'inline-block', marginLeft: '0.25rem', flexShrink: 0 }}>▾</span>
