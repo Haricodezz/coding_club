@@ -17,7 +17,7 @@ export async function GET(
     if (!contest) return NextResponse.json({ error: 'Contest not found' }, { status: 404 });
 
     const problemId = req.nextUrl.searchParams.get('problem_id') || undefined;
-    let query = supabase.from('contest_submissions').select(`
+    let query = (supabase as any).from('contest_submissions').select(`
       id, language, verdict, runtime_ms, testcases_total, testcases_passed,
       error_message, compile_output, submitted_at,
       question_bank(slug, title)
