@@ -540,7 +540,7 @@ function BuilderTab({ course, courseId, onRefresh }: { course: any; courseId: st
       const newMod = await saveResourceModule(null, {
         course_id: courseId, title: `${mod.title} (Copy)`, description: mod.description, display_order: mod.display_order + 5
       });
-      if (mod.resource_items && mod.resource_items.length > 0) {
+      if (newMod && mod.resource_items && mod.resource_items.length > 0) {
         for (const item of mod.resource_items) {
            await saveResourceItem(null, {
              module_id: newMod.id, title: item.title, slug: `${item.slug}-copy-${Date.now()}`,
